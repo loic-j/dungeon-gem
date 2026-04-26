@@ -1,43 +1,43 @@
 # 07 — Three.js Scene
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Créer la scène 3D de base : caméra, murs du donjon, sprite monstre, sprite joueur.
-Assets placeholders (couleurs unies) — pas de sprites définitifs à ce stade.
+Create the base 3D scene: camera, dungeon walls, monster sprite, player sprite.
+Placeholder assets (solid colors) — no final sprites at this stage.
 
-## Fichiers à créer
+## Files to Create
 
-`src/renderer/scene.ts` — setup scène Three.js
-`src/renderer/sprites.ts` — création sprites billboard
-`src/renderer/dungeon.ts` — géométrie murs/sol/plafond
+`src/renderer/scene.ts` — Three.js scene setup
+`src/renderer/sprites.ts` — billboard sprite creation
+`src/renderer/dungeon.ts` — wall/floor/ceiling geometry
 
-## Ce qui est rendu
+## What is Rendered
 
 ```
 ┌─────────────────────┐
-│  [plafond]          │
-│  [mur gauche]       │  ← BoxGeometry texturée couleur
-│         [Monstre]   │  ← THREE.Sprite (billboard, placeholder)
-│  [mur droite]       │
-│  [sol]              │
-│  [personnage joueur]│  ← THREE.Sprite bas gauche
+│  [ceiling]          │
+│  [left wall]        │  ← BoxGeometry with color texture
+│         [Monster]   │  ← THREE.Sprite (billboard, placeholder)
+│  [right wall]       │
+│  [floor]            │
+│  [player character] │  ← THREE.Sprite bottom left
 └─────────────────────┘
 ```
 
-## Spécifications techniques
+## Technical Specifications
 
-- Canvas : ratio 9:16, `ResizeObserver` pour adaptation écran
-- Caméra : `PerspectiveCamera`, FOV 75, positionnée face au couloir
-- Monstre : `THREE.Sprite` centré dans le couloir, placeholder couleur rouge
-- Joueur : `THREE.Sprite` bas gauche, placeholder couleur bleue
-- Renderer : `WebGLRenderer`, `antialias: true`
+- Canvas: 9:16 ratio, `ResizeObserver` for screen adaptation
+- Camera: `PerspectiveCamera`, FOV 75, positioned facing the corridor
+- Monster: `THREE.Sprite` centered in corridor, red color placeholder
+- Player: `THREE.Sprite` bottom left, blue color placeholder
+- Renderer: `WebGLRenderer`, `antialias: true`
 
 ## Tests
 
-Pas de test automatisé — vérification manuelle dans le navigateur :
-- Canvas visible, bon ratio vertical
-- Sprite monstre visible et centré
-- Sprite joueur visible bas gauche
-- Pas d'erreur console WebGL
+No automated test — manual verification in the browser:
+- Canvas visible, correct vertical ratio
+- Monster sprite visible and centered
+- Player sprite visible bottom left
+- No WebGL console errors

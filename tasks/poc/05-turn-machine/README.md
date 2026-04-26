@@ -1,71 +1,71 @@
 # 05 — Turn Machine
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Implémenter la machine à états du tour de jeu. Orchestre mana + combat + phases.
+Implement the turn state machine. Orchestrates mana + combat + phases.
 
-## Fichiers à créer
+## Files to Create
 
 `src/game/turnMachine.ts`
 
-## Flux d'un tour
+## Turn Flow
 
 ```
 GAIN_MANA
-  → addManaToPool (joueur)
+  → addManaToPool (player)
   → monster.actionPoints += 1
   → phase = PLAYER_ACTION
 
 PLAYER_ACTION
-  → joueur choisit sort ou skip
-  → si sort : consumeMana + applyPlayerSpell
+  → player chooses spell or skip
+  → if spell: consumeMana + applyPlayerSpell
   → phase = MONSTER_ACTION
 
 MONSTER_ACTION
   → roll = Math.random() < (actionPoints / threshold)
-  → si roll : applyMonsterSpell + actionPoints = 0
+  → if roll: applyMonsterSpell + actionPoints = 0
   → phase = CHECK_END
 
 CHECK_END
-  → monstre HP ≤ 0 → VICTORY
-  → joueur HP ≤ 0 → GAME_OVER
-  → sinon → GAIN_MANA (tour suivant)
+  → monster HP ≤ 0 → VICTORY
+  → player HP ≤ 0 → GAME_OVER
+  → otherwise → GAIN_MANA (next turn)
 ```
 
-## Fonctions à implémenter
+## Functions to Implement
 
 ```typescript
-// Crée l'état initial d'un combat
+// Creates the initial combat state
 initCombat(): GameState
 
-// Exécute la phase GAIN_MANA → retourne nouveau state
+// Executes the GAIN_MANA phase → returns new state
 processManaPhase(state: GameState): GameState
 
-// Exécute l'action joueur (sort ou skip) → retourne nouveau state
+// Executes the player action (spell or skip) → returns new state
 processPlayerAction(state: GameState, spellId: string | null): GameState
 
-// Exécute la phase monstre → retourne nouveau state + boolean attackOccurred
+// Executes the monster phase → returns new state + boolean attackOccurred
 processMonsterPhase(state: GameState): { state: GameState; attacked: boolean }
 
-// Vérifie fin de combat → retourne 'VICTORY' | 'GAME_OVER' | null
+// Checks combat end → returns 'VICTORY' | 'GAME_OVER' | null
 checkCombatEnd(state: GameState): 'VICTORY' | 'GAME_OVER' | null
 
-// Réinitialise le monstre pour un nouveau combat (victoire → combat suivant)
+// Resets the monster for a new combat (victory → next combat)
 resetCombat(state: GameState): GameState
 ```
 
-## Tests Vitest
+## Vitest Tests
 
 `src/game/turnMachine.test.ts`
 
-- `initCombat` : joueur 20/20 HP, 1 mana, monstre 10/10 HP, 0 AP
-- `processManaPhase` : pool +1 mana, monstre AP +1
-- `processPlayerAction` skip : mana inchangé, monstre HP inchangé
-- `processPlayerAction` sort valide : mana consommé, monstre HP réduit
-- `processMonsterPhase` : AP reset à 0 si attaque lancée
-- `checkCombatEnd` : GAME_OVER si joueur HP ≤ 0
-- `checkCombatEnd` : VICTORY si monstre HP ≤ 0
-- `checkCombatEnd` : null si combat en cours
-- `resetCombat` : monstre revient à 10/10, AP reset, mana pool reset
+- `initCombat`: player 20/20 HP, 1 mana, monster 10/10 HP, 0 AP
+- `processManaPhase`: pool +1 mana, monster AP +1
+- `processPlayerAction` skip: mana unchanged, monster HP unchanged
+- `processPlayerAction` valid spell: mana consumed, monster HP reduced
+- `processMonsterPhase`: AP reset to 0 if attack cast
+- `checkCombatEnd`: GAME_OVER if player HP ≤ 0
+- `checkCombatEnd`: VICTORY if monster HP ≤ 0
+- `checkCombatEnd`: null if combat ongoing
+- `resetCombat`: monster returns to 10/10, AP reset, mana pool reset

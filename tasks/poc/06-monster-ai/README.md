@@ -1,46 +1,46 @@
 # 06 — Monster AI
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Implémenter le système de décision du monstre et exposer la probabilité d'attaque pour l'UI.
+Implement the monster decision system and expose attack probability for the UI.
 
-## Fichiers à créer
+## Files to Create
 
 `src/game/monsterAI.ts`
 
-## Fonctions à implémenter
+## Functions to Implement
 
 ```typescript
-// Retourne la probabilité d'attaque actuelle (0.0 à 1.0)
+// Returns the current attack probability (0.0 to 1.0)
 getAttackProbability(monster: Monster): number
 
-// Détermine si le monstre attaque ce tour (roll aléatoire)
+// Determines if the monster attacks this turn (random roll)
 rollMonsterAttack(monster: Monster): boolean
 
-// Choisit quel sort le monstre lance (aléatoire parmi son set)
+// Chooses which spell the monster casts (random from its set)
 chooseMonsterSpell(monster: Monster): Spell
 ```
 
-## Règles métier
+## Business Rules
 
-- Probabilité : `actionPoints / threshold` (entre 0 et 1)
-- Si `actionPoints >= threshold` → probabilité peut dépasser 1.0, mais le roll reste `Math.random() < proba` (donc quasi certain)
-- Sort choisi aléatoirement parmi les sorts du monstre
+- Probability: `actionPoints / threshold` (between 0 and 1)
+- If `actionPoints >= threshold` → probability can exceed 1.0, but the roll remains `Math.random() < proba` (thus near certain)
+- Spell chosen randomly from the monster's spells
 
-## Note sur la testabilité
+## Testability Note
 
-`rollMonsterAttack` utilise `Math.random()` → injection de seed ou mock nécessaire pour tests déterministes.
-Vitest supporte `vi.spyOn(Math, 'random')` pour contrôler le résultat.
+`rollMonsterAttack` uses `Math.random()` → seed injection or mock needed for deterministic tests.
+Vitest supports `vi.spyOn(Math, 'random')` to control the result.
 
-## Tests Vitest
+## Vitest Tests
 
 `src/game/monsterAI.test.ts`
 
-- `getAttackProbability` : AP=0, threshold=3 → 0
-- `getAttackProbability` : AP=1, threshold=3 → 0.333...
-- `getAttackProbability` : AP=3, threshold=3 → 1.0
-- `rollMonsterAttack` : Math.random mocké à 0.1, AP=1, threshold=3 → false (0.1 > 0.333)
-- `rollMonsterAttack` : Math.random mocké à 0.1, AP=3, threshold=3 → true (0.1 < 1.0)
-- `chooseMonsterSpell` : retourne un sort du set du monstre
+- `getAttackProbability`: AP=0, threshold=3 → 0
+- `getAttackProbability`: AP=1, threshold=3 → 0.333...
+- `getAttackProbability`: AP=3, threshold=3 → 1.0
+- `rollMonsterAttack`: Math.random mocked at 0.1, AP=1, threshold=3 → false (0.1 > 0.333)
+- `rollMonsterAttack`: Math.random mocked at 0.1, AP=3, threshold=3 → true (0.1 < 1.0)
+- `chooseMonsterSpell`: returns a spell from the monster's set

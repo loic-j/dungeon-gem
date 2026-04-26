@@ -1,51 +1,51 @@
 # 09 — Game Integration
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Brancher la logique de jeu (tâches 02-06) sur l'UI (tâche 08).
-Gérer les événements clics, mettre à jour l'affichage après chaque action, orchestrer la boucle de combat.
+Connect the game logic (tasks 02-06) to the UI (task 08).
+Handle click events, update the display after each action, orchestrate the combat loop.
 
-## Fichiers à créer/modifier
+## Files to Create/Modify
 
-`src/main.ts` — point d'entrée, initialise tout et gère la boucle
+`src/main.ts` — entry point, initializes everything and manages the loop
 
-## Responsabilités
+## Responsibilities
 
 ```
 main.ts
-  ├── initCombat() → GameState initial
-  ├── render(state) → met à jour UI + Three.js
-  ├── onClick sort → processPlayerAction → processMonsterPhase
+  ├── initCombat() → initial GameState
+  ├── render(state) → updates UI + Three.js
+  ├── onClick spell → processPlayerAction → processMonsterPhase
   │                → checkCombatEnd → render
   ├── onClick skip → processPlayerAction(null) → processMonsterPhase
   │                → checkCombatEnd → render
-  └── onClick "Rejouer" → resetCombat → render
+  └── onClick "Play Again" → resetCombat → render
 ```
 
-## Flux complet intégré
+## Complete Integrated Flow
 
 ```
 1. initCombat() → state
-2. render(state)        ← affiche état initial
-3. [joueur clique sort/skip]
-4. processManaPhase     ← début du tour
-5. processPlayerAction  ← action joueur
-6. processMonsterPhase  ← monstre roll + attaque éventuelle
+2. render(state)        ← displays initial state
+3. [player clicks spell/skip]
+4. processManaPhase     ← turn start
+5. processPlayerAction  ← player action
+6. processMonsterPhase  ← monster roll + possible attack
 7. checkCombatEnd
    → VICTORY  : resetCombat → goto 2
    → GAME_OVER: showGameOver
    → null     : goto 2
 ```
 
-## Tests Playwright
+## Playwright Tests
 
 `tests/integration.spec.ts`
 
-- Cliquer sort avec mana disponible → HP monstre réduit
-- Cliquer sort sans mana → bouton désactivé, rien ne se passe
-- Cliquer skip → tour avance (monster AP +1 visible via tension bar)
-- Monstre meurt → nouveau combat démarre (monstre HP reset à 10)
-- Joueur meurt → écran Game Over affiché
-- Cliquer "Rejouer" sur Game Over → nouveau combat démarre
+- Click spell with available mana → monster HP reduced
+- Click spell without mana → button disabled, nothing happens
+- Click skip → turn advances (monster AP +1 visible via tension bar)
+- Monster dies → new combat starts (monster HP reset to 10)
+- Player dies → Game Over screen displayed
+- Click "Play Again" on Game Over → new combat starts

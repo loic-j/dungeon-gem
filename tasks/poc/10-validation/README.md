@@ -1,56 +1,56 @@
-# 10 — Validation finale
+# 10 — Final Validation
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Vérifier tous les critères de validation du POC définis dans `brainstorming/poc.md`.
-Tests Playwright complets + vérification manuelle mobile.
+Verify all POC validation criteria defined in `brainstorming/poc.md`.
+Full Playwright tests + manual mobile verification.
 
-## Critères à valider
+## Criteria to Validate
 
-| Critère | Type de test |
-|---------|-------------|
-| Mana se génère et s'accumule correctement | Playwright |
-| Sorts se désactivent si mana insuffisant | Playwright |
-| Calcul dégâts correct (résistance feu, faiblesse eau) | Playwright |
-| Barre de tension monstre monte chaque tour | Playwright |
-| Monstre attaque de façon probabiliste | Playwright (mock random) |
-| Enchaînement combat → nouveau combat | Playwright |
-| Game Over déclenché correctement | Playwright |
-| Interface lisible sur mobile (format vertical) | Playwright (`viewport`) |
+| Criterion | Test Type |
+|-----------|-----------|
+| Mana generates and accumulates correctly | Playwright |
+| Spells disable when mana is insufficient | Playwright |
+| Correct damage calculation (fire resistance, water weakness) | Playwright |
+| Monster tension bar grows each turn | Playwright |
+| Monster attacks probabilistically | Playwright (mock random) |
+| Combat chain → new combat | Playwright |
+| Game Over triggered correctly | Playwright |
+| Interface readable on mobile (vertical format) | Playwright (`viewport`) |
 
-## Tests Playwright
+## Playwright Tests
 
 `tests/validation.spec.ts`
 
-### Mana accumulation
-- Skippper 3 tours → pool contient 3 mana (ou moins si remplacement subi)
+### Mana Accumulation
+- Skip 3 turns → pool contains 3 mana (or less if forced replacement)
 
-### Calcul dégâts
-- Lancer sort Feu → HP monstre = 10 - ceil(5×0.8) = 10 - 4 = 6
-- Lancer sort Eau → HP monstre = 10 - ceil(5×1.2) = 10 - 6 = 4
+### Damage Calculation
+- Cast Fire spell → monster HP = 10 - ceil(5×0.8) = 10 - 4 = 6
+- Cast Water spell → monster HP = 10 - ceil(5×1.2) = 10 - 6 = 4
 
-### Tension bar
-- Skip 1 tour → barre plus haute qu'au début
-- Skip 2 tours → barre plus haute encore
+### Tension Bar
+- Skip 1 turn → bar higher than at start
+- Skip 2 turns → bar even higher
 
 ### Game Over
-- Simuler joueur à 3 HP (via mock state), monstre attaque → Game Over affiché
+- Simulate player at 3 HP (via mock state), monster attacks → Game Over displayed
 
-### Enchaînement
-- Tuer monstre → vérifier HP monstre reset à 10/10
+### Combat Chain
+- Kill monster → verify monster HP reset to 10/10
 
 ### Mobile
 ```typescript
 test.use({ viewport: { width: 480, height: 854 } })
-// Vérifier : tous boutons visibles, pas de scroll nécessaire
+// Verify: all buttons visible, no scroll needed
 ```
 
-## Vérification manuelle (checklist)
+## Manual Verification (checklist)
 
-- [ ] Ouvrir sur mobile (ou DevTools mobile 480×854)
-- [ ] Jouer 5 combats complets sans bug
-- [ ] Vérifier que la barre de tension crée bien un effet de suspense
-- [ ] Vérifier que le Game Over s'affiche et que "Rejouer" fonctionne
-- [ ] Pas d'erreur console pendant toute la session
+- [ ] Open on mobile (or DevTools mobile 480×854)
+- [ ] Play 5 complete combats without bugs
+- [ ] Verify that the tension bar creates a suspense effect
+- [ ] Verify that Game Over displays and "Play Again" works
+- [ ] No console errors during the entire session

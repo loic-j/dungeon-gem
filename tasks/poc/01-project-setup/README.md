@@ -1,28 +1,28 @@
 # 01 — Project Setup
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Initialiser le projet avec toutes les dépendances et la structure de dossiers.
+Initialize the project with all dependencies and folder structure.
 
 ## Actions
 
-- Créer le projet Vite + TypeScript (`pnpm create vite@latest`)
-- Installer Three.js (`pnpm add three @types/three`)
-- Installer Vitest (`pnpm add -D vitest`)
-- Installer Playwright (`pnpm add -D @playwright/test`)
-- Configurer `tsconfig.json` (strict mode)
-- Configurer `vite.config.ts` (Vitest inclus)
-- Créer la structure de dossiers src :
+- Create Vite + TypeScript project (`pnpm create vite@latest`)
+- Install Three.js (`pnpm add three @types/three`)
+- Install Vitest (`pnpm add -D vitest`)
+- Install Playwright (`pnpm add -D @playwright/test`)
+- Configure `tsconfig.json` (strict mode)
+- Configure `vite.config.ts` (Vitest included)
+- Create src folder structure:
   ```
   src/
-    game/       ← logique pure (zéro Three.js)
-    renderer/   ← Three.js uniquement
+    game/       ← pure logic (zero Three.js)
+    renderer/   ← Three.js only
     ui/         ← HTML/CSS overlay
-    main.ts     ← point d'entrée
+    main.ts     ← entry point
   ```
-- Configurer scripts pnpm :
+- Configure pnpm scripts:
   ```json
   "dev": "vite",
   "build": "tsc && vite build",
@@ -30,9 +30,9 @@ Initialiser le projet avec toutes les dépendances et la structure de dossiers.
   "test": "vitest",
   "test:e2e": "playwright test"
   ```
-- Créer `index.html` avec canvas + div UI overlay
+- Create `index.html` with canvas + UI overlay div
 
 ## Tests
 
-Aucun test automatisé à cette étape.
-Vérification : `pnpm dev` → page blanche sans erreur console.
+No automated tests at this stage.
+Verification: `pnpm dev` → blank page with no console errors.

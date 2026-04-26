@@ -95,10 +95,10 @@ test('spell buttons disabled when mana type unavailable', async ({ page }) => {
       hp: 20, maxHp: 20, level: 1, maxMana: 3,
       manaPool: ['fire'],
       spells: [
-        { id: 'flame',  name: 'Flamme',  element: 'fire',      damage: 5, manaCost: ['fire'] },
-        { id: 'wave',   name: 'Vague',   element: 'water',     damage: 5, manaCost: ['water'] },
-        { id: 'bolt',   name: 'Éclair',  element: 'lightning', damage: 5, manaCost: ['lightning'] },
-        { id: 'roots',  name: 'Racines', element: 'nature',    damage: 5, manaCost: ['nature'] },
+        { id: 'flame',  name: 'Flame', element: 'fire',      damage: 5, manaCost: ['fire'] },
+        { id: 'wave',   name: 'Wave',  element: 'water',     damage: 5, manaCost: ['water'] },
+        { id: 'bolt',   name: 'Bolt',  element: 'lightning', damage: 5, manaCost: ['lightning'] },
+        { id: 'roots',  name: 'Roots', element: 'nature',    damage: 5, manaCost: ['nature'] },
       ],
     } as GameState['player'],
   })

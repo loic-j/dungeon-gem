@@ -1,49 +1,49 @@
 # 03 — Mana System
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Implémenter la logique du système de mana. Pur TypeScript, zéro DOM.
+Implement the mana system logic. Pure TypeScript, zero DOM.
 
-## Fichiers à créer
+## Files to Create
 
 `src/game/mana.ts`
 
-## Fonctions à implémenter
+## Functions to Implement
 
 ```typescript
-// Tire un type de mana aléatoire parmi les 4 éléments
+// Draws a random mana type from the 4 elements
 drawRandomMana(): ManaToken
 
-// Ajoute 1 mana au pool. Si pool plein → retire 1 aléatoire avant d'ajouter
+// Adds 1 mana to the pool. If pool full → removes 1 random before adding
 addManaToPool(pool: ManaToken[], max: number): ManaToken[]
 
-// Vérifie si le pool contient les mana requis pour un sort
+// Checks if the pool contains the required mana to cast a spell
 canCastSpell(pool: ManaToken[], cost: ManaToken[]): boolean
 
-// Retire les mana utilisés pour un sort du pool
+// Removes the mana used to cast a spell from the pool
 consumeMana(pool: ManaToken[], cost: ManaToken[]): ManaToken[]
 
-// Crée le pool initial en début de combat (1 mana aléatoire)
+// Creates the initial pool at combat start (1 random mana)
 initManaPool(): ManaToken[]
 ```
 
-## Règles métier à respecter
+## Business Rules
 
-- Pool ne dépasse jamais `maxMana`
-- Si pool plein au moment d'ajouter : retirer 1 mana **aléatoire** existant avant ajout
-- `canCastSpell` : doit vérifier chaque token du coût individuellement (ex: coût `[fire, fire]` nécessite 2 fire dans le pool)
-- Pool remis à zéro entre combats (géré dans turn machine, pas ici)
+- Pool never exceeds `maxMana`
+- If pool is full when adding: remove 1 **random** existing mana before adding
+- `canCastSpell`: must check each token of the cost individually (e.g. cost `[fire, fire]` requires 2 fire in the pool)
+- Pool reset between combats (handled in turn machine, not here)
 
-## Tests Vitest
+## Vitest Tests
 
 `src/game/mana.test.ts`
 
-- `addManaToPool` : pool non plein → ajoute normalement
-- `addManaToPool` : pool plein → taille reste égale au max
-- `canCastSpell` : pool suffisant → true
-- `canCastSpell` : pool insuffisant → false
-- `canCastSpell` : type manquant → false même si quantité OK
-- `consumeMana` : retire exactement les tokens du coût
-- `initManaPool` : retourne exactement 1 mana
+- `addManaToPool`: non-full pool → adds normally
+- `addManaToPool`: full pool → size stays equal to max
+- `canCastSpell`: sufficient pool → true
+- `canCastSpell`: insufficient pool → false
+- `canCastSpell`: missing type → false even if quantity OK
+- `consumeMana`: removes exactly the cost tokens
+- `initManaPool`: returns exactly 1 mana

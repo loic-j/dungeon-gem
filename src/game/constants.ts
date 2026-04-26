@@ -1,10 +1,10 @@
 import type { Spell, Monster } from './types'
 
 export const PLAYER_SPELLS: Spell[] = [
-  { id: 'flame',   name: 'Flamme', element: 'fire',      damage: 5, manaCost: ['fire'] },
-  { id: 'wave',    name: 'Vague',  element: 'water',     damage: 5, manaCost: ['water'] },
-  { id: 'bolt',    name: 'Éclair', element: 'lightning', damage: 5, manaCost: ['lightning'] },
-  { id: 'roots',   name: 'Racines', element: 'nature',   damage: 5, manaCost: ['nature'] },
+  { id: 'flame',   name: 'Flame', element: 'fire',      damage: 5, manaCost: ['fire'] },
+  { id: 'wave',    name: 'Wave',  element: 'water',     damage: 5, manaCost: ['water'] },
+  { id: 'bolt',    name: 'Bolt',  element: 'lightning', damage: 5, manaCost: ['lightning'] },
+  { id: 'roots',   name: 'Roots', element: 'nature',    damage: 5, manaCost: ['nature'] },
 ]
 
 export const POC_MONSTER: Monster = {
@@ -15,7 +15,7 @@ export const POC_MONSTER: Monster = {
   resistances: ['fire'],
   weaknesses: ['water'],
   spells: [
-    { id: 'basic_attack', name: 'Attaque basique', element: 'nature', damage: 3, manaCost: [] },
+    { id: 'basic_attack', name: 'Basic Attack', element: 'nature', damage: 3, manaCost: [] },
   ],
 }
 

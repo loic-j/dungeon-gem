@@ -1,51 +1,51 @@
 # 08 — HTML UI Overlay
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Créer l'interface HTML/CSS posée par-dessus le canvas Three.js.
-Affichage statique d'abord — les données seront branchées en tâche 09.
+Create the HTML/CSS interface overlaid on the Three.js canvas.
+Static display first — data will be connected in task 09.
 
-## Fichiers à créer
+## Files to Create
 
-`src/ui/ui.ts` — fonctions de mise à jour DOM
-`src/ui/ui.css` — styles overlay
-`index.html` — structure HTML complète
+`src/ui/ui.ts` — DOM update functions
+`src/ui/ui.css` — overlay styles
+`index.html` — complete HTML structure
 
-## Éléments UI (référence wireframe : brainstorming/combat-first-screen-design.png)
+## UI Elements (reference wireframe: brainstorming/combat-first-screen-design.png)
 
-**Zone ennemi (haut)**
-- HP ennemi : texte `current/max`
-- Level ennemi
+**Enemy area (top)**
+- Enemy HP: text `current/max`
+- Enemy level
 
-**Zone joueur (bas)**
-- HP joueur : barre + texte `current/max`  
-- Level joueur
-- Mana pool : cercles colorés dynamiques (1 cercle par token, couleur par élément)
-  - 🔥 rouge, 💧 bleu, 🌿 vert, ⚡ jaune
-- 4 boutons sorts : désactivés (`disabled`) si mana insuffisant
-- Bouton Skip turn
-- Barre de tension monstre (rage bar) : indicateur visuel sans valeur numérique
+**Player area (bottom)**
+- Player HP: bar + text `current/max`
+- Player level
+- Mana pool: dynamic colored circles (1 circle per token, color by element)
+  - 🔥 red, 💧 blue, 🌿 green, ⚡ yellow
+- 4 spell buttons: disabled (`disabled`) if insufficient mana
+- Skip turn button
+- Monster tension bar (rage bar): visual indicator with no numeric value
 
-## Fonctions `ui.ts` à implémenter
+## `ui.ts` Functions to Implement
 
 ```typescript
 updatePlayerHp(current: number, max: number): void
 updateMonsterHp(current: number, max: number): void
 updateManaDisplay(pool: ManaToken[]): void
 updateSpellButtons(spells: Spell[], pool: ManaToken[]): void
-updateTensionBar(probability: number): void  // 0.0 à 1.0, pas de chiffre affiché
+updateTensionBar(probability: number): void  // 0.0 to 1.0, no number displayed
 showGameOver(): void
 hideGameOver(): void
 ```
 
-## Tests Playwright
+## Playwright Tests
 
 `tests/ui.spec.ts`
 
-- Tous les éléments UI présents dans le DOM (`data-testid`)
-- HP bar joueur visible
-- 4 boutons sorts présents
-- Bouton skip turn présent
-- Barre tension présente (sans valeur numérique affichée)
+- All UI elements present in DOM (`data-testid`)
+- Player HP bar visible
+- 4 spell buttons present
+- Skip turn button present
+- Tension bar present (no numeric value displayed)

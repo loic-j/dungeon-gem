@@ -1,48 +1,48 @@
 # 04 — Combat Logic
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Implémenter le calcul des dégâts et l'application des sorts. Pur TypeScript, zéro DOM.
+Implement damage calculation and spell application. Pure TypeScript, zero DOM.
 
-## Fichiers à créer
+## Files to Create
 
 `src/game/combat.ts`
 
-## Fonctions à implémenter
+## Functions to Implement
 
 ```typescript
-// Retourne le modificateur d'élément (1.2 / 1.0 / 0.8)
+// Returns the element modifier (1.2 / 1.0 / 0.8)
 getElementModifier(spellElement: Element, monster: Monster): number
 
-// Calcule les dégâts finaux (arrondi supérieur)
+// Calculates final damage (rounded up)
 calculateDamage(baseDamage: number, modifier: number): number
 
-// Applique un sort joueur → retourne nouveau GameState
+// Applies a player spell → returns new GameState
 applyPlayerSpell(state: GameState, spell: Spell): GameState
 
-// Applique un sort monstre → retourne nouveau GameState
+// Applies a monster spell → returns new GameState
 applyMonsterSpell(state: GameState, spell: Spell): GameState
 ```
 
-## Règles métier
+## Business Rules
 
-- Modificateurs : faiblesse ×1.2, neutre ×1.0, résistance ×0.8
-- Arrondi : `Math.ceil(baseDamage × modifier)`
-- Un élément peut être ni résistance ni faiblesse → ×1.0
-- `applyPlayerSpell` : consomme mana + réduit HP monstre
-- `applyMonsterSpell` : réduit HP joueur
-- HP ne peut pas descendre sous 0
+- Modifiers: weakness ×1.2, neutral ×1.0, resistance ×0.8
+- Rounding: `Math.ceil(baseDamage × modifier)`
+- An element can be neither resistance nor weakness → ×1.0
+- `applyPlayerSpell`: consumes mana + reduces monster HP
+- `applyMonsterSpell`: reduces player HP
+- HP cannot drop below 0
 
-## Tests Vitest
+## Vitest Tests
 
 `src/game/combat.test.ts`
 
-- Feu vs résistance feu → `Math.ceil(5 × 0.8)` = 4
-- Eau vs faiblesse eau → `Math.ceil(5 × 1.2)` = 6
-- Foudre vs neutre → 5
-- Nature vs neutre → 5
-- HP monstre ne descend pas sous 0
-- HP joueur ne descend pas sous 0
-- Mana consommé après `applyPlayerSpell`
+- Fire vs fire resistance → `Math.ceil(5 × 0.8)` = 4
+- Water vs water weakness → `Math.ceil(5 × 1.2)` = 6
+- Lightning vs neutral → 5
+- Nature vs neutral → 5
+- Monster HP does not drop below 0
+- Player HP does not drop below 0
+- Mana consumed after `applyPlayerSpell`

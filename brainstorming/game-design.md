@@ -1,16 +1,16 @@
-# Game Design — Dungeon Crawler Élémentaire
+# Game Design — Elemental Dungeon Crawler
 
-## Concept général
+## General Concept
 
-Dungeon crawler tour par tour, vue combat fixe (pas de navigation couloir).
-Boucle : Combat → Récompense → Combat → ...
-Progression infinie (roguelike endless).
+Turn-based dungeon crawler, fixed combat view (no corridor navigation).
+Loop: Combat → Reward → Combat → ...
+Infinite progression (endless roguelike).
 
 ---
 
-## Interface combat
+## Combat Interface
 
-> Wireframe : [combat-first-screen-design.png](combat-first-screen-design.png)
+> Wireframe: [combat-first-screen-design.png](combat-first-screen-design.png)
 
 ```
 ┌─────────────────────────────┐
@@ -26,220 +26,220 @@ Progression infinie (roguelike endless).
 └─────────────────────────────┘
 ```
 
-**Joueur (bas)**
-- **HP** : barre + format `current/max` (ex: `8/20`)
-- **Level** : niveau actuel
-- **Mana** : cercles individuels typés (couleur par élément) — UI s'adapte dynamiquement à la taille du pool actuel
-- **Sorts** : 4 slots cliquables (désactivés si mana insuffisant)
-- **Skip turn** : passe le tour sans action
+**Player (bottom)**
+- **HP**: bar + format `current/max` (e.g. `8/20`)
+- **Level**: current level
+- **Mana**: typed individual circles (color by element) — UI adapts dynamically to current pool size
+- **Spells**: 4 clickable slots (disabled if insufficient mana)
+- **Skip turn**: passes the turn without action
 
-**Ennemi (haut)**
-- **HP** : affiché (joueur voit les HP ennemis)
-- **Level** : affiché
+**Enemy (top)**
+- **HP**: displayed (player sees enemy HP)
+- **Level**: displayed
 
 ---
 
-## Système de Mana
+## Mana System
 
-### Types de mana
-| Type | Élément |
+### Mana Types
+| Type | Element |
 |------|---------|
-| 🔥 | Feu |
-| 💧 | Eau |
+| 🔥 | Fire |
+| 💧 | Water |
 | 🌿 | Nature |
-| ⚡ | Foudre |
+| ⚡ | Lightning |
 
-### Règles
-- **Début de combat** : joueur commence avec **1 mana** tiré aléatoirement
-- **Chaque tour** : gain de **1 mana** tiré aléatoirement
-- Mana non utilisé **se cumule** (dans la limite du maximum)
-- **Si maximum atteint** : on retire 1 mana aléatoire existant, puis on ajoute le nouveau tirage → le total ne dépasse jamais le max
-- Pool **remis à zéro** entre chaque combat
-- **Maximum améliorable** via niveaux et bonus
+### Rules
+- **Combat start**: player starts with **1 mana** drawn randomly
+- **Each turn**: gain **1 mana** drawn randomly
+- Unused mana **accumulates** (up to the maximum)
+- **If maximum reached**: remove 1 random existing mana, then add the new draw → total never exceeds the max
+- Pool **reset to zero** between each combat
+- **Maximum upgradeable** via levels and bonuses
 
-### Valeurs
-| Moment | Valeur |
-|--------|--------|
-| Maximum départ | 3 |
-| Mana début combat | 1 (aléatoire) |
-| Mana gagné/tour | 1 (aléatoire) |
-| Maximum évolutif | oui, via progression |
+### Values
+| When | Value |
+|------|-------|
+| Starting maximum | 3 |
+| Mana at combat start | 1 (random) |
+| Mana gained/turn | 1 (random) |
+| Evolving maximum | yes, via progression |
 
-### Implications stratégiques
-- Dépenser tôt = contrôle du pool, pas de remplacement subi
-- Accumuler = risque de perdre un type précis au prochain tour
-- Sorts coûteux nécessitent de planifier plusieurs tours d'avance
-- Augmenter le maximum = moins de remplacements forcés, plus de flexibilité
-
----
-
-## Système de Sorts
-
-### Règles générales
-- **Départ** : 1 sort prédéfini
-- **Max actifs** : 4 sorts simultanément
-- **Level up** : sorts aléatoires proposés pour certains niveaux → joueur choisit
-- **Si 4 sorts atteints** : possibilité de supprimer un sort existant pour en apprendre un nouveau
-
-### Prérequis mana d'un sort
-- Typé : requiert X mana d'un élément spécifique (ex: 2🔥) ou plusieurs éléments (ex: 1🔥, 2🌿)
-- Neutre : accepte n'importe quel type de mana
-
-### Propriétés d'un sort
-| Propriété | Description |
-|-----------|-------------|
-| Élément | feu / eau / nature / foudre / neutre |
-| Dégâts | valeur fixe (utilisée dans calcul final) |
-| Effets spéciaux | optionnels (voir exemples) |
-
-### Exemples d'effets spéciaux
-- Soigne X HP au joueur
-- Le prochain sort inflige +X dégâts supplémentaires
-- *(autres à définir)*
-
-### Élément principal d'un sort
-- Utilisé dans le calcul des dégâts vs résistances/faiblesses ennemis
+### Strategic Implications
+- Spending early = pool control, no forced replacement
+- Accumulating = risk of losing a specific type next turn
+- Costly spells require planning several turns ahead
+- Increasing the maximum = fewer forced replacements, more flexibility
 
 ---
 
-## Système de HP
+## Spell System
 
-### Valeurs de départ
-- **HP départ** : 20 current / 20 max
+### General Rules
+- **Start**: 1 predefined spell
+- **Max active**: 4 spells simultaneously
+- **Level up**: random spells offered at certain levels → player chooses
+- **If 4 spells reached**: option to remove an existing spell to learn a new one
 
-### Sources de perte
-- Dégâts subis en combat
+### Spell Mana Requirements
+- Typed: requires X mana of a specific element (e.g. 2🔥) or multiple elements (e.g. 1🔥, 2🌿)
+- Neutral: accepts any type of mana
 
-### Sources de gain (current HP)
-- **+3 HP** après chaque combat gagné
-- Sorts de soin (éventuellement)
+### Spell Properties
+| Property | Description |
+|----------|-------------|
+| Element | fire / water / nature / lightning / neutral |
+| Damage | fixed value (used in final calculation) |
+| Special effects | optional (see examples) |
 
-### Sources de gain (max HP)
-- Récompenses niveau up
+### Special Effect Examples
+- Heal X HP to the player
+- The next spell deals +X extra damage
+- *(others to be defined)*
+
+### Spell Primary Element
+- Used in damage calculation vs. enemy resistances/weaknesses
 
 ---
 
-## Système de Monstres
+## HP System
 
-### Définition
-- Types de monstres **prédéfinis** (liste fixe)
-- Chaque combat : monstre tiré **aléatoirement** selon niveau joueur et niveau du type de monstre
+### Starting Values
+- **Starting HP**: 20 current / 20 max
 
-### Propriétés d'un type de monstre
-| Propriété | Description |
-|-----------|-------------|
-| HP max | Fixe par type |
-| HP départ | Fixe par type |
-| Sorts | Set de 1 à 4 sorts prédéfinis |
-| Threshold | Seuil de points d'action pour lancer un sort |
-| Résistances | 0 à N éléments (dégâts réduits) |
-| Faiblesses | 0 à N éléments (dégâts augmentés) |
+### Sources of Loss
+- Damage taken in combat
 
-### Mécanique d'action monstre (par tour)
-1. Monstre gagne **+1 point d'action**
-2. Calcul chance de lancer un sort : `points_action / threshold`
-   - Exemple : threshold=4, points=3 → **75% de chance** de lancer un sort
-3. Si sort lancé → **points d'action remis à 0**, effets appliqués
-4. Si sort de dégâts → joueur perd des HP
+### Sources of Gain (current HP)
+- **+3 HP** after each won combat
+- Healing spells (if applicable)
+
+### Sources of Gain (max HP)
+- Level up rewards
+
+---
+
+## Monster System
+
+### Definition
+- Monster types **predefined** (fixed list)
+- Each combat: monster drawn **randomly** based on player level and monster type level
+
+### Monster Type Properties
+| Property | Description |
+|----------|-------------|
+| Max HP | Fixed per type |
+| Starting HP | Fixed per type |
+| Spells | Set of 1 to 4 predefined spells |
+| Threshold | Action point threshold to cast a spell |
+| Resistances | 0 to N elements (reduced damage) |
+| Weaknesses | 0 to N elements (increased damage) |
+
+### Monster Action Mechanic (per turn)
+1. Monster gains **+1 action point**
+2. Calculate chance to cast a spell: `action_points / threshold`
+   - Example: threshold=4, points=3 → **75% chance** to cast a spell
+3. If spell cast → **action points reset to 0**, effects applied
+4. If damage spell → player loses HP
 
 ### Implications
-- Monstre inactif en début de combat (peu de points d'action)
-- Tension croissante à chaque tour sans attaque
-- Threshold **fixe par type** → définit le "rythme" du monstre : élevé = lent mais imprévisible, bas = agressif
+- Monster inactive at combat start (few action points)
+- Growing tension each turn without an attack
+- Threshold **fixed per type** → defines the monster's "rhythm": high = slow but unpredictable, low = aggressive
 
 ---
 
-## Progression du joueur
+## Player Progression
 
-| Élément | Détail |
+| Element | Detail |
 |---------|--------|
-| Niveaux | Infini |
-| HP départ | 20/20 |
-| HP max | Améliorable via level up |
-| Level up | Sorts aléatoires proposés au choix pour certains niveaux |
-| Pool mana | Améliorable via récompenses |
-| Stats | À définir |
+| Levels | Infinite |
+| Starting HP | 20/20 |
+| Max HP | Upgradeable via level up |
+| Level up | Random spells offered at certain levels |
+| Mana pool | Upgradeable via rewards |
+| Stats | To be defined |
 
 ---
 
-## Boucle de jeu
+## Game Loop
 
 ```
 START
   └─> Combat
-        └─> [Victoire] Phase Récompense
-              └─> Combat suivant
-        └─> [Défaite] Game Over
+        └─> [Victory] Reward Phase
+              └─> Next Combat
+        └─> [Defeat] Game Over
 ```
 
 ---
 
-## Phase Récompense & Level Up
+## Reward Phase & Level Up
 
-> **TODO** : système à développer
+> **TODO**: system to be developed
 >
-> **Mécanique** : le joueur choisit parmi **3 récompenses** proposées à la fin de chaque combat.
+> **Mechanic**: the player chooses from **3 rewards** offered at the end of each combat.
 >
-> ### Idées de récompenses
+> ### Reward Ideas
 >
 > **Mana**
-> - Augmenter la probabilité de tirer un type de mana spécifique
-> - Augmenter le mana maximum
-> - Démarrer les combats avec +1 mana d'un certain type
+> - Increase the probability of drawing a specific mana type
+> - Increase the mana maximum
+> - Start combats with +1 mana of a certain type
 >
 > **HP**
-> - Augmenter les HP max
-> - Soigner des HP
+> - Increase max HP
+> - Heal HP
 >
-> **Sorts**
-> - Apprendre un nouveau sort (parmi X proposés)
+> **Spells**
+> - Learn a new spell (from X offered)
 >
-> **Passifs**
-> - Bonus passif (à définir)
+> **Passives**
+> - Passive bonus (to be defined)
 > - ...
 >
-> *Contenu et équilibrage restent à définir.*
+> *Content and balancing remain to be defined.*
 
 ---
 
-## Mécanique de Combat
+## Combat Mechanic
 
-### Calcul des dégâts
+### Damage Calculation
 ```
-dégâts finaux = dégâts_sort × modificateur_élément  (arrondi supérieur)
+final damage = spell_damage × element_modifier  (rounded up)
 
-modificateur:
-  faiblesse   → ×1.2
-  neutre      → ×1
-  résistance  → ×0.8
-```
-
-### Structure d'un tour
-```
-1. Gain mana joueur       (+1 aléatoire)
-2. Gain point d'action monstre (+1)
-3. Phase joueur           → choisit sort ou skip
-4. Phase monstre          → roll (points/threshold)
-                             si succès : lance sort + reset points à 0
-5. Fin de tour            → applique statuts actifs (brûlure, poison...)
+modifier:
+  weakness    → ×1.2
+  neutral     → ×1
+  resistance  → ×0.8
 ```
 
-### Télégraphie monstre
-- Barre visuelle type "rage" montrant la pression d'attaque
-- **Valeur exacte non affichée** → tension maintenue pour le joueur
+### Turn Structure
+```
+1. Player mana gain          (+1 random)
+2. Monster action point gain (+1)
+3. Player phase              → choose spell or skip
+4. Monster phase             → roll (points/threshold)
+                                if success: cast spell + reset points to 0
+5. End of turn               → apply active status effects (burn, poison...)
+```
 
-### Idées d'effets de sorts (non liés à l'élément)
-- Brûlure : X dégâts/tour pendant N tours
-- Poison : X dégâts/tour pendant N tours
-- Étourdissement : reset points d'action monstre à 0
-- Ralentissement : monstre gagne moins de points d'action
-- Soin : restaure X HP au joueur
-- Amplification : prochain sort inflige +X dégâts
+### Monster Telegraphing
+- Visual "rage" bar showing attack pressure
+- **Exact value not displayed** → tension maintained for the player
+
+### Spell Effect Ideas (not element-related)
+- Burn: X damage/turn for N turns
+- Poison: X damage/turn for N turns
+- Stun: reset monster action points to 0
+- Slow: monster gains fewer action points
+- Heal: restore X HP to the player
+- Amplify: next spell deals +X damage
 
 ---
 
-## À définir
+## To Be Defined
 
-- Types d'ennemis et leurs éléments
-- Stats joueur (ATK, DEF, SPD ?)
-- Nombre de sorts proposés au level up
+- Enemy types and their elements
+- Player stats (ATK, DEF, SPD?)
+- Number of spells offered at level up

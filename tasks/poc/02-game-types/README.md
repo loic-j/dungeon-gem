@@ -1,13 +1,13 @@
 # 02 — Game Types
 
-**Status : ✅ DONE**
+**Status: ✅ DONE**
 
-## Objectif
+## Goal
 
-Définir toutes les structures de données TypeScript du jeu.
-Aucune logique — uniquement types, interfaces et constantes.
+Define all TypeScript data structures for the game.
+No logic — only types, interfaces, and constants.
 
-## Fichiers à créer
+## Files to Create
 
 `src/game/types.ts`
 
@@ -57,9 +57,9 @@ interface GameState {
 }
 ```
 
-`src/game/constants.ts` — données fixes du POC (sorts joueur, définition monstre)
+`src/game/constants.ts` — fixed POC data (player spells, monster definition)
 
 ## Tests
 
-Vitest : vérifie que les constantes du POC sont correctement typées et ont les bonnes valeurs
-(4 sorts, monstre threshold=3, résistance feu, faiblesse eau).
+Vitest: verifies that POC constants are correctly typed and have the right values
+(4 spells, monster threshold=3, fire resistance, water weakness).
