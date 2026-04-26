@@ -1,0 +1,26 @@
+# Dependency directories
+node_modules/
+.pnpm-store/
+
+# Logs
+logs
+*.log
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# pnpm-specific 
+# (Required if you use pnpm for publishing but don't want the npm lockfile)
+package-lock.json
+
+# Optional: Diagnostic and cache files
+.pnpm-typecheck.json
+.eslintcache
+.stylelintcache
+
+# Build outputs (Adjust based on your framework, e.g., Next.js, Vite)
+dist/
+build/
+.next/
+.nuxt/

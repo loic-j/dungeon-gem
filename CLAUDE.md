@@ -15,10 +15,10 @@ See @brainstorming/poc.md for current POC scope.
 ## Commands
 
 ```bash
-npm run dev      # dev server (localhost:5173)
-npm run build    # production build
-npm run preview  # preview production build
-npm run typecheck # tsc --noEmit
+pnpm dev         # dev server (localhost:5173)
+pnpm build       # production build
+pnpm preview     # preview production build
+pnpm typecheck   # tsc --noEmit
 ```
 
 ## Code style

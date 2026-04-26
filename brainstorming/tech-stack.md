@@ -19,8 +19,8 @@ Format vertical, compatible mobile & PC.
 
 ### Setup initial
 ```bash
-npm create vite@latest dungeon-crawler -- --template vanilla-ts
-npm install three @types/three
+pnpm create vite@latest dungeon-crawler -- --template vanilla-ts
+pnpm add three @types/three
 ```
 
 ### Architecture map

@@ -13,8 +13,8 @@ Périmètre complet : @brainstorming/poc.md
 Le canvas Three.js n'est pas testé automatiquement — vérification manuelle dans le navigateur.
 Les tests Vitest et Playwright sont exécutables à tout moment :
 ```bash
-npm run test          # Vitest (unit)
-npm run test:e2e      # Playwright (E2E)
+pnpm test             # Vitest (unit)
+pnpm test:e2e         # Playwright (E2E)
 ```
 
 ---
