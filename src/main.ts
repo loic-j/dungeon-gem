@@ -1,7 +1,7 @@
 import { initScene } from './renderer/scene'
 import { animateMonsterAttack } from './renderer/animator'
 import { createOverlay } from './ui/overlay'
-import { playSpellSound, playVictorySound, playGameOverSound } from './audio/soundManager'
+import { playSpellSound, playVictorySound, playGameOverSound, startBackgroundMusic, stopBackgroundMusic } from './audio/soundManager'
 import {
   initCombat,
   processManaPhase,
@@ -63,6 +63,7 @@ async function act(spellId: string | null) {
 
   const outcome = checkCombatEnd(state)
   if (outcome === 'GAME_OVER') {
+    stopBackgroundMusic()
     playGameOverSound()
     showMessage('GAME OVER', '#c00')
     return
@@ -122,6 +123,16 @@ function delay(ms: number): Promise<void> {
 }
 
 tick()
+
+const startMusicOnce = () => {
+  startBackgroundMusic()
+  window.removeEventListener('click', startMusicOnce)
+  window.removeEventListener('touchstart', startMusicOnce)
+  window.removeEventListener('keydown', startMusicOnce)
+}
+window.addEventListener('click', startMusicOnce)
+window.addEventListener('touchstart', startMusicOnce)
+window.addEventListener('keydown', startMusicOnce)
 
 // Test-only debug API (dev mode)
 if (import.meta.env.DEV) {
