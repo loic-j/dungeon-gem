@@ -1,1 +1,4 @@
-// Entry point — wires game logic, renderer, and UI together
+import { initScene } from './renderer/scene'
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+initScene(canvas)

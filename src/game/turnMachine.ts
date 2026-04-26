@@ -1,0 +1,82 @@
+import type { GameState } from './types'
+import { PLAYER_SPELLS, POC_MONSTER, PLAYER_START_HP, PLAYER_START_MAX_MANA, PLAYER_START_LEVEL } from './constants'
+import { addManaToPool, initManaPool } from './mana'
+import { applyPlayerSpell, applyMonsterSpell } from './combat'
+import { rollMonsterAttack, chooseMonsterSpell } from './monsterAI'
+
+export function initCombat(): GameState {
+  return {
+    player: {
+      hp: PLAYER_START_HP,
+      maxHp: PLAYER_START_HP,
+      manaPool: initManaPool(),
+      maxMana: PLAYER_START_MAX_MANA,
+      spells: PLAYER_SPELLS,
+      level: PLAYER_START_LEVEL,
+    },
+    monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
+    phase: 'GAIN_MANA',
+    turn: 1,
+    log: [],
+  }
+}
+
+export function processManaPhase(state: GameState): GameState {
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      manaPool: addManaToPool(state.player.manaPool, state.player.maxMana),
+    },
+    monster: {
+      ...state.monster,
+      actionPoints: state.monster.actionPoints + 1,
+    },
+    phase: 'PLAYER_ACTION',
+  }
+}
+
+export function processPlayerAction(state: GameState, spellId: string | null): GameState {
+  if (spellId === null) {
+    return { ...state, phase: 'MONSTER_ACTION' }
+  }
+  const spell = state.player.spells.find(s => s.id === spellId)
+  if (!spell) return { ...state, phase: 'MONSTER_ACTION' }
+  return { ...applyPlayerSpell(state, spell), phase: 'MONSTER_ACTION' }
+}
+
+export function processMonsterPhase(state: GameState): { state: GameState; attacked: boolean } {
+  if (!rollMonsterAttack(state.monster)) {
+    return { state: { ...state, phase: 'CHECK_END' }, attacked: false }
+  }
+  const spell = chooseMonsterSpell(state.monster)
+  const next = applyMonsterSpell(state, spell)
+  return {
+    state: {
+      ...next,
+      monster: { ...next.monster, actionPoints: 0 },
+      phase: 'CHECK_END',
+    },
+    attacked: true,
+  }
+}
+
+export function checkCombatEnd(state: GameState): 'VICTORY' | 'GAME_OVER' | null {
+  if (state.monster.hp <= 0) return 'VICTORY'
+  if (state.player.hp <= 0) return 'GAME_OVER'
+  return null
+}
+
+export function resetCombat(state: GameState): GameState {
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      manaPool: initManaPool(),
+    },
+    monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
+    phase: 'GAIN_MANA',
+    turn: 1,
+    log: [],
+  }
+}

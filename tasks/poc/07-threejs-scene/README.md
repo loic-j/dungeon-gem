@@ -1,6 +1,6 @@
 # 07 — Three.js Scene
 
-**Status : ⬜ TODO**
+**Status : ✅ DONE**
 
 ## Objectif
 

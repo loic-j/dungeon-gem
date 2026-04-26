@@ -1,6 +1,6 @@
 # 06 — Monster AI
 
-**Status : ⬜ TODO**
+**Status : ✅ DONE**
 
 ## Objectif
 
