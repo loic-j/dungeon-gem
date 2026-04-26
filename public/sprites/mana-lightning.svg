@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="12" fill="#1a1500"/>
+  <!-- Bolt outer -->
+  <polygon points="15,3 8,13 12.5,13 10,21 17,11 12.5,11" fill="#ca8a04"/>
+  <!-- Bolt inner (highlight) -->
+  <polygon points="14.5,4 9,12.5 13,12.5 10.5,20 16,11.5 12,11.5" fill="#fde047"/>
+</svg>

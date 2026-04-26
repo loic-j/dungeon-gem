@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="12" fill="#0a2000"/>
+  <!-- Leaf -->
+  <path d="M12 4 C12 4 19 8 19 14 C19 17.5 16.5 20 14 20.5 C15 18 15 15 12 13 C9 15 9 18 10 20.5 C7.5 20 5 17.5 5 14 C5 8 12 4 12 4Z" fill="#16a34a"/>
+  <!-- Mid vein -->
+  <line x1="12" y1="4" x2="12" y2="20.5" stroke="#15803d" stroke-width="1.2"/>
+  <!-- Side veins -->
+  <path d="M12 9 Q15.5 10.5 17 14" fill="none" stroke="#15803d" stroke-width="0.8"/>
+  <path d="M12 9 Q8.5 10.5 7 14"  fill="none" stroke="#15803d" stroke-width="0.8"/>
+</svg>

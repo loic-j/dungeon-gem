@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="12" fill="#001530"/>
+  <!-- Droplet -->
+  <path d="M12 3 C12 3 6 10 6 15 C6 18.3 8.7 21 12 21 C15.3 21 18 18.3 18 15 C18 10 12 3 12 3Z" fill="#1d4ed8"/>
+  <path d="M12 6.5 C12 6.5 8 12 8 15 C8 17.2 9.8 19 12 19 C14.2 19 16 17.2 16 15 C16 12 12 6.5 12 6.5Z" fill="#3b82f6"/>
+  <!-- Highlight -->
+  <ellipse cx="10" cy="13" rx="1.5" ry="2.5" fill="#bfdbfe" opacity="0.45"/>
+</svg>

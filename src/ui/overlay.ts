@@ -47,11 +47,9 @@ export function createOverlay(
   const leftCol = div(`width:45%; display:flex; flex-direction:column;
     align-items:center; justify-content:flex-end; padding:0 8px 14px 10px; gap:10px;`)
 
-  const charOval = div(`width:90px; height:110px; border-radius:50%;
-    border:2px solid rgba(255,255,255,0.25); background:rgba(30,80,200,0.25);
-    display:flex; align-items:center; justify-content:center;
-    font-size:11px; opacity:0.7;`)
-  charOval.textContent = 'Player'
+  const charOval = document.createElement('img')
+  charOval.src = '/sprites/player-warrior.svg'
+  charOval.style.cssText = 'width:auto; height:270px; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));'
 
   const skipBtn = document.createElement('button')
   skipBtn.textContent = 'Skip turn'
@@ -91,11 +89,10 @@ export function createOverlay(
     manaRow.replaceChildren()
     for (let i = 0; i < player.maxMana; i++) {
       const token = player.manaPool[i]
-      const color = token ? ELEMENT_COLOR[token] : '#555'
-      const circle = div(`width:22px; height:22px; border-radius:50%;
-        border:2px solid ${color};
-        background:${token ? color + '55' : 'transparent'};`)
-      manaRow.appendChild(circle)
+      const img = document.createElement('img')
+      img.src = token ? `/sprites/mana-${token}.svg` : '/sprites/mana-empty.svg'
+      img.style.cssText = 'width:26px; height:26px;'
+      manaRow.appendChild(img)
     }
 
     // Spell buttons
