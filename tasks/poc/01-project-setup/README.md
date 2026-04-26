@@ -1,6 +1,6 @@
 # 01 — Project Setup
 
-**Status : ⬜ TODO**
+**Status : ✅ DONE**
 
 ## Objectif
 
