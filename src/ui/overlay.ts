@@ -24,6 +24,7 @@ export function createOverlay(
     padding:12px 14px; display:flex; flex-direction:column; gap:2px; pointer-events:none;`)
 
   const enemyHpLabel  = span('font-size:15px; font-weight:bold; text-shadow:0 1px 4px #000;')
+  enemyHpLabel.dataset['testid'] = 'enemy-hp'
   const enemyLvlLabel = span('font-size:13px; opacity:0.8; text-shadow:0 1px 4px #000;')
 
   const tensionWrap = div('margin-top:6px; display:flex; align-items:center; gap:6px;')
@@ -31,6 +32,7 @@ export function createOverlay(
   tensionLabel.textContent = 'Tension'
   const tensionBar  = div('flex:1; max-width:100px; height:6px; background:#333; border-radius:3px; overflow:hidden;')
   const tensionFill = div('height:100%; background:#e84a1a; border-radius:3px; transition:width .3s; width:0%;')
+  tensionFill.dataset['testid'] = 'tension-fill'
   tensionBar.appendChild(tensionFill)
   tensionWrap.append(tensionLabel, tensionBar)
   topBar.append(enemyHpLabel, enemyLvlLabel, tensionWrap)
@@ -55,6 +57,7 @@ export function createOverlay(
   skipBtn.textContent = 'Skip turn'
   skipBtn.style.cssText = `width:100%; padding:10px 0; background:#222; border:1px solid #555;
     border-radius:6px; color:#ccc; font-size:14px; cursor:pointer; pointer-events:auto;`
+  skipBtn.dataset['testid'] = 'skip-btn'
   skipBtn.addEventListener('click', () => callbacks.onSkip())
   leftCol.append(charOval, skipBtn)
 
@@ -62,8 +65,10 @@ export function createOverlay(
   const rightCol = div(`width:55%; display:flex; flex-direction:column;
     padding:0 10px 14px 6px; gap:6px; justify-content:flex-end;`)
   const playerHpLabel  = div('font-size:15px; font-weight:bold;')
+  playerHpLabel.dataset['testid'] = 'player-hp'
   const playerLvlLabel = div('font-size:13px; opacity:0.7;')
   const manaRow   = div('display:flex; gap:5px; flex-wrap:wrap;')
+  manaRow.dataset['testid'] = 'mana-row'
   const spellsCol = div('display:flex; flex-direction:column; gap:5px;')
   rightCol.append(playerHpLabel, playerLvlLabel, manaRow, spellsCol)
 
@@ -120,6 +125,7 @@ export function createOverlay(
       const dmgSpan = span('opacity:0.6; font-size:11px;')
       dmgSpan.textContent = `${spell.damage} dmg`
 
+      btn.dataset['testid'] = `spell-${spell.id}`
       btn.append(nameSpan, dmgSpan)
       if (castable) btn.addEventListener('click', () => callbacks.onSpell(spell.id))
       spellsCol.appendChild(btn)

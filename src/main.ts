@@ -102,3 +102,12 @@ function delay(ms: number): Promise<void> {
 // Start first turn
 state = processManaPhase(state)
 tick()
+
+// Test-only debug API (dev mode)
+if (import.meta.env.DEV) {
+  ;(window as unknown as Record<string, unknown>)['__game'] = {
+    getState: () => state,
+    setState: (s: GameState) => { state = s; locked = false; tick() },
+    isLocked: () => locked,
+  }
+}
