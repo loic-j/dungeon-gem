@@ -15,7 +15,7 @@ export function initCombat(): GameState {
       level: PLAYER_START_LEVEL,
     },
     monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
-    phase: 'GAIN_MANA',
+    phase: 'PLAYER_ACTION',
     turn: 1,
     log: [],
   }
@@ -75,7 +75,7 @@ export function resetCombat(state: GameState): GameState {
       manaPool: initManaPool(),
     },
     monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
-    phase: 'GAIN_MANA',
+    phase: 'PLAYER_ACTION',
     turn: 1,
     log: [],
   }

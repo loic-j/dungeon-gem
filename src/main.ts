@@ -8,6 +8,7 @@ import {
   checkCombatEnd,
   resetCombat,
 } from './game/turnMachine'
+
 import type { GameState } from './game/types'
 
 const canvas    = document.getElementById('canvas') as HTMLCanvasElement
@@ -36,6 +37,11 @@ async function act(spellId: string | null) {
 
   await delay(400)
 
+  if (checkCombatEnd(state) === 'VICTORY') {
+    handleVictory()
+    return
+  }
+
   const { state: afterMonster, attacked } = processMonsterPhase(state)
   state = afterMonster
   if (attacked) {
@@ -51,18 +57,21 @@ async function act(spellId: string | null) {
     return
   }
   if (outcome === 'VICTORY') {
-    showMessage('Victory!', '#2b8', async () => {
-      state = resetCombat(state)
-      state = processManaPhase(state)
-      locked = false
-      tick()
-    })
+    handleVictory()
     return
   }
 
   state = processManaPhase(state)
   locked = false
   tick()
+}
+
+function handleVictory() {
+  showMessage('Victory!', '#2b8', async () => {
+    state = resetCombat(state)
+    locked = false
+    tick()
+  })
 }
 
 function flashScreen() {
@@ -99,8 +108,6 @@ function delay(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms))
 }
 
-// Start first turn
-state = processManaPhase(state)
 tick()
 
 // Test-only debug API (dev mode)
