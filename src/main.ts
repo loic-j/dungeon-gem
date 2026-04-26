@@ -1,4 +1,5 @@
 import { initScene } from './renderer/scene'
+import { animateMonsterAttack } from './renderer/animator'
 import { createOverlay } from './ui/overlay'
 import {
   initCombat,
@@ -19,7 +20,7 @@ const { objects } = initScene(canvas)
 let state: GameState = initCombat()
 let locked = false
 
-const render = createOverlay(uiRoot, {
+const { render, animatePlayerAttack } = createOverlay(uiRoot, {
   onSpell: (spellId) => { if (!locked) act(spellId) },
   onSkip:  ()        => { if (!locked) act(null) },
 })
@@ -32,10 +33,12 @@ function tick() {
 async function act(spellId: string | null) {
   locked = true
 
+  if (spellId !== null) await animatePlayerAttack()
+
   state = processPlayerAction(state, spellId)
   tick()
 
-  await delay(400)
+  await delay(100)
 
   if (checkCombatEnd(state) === 'VICTORY') {
     handleVictory()
@@ -45,6 +48,7 @@ async function act(spellId: string | null) {
   const { state: afterMonster, attacked } = processMonsterPhase(state)
   state = afterMonster
   if (attacked) {
+    await animateMonsterAttack(objects.monsterSprite)
     flashScreen()
   }
   tick()

@@ -13,10 +13,15 @@ export interface OverlayCallbacks {
   onSkip: () => void
 }
 
+export interface OverlayControls {
+  render: (state: GameState, locked: boolean) => void
+  animatePlayerAttack: () => Promise<void>
+}
+
 export function createOverlay(
   container: HTMLElement,
   callbacks: OverlayCallbacks,
-): (state: GameState, locked: boolean) => void {
+): OverlayControls {
   container.style.cssText = 'pointer-events:none; display:flex; flex-direction:column; height:100%; font-family:sans-serif; color:#fff;'
 
   // ── Top: enemy info ────────────────────────────────────────────────────────
@@ -74,7 +79,7 @@ export function createOverlay(
   container.appendChild(bottom)
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  return function render(state: GameState, locked: boolean) {
+  function render(state: GameState, locked: boolean) {
     const { player, monster } = state
 
     enemyHpLabel.textContent  = `Enemy HP: ${monster.hp} / ${monster.maxHp}`
@@ -131,6 +136,21 @@ export function createOverlay(
     skipBtn.style.opacity = locked ? '0.4' : '1'
     skipBtn.style.pointerEvents = locked ? 'none' : 'auto'
   }
+
+  async function animatePlayerAttack(): Promise<void> {
+    const anim = charOval.animate(
+      [
+        { transform: 'translate(0px, 0px)',     offset: 0 },
+        { transform: 'translate(-14px, 10px)',  offset: 0.28 },
+        { transform: 'translate(60px, -48px)', offset: 0.62 },
+        { transform: 'translate(0px, 0px)',     offset: 1 },
+      ],
+      { duration: 340, fill: 'none' },
+    )
+    await anim.finished
+  }
+
+  return { render, animatePlayerAttack }
 }
 
 function div(css: string): HTMLDivElement {
