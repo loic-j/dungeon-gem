@@ -1,6 +1,7 @@
 import { initScene } from './renderer/scene'
 import { animateMonsterAttack } from './renderer/animator'
 import { createOverlay } from './ui/overlay'
+import { playSpellSound, playMonsterSound, playVictorySound, playGameOverSound } from './audio/soundManager'
 import {
   initCombat,
   processManaPhase,
@@ -33,7 +34,11 @@ function tick() {
 async function act(spellId: string | null) {
   locked = true
 
-  if (spellId !== null) await animatePlayerAttack()
+  if (spellId !== null) {
+    const spell = state.player.spells.find(s => s.id === spellId)
+    if (spell) playSpellSound(spell.element)
+    await animatePlayerAttack()
+  }
 
   state = processPlayerAction(state, spellId)
   tick()
@@ -48,6 +53,7 @@ async function act(spellId: string | null) {
   const { state: afterMonster, attacked } = processMonsterPhase(state)
   state = afterMonster
   if (attacked) {
+    playMonsterSound(state.monster.attackSound)
     await animateMonsterAttack(objects.monsterSprite)
     flashScreen()
   }
@@ -57,6 +63,7 @@ async function act(spellId: string | null) {
 
   const outcome = checkCombatEnd(state)
   if (outcome === 'GAME_OVER') {
+    playGameOverSound()
     showMessage('GAME OVER', '#c00')
     return
   }
@@ -71,6 +78,7 @@ async function act(spellId: string | null) {
 }
 
 function handleVictory() {
+  playVictorySound()
   showMessage('Victory!', '#2b8', async () => {
     state = resetCombat(state)
     locked = false

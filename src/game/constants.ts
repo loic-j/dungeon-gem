@@ -14,6 +14,7 @@ export const POC_MONSTER: Monster = {
   threshold: 3,
   resistances: ['fire'],
   weaknesses: ['water'],
+  attackSound: 'monster_growl',
   spells: [
     { id: 'basic_attack', name: 'Basic Attack', element: 'nature', damage: 3, manaCost: [] },
   ],

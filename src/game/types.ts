@@ -26,6 +26,7 @@ export interface Monster {
   actionPoints: number
   resistances: Element[]
   weaknesses: Element[]
+  attackSound: string
 }
 
 export type TurnPhase =
