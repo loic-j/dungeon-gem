@@ -1,5 +1,7 @@
 import type { GameState } from './types'
-import { PLAYER_SPELLS, POC_MONSTER, PLAYER_START_HP, PLAYER_START_MAX_MANA, PLAYER_START_LEVEL } from './constants'
+import { PLAYER_START_HP, PLAYER_START_MAX_MANA, PLAYER_START_LEVEL } from './constants'
+import { SPELL_LIBRARY } from './data/spells'
+import { pickMonster, spawnMonster } from './data/monsters'
 import { addManaToPool, initManaPool } from './mana'
 import { applyPlayerSpell, applyMonsterSpell } from './combat'
 import { rollMonsterAttack, chooseMonsterSpell } from './monsterAI'
@@ -11,10 +13,10 @@ export function initCombat(): GameState {
       maxHp: PLAYER_START_HP,
       manaPool: initManaPool(),
       maxMana: PLAYER_START_MAX_MANA,
-      spells: PLAYER_SPELLS,
+      spells: SPELL_LIBRARY,
       level: PLAYER_START_LEVEL,
     },
-    monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
+    monster: spawnMonster(pickMonster(PLAYER_START_LEVEL)),
     phase: 'PLAYER_ACTION',
     turn: 1,
     log: [],
@@ -74,7 +76,7 @@ export function resetCombat(state: GameState): GameState {
       ...state.player,
       manaPool: initManaPool(),
     },
-    monster: { ...POC_MONSTER, hp: POC_MONSTER.maxHp, actionPoints: 0 },
+    monster: spawnMonster(pickMonster(state.player.level)),
     phase: 'PLAYER_ACTION',
     turn: 1,
     log: [],

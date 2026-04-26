@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { getElementModifier, calculateDamage, applyPlayerSpell, applyMonsterSpell } from './combat'
-import { POC_MONSTER, PLAYER_SPELLS } from './constants'
-import type { GameState, Monster } from './types'
+import { GOBLIN, spawnMonster } from './data/monsters'
+import { SPELL_LIBRARY } from './data/spells'
+import type { GameState } from './types'
 
 function makeState(overrides?: { playerHp?: number; monsterHp?: number; mana?: GameState['player']['manaPool'] }): GameState {
-  const monster: Monster = { ...POC_MONSTER }
+  const monster = spawnMonster(GOBLIN)
   return {
     player: {
       hp: overrides?.playerHp ?? 20,
       maxHp: 20,
       manaPool: overrides?.mana ?? ['fire', 'water', 'lightning', 'nature'],
       maxMana: 3,
-      spells: PLAYER_SPELLS,
+      spells: SPELL_LIBRARY,
       level: 1,
     },
     monster: { ...monster, hp: overrides?.monsterHp ?? monster.maxHp },
@@ -21,27 +22,27 @@ function makeState(overrides?: { playerHp?: number; monsterHp?: number; mana?: G
   }
 }
 
-const flame     = PLAYER_SPELLS.find(s => s.id === 'flame')!
-const wave      = PLAYER_SPELLS.find(s => s.id === 'wave')!
-const bolt      = PLAYER_SPELLS.find(s => s.id === 'bolt')!
-const roots     = PLAYER_SPELLS.find(s => s.id === 'roots')!
-const monsterSpell = POC_MONSTER.spells[0]!
+const flame     = SPELL_LIBRARY.find(s => s.id === 'flame')!
+const wave      = SPELL_LIBRARY.find(s => s.id === 'wave')!
+const bolt      = SPELL_LIBRARY.find(s => s.id === 'bolt')!
+const roots     = SPELL_LIBRARY.find(s => s.id === 'roots')!
+const monsterSpell = GOBLIN.spells[0]!
 
 describe('getElementModifier', () => {
   it('fire vs fire resistance → 0.8', () => {
-    expect(getElementModifier('fire', POC_MONSTER)).toBe(0.8)
+    expect(getElementModifier('fire', spawnMonster(GOBLIN))).toBe(0.8)
   })
 
   it('water vs water weakness → 1.2', () => {
-    expect(getElementModifier('water', POC_MONSTER)).toBe(1.2)
+    expect(getElementModifier('water', spawnMonster(GOBLIN))).toBe(1.2)
   })
 
   it('lightning vs neutral → 1.0', () => {
-    expect(getElementModifier('lightning', POC_MONSTER)).toBe(1.0)
+    expect(getElementModifier('lightning', spawnMonster(GOBLIN))).toBe(1.0)
   })
 
   it('nature vs neutral → 1.0', () => {
-    expect(getElementModifier('nature', POC_MONSTER)).toBe(1.0)
+    expect(getElementModifier('nature', spawnMonster(GOBLIN))).toBe(1.0)
   })
 })
 

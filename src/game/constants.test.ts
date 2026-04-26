@@ -1,49 +1,57 @@
 import { describe, it, expect } from 'vitest'
-import { PLAYER_SPELLS, POC_MONSTER } from './constants'
+import { SPELL_LIBRARY } from './data/spells'
+import { GOBLIN, spawnMonster } from './data/monsters'
 
-describe('PLAYER_SPELLS', () => {
+describe('SPELL_LIBRARY', () => {
   it('has exactly 4 spells', () => {
-    expect(PLAYER_SPELLS).toHaveLength(4)
+    expect(SPELL_LIBRARY).toHaveLength(4)
   })
 
   it('each spell costs exactly 1 mana of its own element', () => {
-    for (const spell of PLAYER_SPELLS) {
+    for (const spell of SPELL_LIBRARY) {
       expect(spell.manaCost).toHaveLength(1)
       expect(spell.manaCost[0]).toBe(spell.element)
     }
   })
 
   it('each spell deals 5 damage', () => {
-    for (const spell of PLAYER_SPELLS) {
+    for (const spell of SPELL_LIBRARY) {
       expect(spell.damage).toBe(5)
     }
   })
 
   it('covers all 4 elements', () => {
-    const elements = PLAYER_SPELLS.map(s => s.element).sort()
+    const elements = SPELL_LIBRARY.map(s => s.element).sort()
     expect(elements).toEqual(['fire', 'lightning', 'nature', 'water'])
   })
 })
 
-describe('POC_MONSTER', () => {
-  it('starts with 10/10 HP', () => {
-    expect(POC_MONSTER.hp).toBe(10)
-    expect(POC_MONSTER.maxHp).toBe(10)
+describe('GOBLIN', () => {
+  it('has 10 max HP', () => {
+    expect(GOBLIN.maxHp).toBe(10)
   })
 
   it('has threshold 3', () => {
-    expect(POC_MONSTER.threshold).toBe(3)
+    expect(GOBLIN.threshold).toBe(3)
   })
 
   it('resists fire', () => {
-    expect(POC_MONSTER.resistances).toContain('fire')
+    expect(GOBLIN.resistances).toContain('fire')
   })
 
   it('is weak to water', () => {
-    expect(POC_MONSTER.weaknesses).toContain('water')
+    expect(GOBLIN.weaknesses).toContain('water')
+  })
+})
+
+describe('spawnMonster', () => {
+  it('spawns with full HP', () => {
+    const m = spawnMonster(GOBLIN)
+    expect(m.hp).toBe(GOBLIN.maxHp)
   })
 
-  it('starts with 0 action points', () => {
-    expect(POC_MONSTER.actionPoints).toBe(0)
+  it('spawns with 0 action points', () => {
+    const m = spawnMonster(GOBLIN)
+    expect(m.actionPoints).toBe(0)
   })
 })

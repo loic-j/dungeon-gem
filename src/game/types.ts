@@ -18,15 +18,20 @@ export interface Player {
   level: number
 }
 
-export interface Monster {
-  hp: number
+export interface MonsterType {
+  id: string
+  name: string
   maxHp: number
   spells: Spell[]
   threshold: number
-  actionPoints: number
   resistances: Element[]
   weaknesses: Element[]
   attackSound: string
+}
+
+export type Monster = MonsterType & {
+  hp: number
+  actionPoints: number
 }
 
 export type TurnPhase =

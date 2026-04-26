@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { getAttackProbability, rollMonsterAttack, chooseMonsterSpell } from './monsterAI'
-import { POC_MONSTER } from './constants'
-import type { Monster } from './types'
+import { GOBLIN, spawnMonster } from './data/monsters'
 
-function makeMonster(actionPoints: number): Monster {
-  return { ...POC_MONSTER, actionPoints }
+function makeMonster(actionPoints: number) {
+  return { ...spawnMonster(GOBLIN), actionPoints }
 }
 
 afterEach(() => vi.restoreAllMocks())
@@ -42,7 +41,8 @@ describe('rollMonsterAttack', () => {
 
 describe('chooseMonsterSpell', () => {
   it('returns a spell from the monster set', () => {
-    const spell = chooseMonsterSpell(POC_MONSTER)
-    expect(POC_MONSTER.spells).toContainEqual(spell)
+    const monster = spawnMonster(GOBLIN)
+    const spell = chooseMonsterSpell(monster)
+    expect(GOBLIN.spells).toContainEqual(spell)
   })
 })
