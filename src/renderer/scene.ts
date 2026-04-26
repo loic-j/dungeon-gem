@@ -13,6 +13,7 @@ export function initScene(
 ): {
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
+  animateWalk: () => Promise<void>;
   dispose: () => void;
 } {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -56,11 +57,33 @@ export function initScene(
   }
   animate();
 
+  function animateWalk(): Promise<void> {
+    return new Promise((resolve) => {
+      const startZ = camera.position.z;
+      const endZ = -4;
+      const duration = 550;
+      const start = performance.now();
+
+      function step(now: number) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        camera.position.z = startZ + (endZ - startZ) * eased;
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          camera.position.z = startZ;
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
   function dispose() {
     ro.disconnect();
     cancelAnimationFrame(animId);
     renderer.dispose();
   }
 
-  return { renderer, objects: { monsterSprite }, dispose };
+  return { renderer, objects: { monsterSprite }, animateWalk, dispose };
 }

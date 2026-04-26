@@ -14,7 +14,7 @@ export interface OverlayCallbacks {
 }
 
 export interface OverlayControls {
-  render: (state: GameState, locked: boolean) => void;
+  render: (state: GameState, locked: boolean, inCombat: boolean) => void;
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => void;
 }
@@ -115,21 +115,27 @@ export function createOverlay(
   container.appendChild(bottom);
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  function render(state: GameState, locked: boolean) {
+  function render(state: GameState, locked: boolean, inCombat: boolean) {
     const { player, monster } = state;
 
-    enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.maxHp}`;
-    const enemyHpRatio = Math.max(0, monster.hp / monster.maxHp);
-    enemyHpFill.style.width = `${Math.round(enemyHpRatio * 100)}%`;
-    enemyHpFill.style.background =
-      enemyHpRatio > 0.5
-        ? "#2db84b"
-        : enemyHpRatio > 0.25
-          ? "#e8c01a"
-          : "#e84a1a";
-    enemyLvlLabel.textContent = "Level 1";
-    const prob = Math.min(1, monster.actionPoints / monster.threshold);
-    dangerFill.style.width = `${Math.round(prob * 100)}%`;
+    topBar.style.display = inCombat ? "" : "none";
+    skipBtn.style.visibility = inCombat ? "visible" : "hidden";
+    skipBtn.style.pointerEvents = inCombat ? "auto" : "none";
+
+    if (inCombat) {
+      enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.maxHp}`;
+      const enemyHpRatio = Math.max(0, monster.hp / monster.maxHp);
+      enemyHpFill.style.width = `${Math.round(enemyHpRatio * 100)}%`;
+      enemyHpFill.style.background =
+        enemyHpRatio > 0.5
+          ? "#2db84b"
+          : enemyHpRatio > 0.25
+            ? "#e8c01a"
+            : "#e84a1a";
+      enemyLvlLabel.textContent = "Level 1";
+      const prob = Math.min(1, monster.actionPoints / monster.threshold);
+      dangerFill.style.width = `${Math.round(prob * 100)}%`;
+    }
 
     playerHpLabel.textContent = `HP: ${player.hp} / ${player.maxHp}`;
     const hpRatio = Math.max(0, player.hp / player.maxHp);
@@ -153,7 +159,8 @@ export function createOverlay(
     // Spell buttons
     spellsCol.replaceChildren();
     for (const spell of player.spells) {
-      const castable = !locked && canCastSpell(player.manaPool, spell.manaCost);
+      const castable =
+        inCombat && !locked && canCastSpell(player.manaPool, spell.manaCost);
       const color = ELEMENT_COLOR[spell.element];
 
       const btn = document.createElement("button");
@@ -186,7 +193,7 @@ export function createOverlay(
     }
 
     skipBtn.style.opacity = locked ? "0.4" : "1";
-    skipBtn.style.pointerEvents = locked ? "none" : "auto";
+    if (inCombat) skipBtn.style.pointerEvents = locked ? "none" : "auto";
   }
 
   function animateManaGain(index: number): void {
