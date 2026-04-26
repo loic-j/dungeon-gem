@@ -91,14 +91,32 @@ Progression infinie (roguelike endless).
 
 ---
 
+## Système de HP
+
+### Valeurs de départ
+- **HP départ** : 20 current / 20 max
+
+### Sources de perte
+- Dégâts subis en combat
+
+### Sources de gain (current HP)
+- **+3 HP** après chaque combat gagné
+- Sorts de soin (éventuellement)
+
+### Sources de gain (max HP)
+- Récompenses niveau up
+
+---
+
 ## Progression du joueur
 
 | Élément | Détail |
 |---------|--------|
 | Niveaux | Infini |
+| HP départ | 20/20 |
+| HP max | Améliorable via level up |
 | Level up | Sorts aléatoires proposés au choix pour certains niveaux |
 | Pool mana | Améliorable via récompenses |
-| HP max | À définir (améliorable ?) |
 | Stats | À définir |
 
 ---
@@ -121,6 +139,5 @@ START
 - Mécanique combat détaillée (calcul dégâts, résistances, faiblesses)
 - Types d'ennemis et leurs éléments
 - Contenu phase récompense (quelles options ?)
-- Game over ou système de checkpoint ?
 - Stats joueur (ATK, DEF, SPD ?)
 - Nombre de sorts dans le pool disponible (combien proposés au level up ?)
