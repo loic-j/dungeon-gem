@@ -5,7 +5,7 @@ import {
   applyPlayerSpell,
   applyMonsterSpell,
 } from "./combat";
-import { GOBLIN, spawnMonster } from "./data/monsters";
+import { SKELETON, spawnMonster } from "./data/monsters";
 import { SPELL_LIBRARY } from "./data/spells";
 import type { GameState } from "./types";
 
@@ -14,7 +14,7 @@ function makeState(overrides?: {
   monsterHp?: number;
   mana?: GameState["player"]["manaPool"];
 }): GameState {
-  const monster = spawnMonster(GOBLIN);
+  const monster = spawnMonster(SKELETON);
   return {
     player: {
       hp: overrides?.playerHp ?? 20,
@@ -35,23 +35,23 @@ const flame = SPELL_LIBRARY.find((s) => s.id === "flame")!;
 const wave = SPELL_LIBRARY.find((s) => s.id === "wave")!;
 const bolt = SPELL_LIBRARY.find((s) => s.id === "bolt")!;
 const roots = SPELL_LIBRARY.find((s) => s.id === "roots")!;
-const monsterSpell = GOBLIN.spells[0]!;
+const monsterSpell = SKELETON.spells[0]!;
 
 describe("getElementModifier", () => {
   it("fire vs fire resistance → 0.8", () => {
-    expect(getElementModifier("fire", spawnMonster(GOBLIN))).toBe(0.8);
+    expect(getElementModifier("fire", spawnMonster(SKELETON))).toBe(0.8);
   });
 
   it("water vs water weakness → 1.2", () => {
-    expect(getElementModifier("water", spawnMonster(GOBLIN))).toBe(1.2);
+    expect(getElementModifier("water", spawnMonster(SKELETON))).toBe(1.2);
   });
 
   it("lightning vs neutral → 1.0", () => {
-    expect(getElementModifier("lightning", spawnMonster(GOBLIN))).toBe(1.0);
+    expect(getElementModifier("lightning", spawnMonster(SKELETON))).toBe(1.0);
   });
 
   it("nature vs neutral → 1.0", () => {
-    expect(getElementModifier("nature", spawnMonster(GOBLIN))).toBe(1.0);
+    expect(getElementModifier("nature", spawnMonster(SKELETON))).toBe(1.0);
   });
 });
 

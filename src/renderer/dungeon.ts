@@ -18,7 +18,12 @@ export function createDungeon(): THREE.Group {
   floorTex.wrapT = THREE.RepeatWrapping;
   floorTex.repeat.set(2, 20);
   const floorMat = new THREE.MeshBasicMaterial({ map: floorTex });
-  const ceilMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+
+  const ceilTex = loader.load("/sprites/ceiling.png");
+  ceilTex.wrapS = THREE.RepeatWrapping;
+  ceilTex.wrapT = THREE.RepeatWrapping;
+  ceilTex.repeat.set(2, 20);
+  const ceilMat = new THREE.MeshBasicMaterial({ map: ceilTex });
   const leftWallMat = new THREE.MeshBasicMaterial({ map: wallTex });
   const rightWallMat = new THREE.MeshBasicMaterial({ map: wallTexRight });
 

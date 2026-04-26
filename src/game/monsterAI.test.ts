@@ -4,10 +4,10 @@ import {
   rollMonsterAttack,
   chooseMonsterSpell,
 } from "./monsterAI";
-import { GOBLIN, spawnMonster } from "./data/monsters";
+import { SKELETON, spawnMonster } from "./data/monsters";
 
 function makeMonster(actionPoints: number) {
-  return { ...spawnMonster(GOBLIN), actionPoints };
+  return { ...spawnMonster(SKELETON), actionPoints };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -45,8 +45,8 @@ describe("rollMonsterAttack", () => {
 
 describe("chooseMonsterSpell", () => {
   it("returns a spell from the monster set", () => {
-    const monster = spawnMonster(GOBLIN);
+    const monster = spawnMonster(SKELETON);
     const spell = chooseMonsterSpell(monster);
-    expect(GOBLIN.spells).toContainEqual(spell);
+    expect(SKELETON.spells).toContainEqual(spell);
   });
 });

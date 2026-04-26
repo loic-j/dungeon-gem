@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { SPELL_LIBRARY } from "./data/spells";
-import { GOBLIN, spawnMonster } from "./data/monsters";
+import { SKELETON, spawnMonster } from "./data/monsters";
 
 describe("SPELL_LIBRARY", () => {
   it("has exactly 4 spells", () => {
@@ -26,32 +26,32 @@ describe("SPELL_LIBRARY", () => {
   });
 });
 
-describe("GOBLIN", () => {
+describe("SKELETON", () => {
   it("has 10 max HP", () => {
-    expect(GOBLIN.maxHp).toBe(10);
+    expect(SKELETON.maxHp).toBe(10);
   });
 
   it("has threshold 3", () => {
-    expect(GOBLIN.threshold).toBe(3);
+    expect(SKELETON.threshold).toBe(3);
   });
 
   it("resists fire", () => {
-    expect(GOBLIN.resistances).toContain("fire");
+    expect(SKELETON.resistances).toContain("fire");
   });
 
   it("is weak to water", () => {
-    expect(GOBLIN.weaknesses).toContain("water");
+    expect(SKELETON.weaknesses).toContain("water");
   });
 });
 
 describe("spawnMonster", () => {
   it("spawns with full HP", () => {
-    const m = spawnMonster(GOBLIN);
-    expect(m.hp).toBe(GOBLIN.maxHp);
+    const m = spawnMonster(SKELETON);
+    expect(m.hp).toBe(SKELETON.maxHp);
   });
 
   it("spawns with 0 action points", () => {
-    const m = spawnMonster(GOBLIN);
+    const m = spawnMonster(SKELETON);
     expect(m.actionPoints).toBe(0);
   });
 });

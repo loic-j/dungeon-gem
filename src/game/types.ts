@@ -27,6 +27,7 @@ export interface MonsterType {
   resistances: Element[];
   weaknesses: Element[];
   attackSound: () => void;
+  appearSound: () => void;
   sprite: {
     path: string;
     scale: [number, number, number];

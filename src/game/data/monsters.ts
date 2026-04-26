@@ -1,9 +1,9 @@
 import type { MonsterType, Monster } from "../types";
 import { playTone, playNoise } from "../../audio/soundManager";
 
-export const GOBLIN: MonsterType = {
-  id: "goblin",
-  name: "Goblin",
+export const SKELETON: MonsterType = {
+  id: "skeleton",
+  name: "Skeleton",
   maxHp: 10,
   threshold: 3,
   resistances: ["fire"],
@@ -11,6 +11,13 @@ export const GOBLIN: MonsterType = {
   attackSound: () => {
     playTone(80, "sawtooth", 0.6, 0.7, 55);
     playNoise(0.4, 0.35, 400);
+  },
+  appearSound: () => {
+    // high bone clicks then eerie rising tone
+    playNoise(0.06, 0.4, 3500);
+    setTimeout(() => playNoise(0.06, 0.35, 2800), 80);
+    setTimeout(() => playNoise(0.06, 0.3, 4200), 160);
+    setTimeout(() => playNoise(0.06, 0.25, 3000), 240);
   },
   spells: [
     {
@@ -28,7 +35,7 @@ export const GOBLIN: MonsterType = {
   },
 };
 
-export const MONSTER_LIBRARY: MonsterType[] = [GOBLIN];
+export const MONSTER_LIBRARY: MonsterType[] = [SKELETON];
 
 export function pickMonster(_playerLevel: number): MonsterType {
   return MONSTER_LIBRARY[Math.floor(Math.random() * MONSTER_LIBRARY.length)]!;

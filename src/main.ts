@@ -43,7 +43,7 @@ const { render, animatePlayerAttack, animateManaGain } = createOverlay(uiRoot, {
 const moveBtn = document.createElement("button");
 moveBtn.textContent = "↑";
 moveBtn.style.cssText = `
-  position:absolute; top:35%; left:50%; transform:translate(-50%, -50%);
+  position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
   width:64px; height:64px; border-radius:50%;
   background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.25);
   color:#fff; font-size:36px; line-height:1; cursor:pointer;
@@ -77,6 +77,7 @@ moveBtn.addEventListener("click", async () => {
     appPhase = "COMBAT";
     state = resetCombat(state);
     objects.monsterSprite.visible = true;
+    state.monster.appearSound();
     locked = false;
     tick();
   }
