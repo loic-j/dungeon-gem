@@ -21,6 +21,10 @@ pnpm preview     # preview production build
 pnpm typecheck   # tsc --noEmit
 ```
 
+## Language
+
+- All code, comments, variable names, UI text, and in-game content must be in **English**
+
 ## Code style
 
 - Strict TypeScript — no `any`, no `as unknown`
