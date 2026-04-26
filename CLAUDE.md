@@ -21,6 +21,28 @@ pnpm preview     # preview production build
 pnpm typecheck   # tsc --noEmit
 ```
 
+## Network access (WSL2 → other devices)
+
+To access dev server from other devices on local network:
+
+**1. Vite — bind all interfaces** (already set in `vite.config.ts`)
+```ts
+server: { host: '0.0.0.0' }
+```
+
+**2. Windows portproxy** (run in PowerShell admin, redo after reboot — WSL2 IP changes)
+```powershell
+netsh interface portproxy add v4tov4 listenport=5173 listenaddress=<windows-lan-ip> connectport=5173 connectaddress=$(wsl hostname -I)
+```
+Use explicit Windows LAN IP (e.g. `192.168.0.139`) — `0.0.0.0` does not bind to LAN interface reliably.
+
+**3. Windows Firewall — allow port**
+```powershell
+netsh advfirewall firewall add rule name="Vite Dev" dir=in action=allow protocol=TCP localport=5173
+```
+
+Verify portproxy: `netsh interface portproxy show all`
+
 ## Language
 
 - All code, comments, variable names, UI text, and in-game content must be in **English**
