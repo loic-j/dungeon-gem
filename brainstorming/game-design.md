@@ -29,7 +29,7 @@ Progression infinie (roguelike endless).
 **Joueur (bas)**
 - **HP** : barre + format `current/max` (ex: `8/20`)
 - **Level** : niveau actuel
-- **Mana** : cercles individuels typés (couleur par élément) — UI affiche jusqu'à 6 cercles (max possible après upgrades)
+- **Mana** : cercles individuels typés (couleur par élément) — UI s'adapte dynamiquement à la taille du pool actuel
 - **Sorts** : 4 slots cliquables (désactivés si mana insuffisant)
 - **Skip turn** : passe le tour sans action
 
@@ -78,15 +78,15 @@ Progression infinie (roguelike endless).
 ### Règles générales
 - **Départ** : 1 sort prédéfini
 - **Max actifs** : 4 sorts simultanément
-- **Level up** : sorts aléatoires proposés → joueur choisit
+- **Level up** : sorts aléatoires proposés pour certains niveaux → joueur choisit
 - **Si 4 sorts atteints** : possibilité de supprimer un sort existant pour en apprendre un nouveau
 
 ### Prérequis mana d'un sort
-- Typé : requiert X mana d'un élément spécifique (ex: 2🔥)
+- Typé : requiert X mana d'un élément spécifique (ex: 2🔥) ou plusieurs élément (ex: 1🔥, 2🌿)
 - Neutre : accepte n'importe quel type de mana
 
 ### Élément principal d'un sort
-- Chaque sort a un élément principal (feu / eau / nature / foudre)
+- Chaque sort a un élément principal (feu / eau / nature / foudre / neutre)
 - Utilisé dans le calcul des dégâts vs résistances/faiblesses ennemis
 
 ---
@@ -96,7 +96,7 @@ Progression infinie (roguelike endless).
 | Élément | Détail |
 |---------|--------|
 | Niveaux | Infini |
-| Level up | Sorts aléatoires proposés au choix |
+| Level up | Sorts aléatoires proposés au choix pour certains niveaux |
 | Pool mana | Améliorable via récompenses |
 | HP max | À définir (améliorable ?) |
 | Stats | À définir |
@@ -109,9 +109,9 @@ Progression infinie (roguelike endless).
 START
   └─> Combat
         └─> [Victoire] Phase Récompense
-              └─> (amélioration pool / nouveau sort / autre ?)
+              └─> (amélioration pool / nouveau sort / autre bonus a definir)
                     └─> Combat suivant
-        └─> [Défaite] Game Over ? ou checkpoint ?
+        └─> [Défaite] Game Over
 ```
 
 ---
