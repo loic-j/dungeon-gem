@@ -12,6 +12,7 @@ export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRen
 
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(0x0d0b09)
+  scene.fog = new THREE.Fog(0x0d0b09, 8, 22)
 
   const camera = new THREE.PerspectiveCamera(75, 9 / 16, 0.1, 100)
   camera.position.set(0, 0, 2)
