@@ -30,8 +30,8 @@ pnpm test:e2e         # Playwright (E2E)
 | 05 | [Turn Machine](05-turn-machine/README.md) | ✅ DONE | Vitest |
 | 06 | [Monster AI](06-monster-ai/README.md) | ✅ DONE | Vitest |
 | 07 | [Three.js Scene](07-threejs-scene/README.md) | ✅ DONE | Manuel |
-| 08 | [HTML UI Overlay](08-html-ui/README.md) | ⬜ TODO | Playwright |
-| 09 | [Game Integration](09-game-integration/README.md) | ⬜ TODO | Playwright |
+| 08 | [HTML UI Overlay](08-html-ui/README.md) | ✅ DONE | Playwright |
+| 09 | [Game Integration](09-game-integration/README.md) | ✅ DONE | Playwright |
 | 10 | [Validation finale](10-validation/README.md) | ⬜ TODO | Playwright |
 
 ## Légende status

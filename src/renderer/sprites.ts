@@ -14,7 +14,7 @@ export function createMonsterSprite(): THREE.Sprite {
 }
 
 export function createPlayerSprite(): THREE.Sprite {
-  const sprite = makeSprite(0x2255cc, 0.8, 1.0)
-  sprite.position.set(-1.4, -0.6, 0.5)
+  const sprite = makeSprite(0x2255cc, 1.0, 1.3)
+  sprite.position.set(-0.6, -0.7, -0.5)
   return sprite
 }

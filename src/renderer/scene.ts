@@ -1,10 +1,9 @@
 import * as THREE from 'three'
 import { createDungeon } from './dungeon'
-import { createMonsterSprite, createPlayerSprite } from './sprites'
+import { createMonsterSprite } from './sprites'
 
 export interface SceneObjects {
   monsterSprite: THREE.Sprite
-  playerSprite: THREE.Sprite
 }
 
 export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRenderer; objects: SceneObjects; dispose: () => void } {
@@ -21,9 +20,7 @@ export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRen
   scene.add(createDungeon())
 
   const monsterSprite = createMonsterSprite()
-  const playerSprite = createPlayerSprite()
   scene.add(monsterSprite)
-  scene.add(playerSprite)
 
   const ambient = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambient)
@@ -56,5 +53,5 @@ export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRen
     renderer.dispose()
   }
 
-  return { renderer, objects: { monsterSprite, playerSprite }, dispose }
+  return { renderer, objects: { monsterSprite }, dispose }
 }

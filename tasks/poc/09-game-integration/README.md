@@ -1,6 +1,6 @@
 # 09 — Game Integration
 
-**Status : ⬜ TODO**
+**Status : ✅ DONE**
 
 ## Objectif
 
