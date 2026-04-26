@@ -24,7 +24,7 @@ pnpm test:e2e         # Playwright (E2E)
 | # | Tâche | Status | Tests |
 |---|-------|--------|-------|
 | 01 | [Project Setup](01-project-setup/README.md) | ✅ DONE | — |
-| 02 | [Game Types](02-game-types/README.md) | ⬜ TODO | Vitest |
+| 02 | [Game Types](02-game-types/README.md) | ✅ DONE | Vitest |
 | 03 | [Mana System](03-mana-system/README.md) | ⬜ TODO | Vitest |
 | 04 | [Combat Logic](04-combat-logic/README.md) | ⬜ TODO | Vitest |
 | 05 | [Turn Machine](05-turn-machine/README.md) | ⬜ TODO | Vitest |

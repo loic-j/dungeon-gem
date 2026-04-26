@@ -1,6 +1,6 @@
 # 02 — Game Types
 
-**Status : ⬜ TODO**
+**Status : ✅ DONE**
 
 ## Objectif
 
