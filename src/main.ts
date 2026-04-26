@@ -21,7 +21,7 @@ const { objects } = initScene(canvas)
 let state: GameState = initCombat()
 let locked = false
 
-const { render, animatePlayerAttack } = createOverlay(uiRoot, {
+const { render, animatePlayerAttack, animateManaGain } = createOverlay(uiRoot, {
   onSpell: (spellId) => { if (!locked) act(spellId) },
   onSkip:  ()        => { if (!locked) act(null) },
 })
@@ -75,6 +75,7 @@ async function act(spellId: string | null) {
   state = processManaPhase(state)
   locked = false
   tick()
+  animateManaGain(state.player.manaPool.length - 1)
 }
 
 function handleVictory() {

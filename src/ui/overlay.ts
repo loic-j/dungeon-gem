@@ -16,6 +16,7 @@ export interface OverlayCallbacks {
 export interface OverlayControls {
   render: (state: GameState, locked: boolean) => void
   animatePlayerAttack: () => Promise<void>
+  animateManaGain: (index: number) => void
 }
 
 export function createOverlay(
@@ -139,6 +140,19 @@ export function createOverlay(
     skipBtn.style.pointerEvents = locked ? 'none' : 'auto'
   }
 
+  function animateManaGain(index: number): void {
+    const circle = manaRow.children[index] as HTMLElement | undefined
+    if (!circle) return
+    circle.animate(
+      [
+        { transform: 'scale(1)',    filter: 'brightness(1)',   offset: 0 },
+        { transform: 'scale(1.6)', filter: 'brightness(2.2)', offset: 0.35 },
+        { transform: 'scale(1)',   filter: 'brightness(1)',   offset: 1 },
+      ],
+      { duration: 420, easing: 'ease-out' },
+    )
+  }
+
   async function animatePlayerAttack(): Promise<void> {
     const anim = charOval.animate(
       [
@@ -152,7 +166,7 @@ export function createOverlay(
     await anim.finished
   }
 
-  return { render, animatePlayerAttack }
+  return { render, animatePlayerAttack, animateManaGain }
 }
 
 function div(css: string): HTMLDivElement {
