@@ -11,19 +11,21 @@
         box-sizing: border-box;
       }
 
-      body {
+      html, body {
+        width: 100%;
+        height: 100%;
         background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
         overflow: hidden;
       }
 
       #app {
-        position: relative;
+        position: fixed;
+        top: 50%;
+        left: 50%;
         width: 480px;
         height: 854px;
+        transform-origin: center center;
+        transform: translate(-50%, -50%);
       }
 
       #canvas {
@@ -49,6 +51,17 @@
       <canvas id="canvas"></canvas>
       <div id="ui"></div>
     </div>
+    <script>
+      (function () {
+        function resize() {
+          var scale = Math.min(window.innerWidth / 480, window.innerHeight / 854, 1)
+          document.getElementById('app').style.transform =
+            'translate(-50%, -50%) scale(' + scale + ')'
+        }
+        resize()
+        window.addEventListener('resize', resize)
+      })()
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

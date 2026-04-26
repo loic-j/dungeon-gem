@@ -59,7 +59,8 @@ export function createOverlay(
   const skipBtn = document.createElement('button')
   skipBtn.textContent = 'Skip turn'
   skipBtn.style.cssText = `width:100%; padding:10px 0; background:#222; border:1px solid #555;
-    border-radius:6px; color:#ccc; font-size:14px; cursor:pointer; pointer-events:auto;`
+    border-radius:6px; color:#ccc; font-size:14px; cursor:pointer; pointer-events:auto;
+    touch-action:manipulation;`
   skipBtn.dataset['testid'] = 'skip-btn'
   skipBtn.addEventListener('click', () => callbacks.onSkip())
   leftCol.append(charOval, skipBtn)
@@ -113,6 +114,7 @@ export function createOverlay(
         border-radius:5px; color:${castable ? '#fff' : '#555'};
         font-size:13px; cursor:${castable ? 'pointer' : 'default'};
         pointer-events:${castable ? 'auto' : 'none'};
+        touch-action:manipulation;
         display:flex; justify-content:space-between; align-items:center;`
 
       const dot = div(`display:inline-block; width:10px; height:10px;
