@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { MonsterType } from '../game/types'
 import { createDungeon } from './dungeon'
 import { createMonsterSprite } from './sprites'
 
@@ -6,7 +7,7 @@ export interface SceneObjects {
   monsterSprite: THREE.Sprite
 }
 
-export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRenderer; objects: SceneObjects; dispose: () => void } {
+export function initScene(canvas: HTMLCanvasElement, monsterType: MonsterType): { renderer: THREE.WebGLRenderer; objects: SceneObjects; dispose: () => void } {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setPixelRatio(window.devicePixelRatio)
 
@@ -20,7 +21,7 @@ export function initScene(canvas: HTMLCanvasElement): { renderer: THREE.WebGLRen
 
   scene.add(createDungeon())
 
-  const monsterSprite = createMonsterSprite()
+  const monsterSprite = createMonsterSprite(monsterType)
   scene.add(monsterSprite)
 
   const ambient = new THREE.AmbientLight(0xffffff, 1)

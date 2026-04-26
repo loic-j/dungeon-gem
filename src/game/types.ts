@@ -26,7 +26,12 @@ export interface MonsterType {
   threshold: number
   resistances: Element[]
   weaknesses: Element[]
-  attackSound: string
+  attackSound: () => void
+  sprite: {
+    path: string
+    scale: [number, number, number]
+    position: [number, number, number]
+  }
 }
 
 export type Monster = MonsterType & {

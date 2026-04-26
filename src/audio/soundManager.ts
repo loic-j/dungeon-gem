@@ -12,7 +12,7 @@ function resume() {
   if (c.state === 'suspended') c.resume()
 }
 
-function playTone(
+export function playTone(
   frequency: number,
   type: OscillatorType,
   duration: number,
@@ -38,7 +38,7 @@ function playTone(
   osc.stop(c.currentTime + duration)
 }
 
-function playNoise(duration: number, gainPeak: number, filterFreq: number) {
+export function playNoise(duration: number, gainPeak: number, filterFreq: number) {
   const c = getCtx()
   const bufSize = c.sampleRate * duration
   const buf = c.createBuffer(1, bufSize, c.sampleRate)
@@ -82,22 +82,11 @@ const SPELL_SOUNDS: Record<Element, () => void> = {
   },
 }
 
-const MONSTER_SOUNDS: Record<string, () => void> = {
-  monster_growl: () => {
-    playTone(80, 'sawtooth', 0.6, 0.7, 55)
-    playNoise(0.4, 0.35, 400)
-  },
-}
-
 export function playSpellSound(element: Element): void {
   resume()
   SPELL_SOUNDS[element]?.()
 }
 
-export function playMonsterSound(soundId: string): void {
-  resume()
-  MONSTER_SOUNDS[soundId]?.()
-}
 
 export function playVictorySound(): void {
   resume()

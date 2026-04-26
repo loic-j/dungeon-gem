@@ -1,7 +1,7 @@
 import { initScene } from './renderer/scene'
 import { animateMonsterAttack } from './renderer/animator'
 import { createOverlay } from './ui/overlay'
-import { playSpellSound, playMonsterSound, playVictorySound, playGameOverSound } from './audio/soundManager'
+import { playSpellSound, playVictorySound, playGameOverSound } from './audio/soundManager'
 import {
   initCombat,
   processManaPhase,
@@ -16,9 +16,9 @@ import type { GameState } from './game/types'
 const canvas    = document.getElementById('canvas') as HTMLCanvasElement
 const uiRoot    = document.getElementById('ui') as HTMLDivElement
 
-const { objects } = initScene(canvas)
-
 let state: GameState = initCombat()
+
+const { objects } = initScene(canvas, state.monster)
 let locked = false
 
 const { render, animatePlayerAttack, animateManaGain } = createOverlay(uiRoot, {
@@ -53,7 +53,7 @@ async function act(spellId: string | null) {
   const { state: afterMonster, attacked } = processMonsterPhase(state)
   state = afterMonster
   if (attacked) {
-    playMonsterSound(state.monster.attackSound)
+    state.monster.attackSound()
     await animateMonsterAttack(objects.monsterSprite)
     flashScreen()
   }
