@@ -8,16 +8,17 @@ Progression infinie (roguelike endless).
 
 ---
 
-## Interface combat (wireframe)
+## Interface combat
+
+> Wireframe : [combat-first-screen-design.png](combat-first-screen-design.png)
 
 ```
 ┌─────────────────────────────┐
-│                  [Enemy]    │
+│  HP / Level                 │
+│               [Enemy]       │
 │                             │
-│  [My Character]             │
-│                  HP ██░░ 8/20
-│                  Lv 3       │
-│                  ○●○○ ← mana│
+│  [My Character]  HP / Level │
+│                  ○○○○○○←mana│
 │                  [Spell 1]  │
 │                  [Spell 2]  │
 │                  [Spell 3]  │
@@ -25,10 +26,16 @@ Progression infinie (roguelike endless).
 └─────────────────────────────┘
 ```
 
+**Joueur (bas)**
 - **HP** : barre + format `current/max` (ex: `8/20`)
-- **Mana** : cercles individuels typés (couleur par élément)
-- **Sorts** : max 4 boutons cliquables
-- **Skip turn** : passe le tour, aucun effet
+- **Level** : niveau actuel
+- **Mana** : cercles individuels typés (couleur par élément) — UI affiche jusqu'à 6 cercles (max possible après upgrades)
+- **Sorts** : 4 slots cliquables (désactivés si mana insuffisant)
+- **Skip turn** : passe le tour sans action
+
+**Ennemi (haut)**
+- **HP** : affiché (joueur voit les HP ennemis)
+- **Level** : affiché
 
 ---
 
