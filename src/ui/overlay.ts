@@ -30,13 +30,19 @@ export function createOverlay(
   const topBar = div(`position:absolute; top:0; left:0; right:0;
     padding:12px 14px; display:flex; flex-direction:column; gap:2px; pointer-events:none;`);
 
-  const enemyHpWrapper = div("display:flex; flex-direction:column; gap:3px; max-width:160px;");
+  const enemyHpWrapper = div(
+    "display:flex; flex-direction:column; gap:3px; max-width:160px;",
+  );
   const enemyHpLabel = span(
     "font-size:15px; font-weight:bold; text-shadow:0 1px 4px #000;",
   );
   enemyHpLabel.dataset["testid"] = "enemy-hp";
-  const enemyHpBar = div("width:100%; height:8px; background:#333; border-radius:4px; overflow:hidden;");
-  const enemyHpFill = div("height:100%; border-radius:4px; transition:width .3s, background .3s; width:100%; background:#2db84b;");
+  const enemyHpBar = div(
+    "width:100%; height:8px; background:#333; border-radius:4px; overflow:hidden;",
+  );
+  const enemyHpFill = div(
+    "height:100%; border-radius:4px; transition:width .3s, background .3s; width:100%; background:#2db84b;",
+  );
   enemyHpBar.appendChild(enemyHpFill);
   enemyHpWrapper.append(enemyHpLabel, enemyHpBar);
 
@@ -73,7 +79,7 @@ export function createOverlay(
   const charOval = document.createElement("img");
   charOval.src = "/sprites/player-mage2.png";
   charOval.style.cssText =
-    "flex:1; min-height:0; width:100%; object-fit:contain; object-position:bottom; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
+    "flex-shrink:0; height:400px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
 
   const skipBtn = document.createElement("button");
   skipBtn.textContent = "Skip turn";
@@ -90,8 +96,12 @@ export function createOverlay(
   const hpWrapper = div("display:flex; flex-direction:column; gap:3px;");
   const playerHpLabel = div("font-size:15px; font-weight:bold;");
   playerHpLabel.dataset["testid"] = "player-hp";
-  const hpBar = div("width:100%; height:8px; background:#333; border-radius:4px; overflow:hidden;");
-  const hpFill = div("height:100%; border-radius:4px; transition:width .3s, background .3s; width:100%; background:#2db84b;");
+  const hpBar = div(
+    "width:100%; height:8px; background:#333; border-radius:4px; overflow:hidden;",
+  );
+  const hpFill = div(
+    "height:100%; border-radius:4px; transition:width .3s, background .3s; width:100%; background:#2db84b;",
+  );
   hpBar.appendChild(hpFill);
   hpWrapper.append(playerHpLabel, hpBar);
 
@@ -111,7 +121,12 @@ export function createOverlay(
     enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.maxHp}`;
     const enemyHpRatio = Math.max(0, monster.hp / monster.maxHp);
     enemyHpFill.style.width = `${Math.round(enemyHpRatio * 100)}%`;
-    enemyHpFill.style.background = enemyHpRatio > 0.5 ? "#2db84b" : enemyHpRatio > 0.25 ? "#e8c01a" : "#e84a1a";
+    enemyHpFill.style.background =
+      enemyHpRatio > 0.5
+        ? "#2db84b"
+        : enemyHpRatio > 0.25
+          ? "#e8c01a"
+          : "#e84a1a";
     enemyLvlLabel.textContent = "Level 1";
     const prob = Math.min(1, monster.actionPoints / monster.threshold);
     dangerFill.style.width = `${Math.round(prob * 100)}%`;
@@ -119,7 +134,8 @@ export function createOverlay(
     playerHpLabel.textContent = `HP: ${player.hp} / ${player.maxHp}`;
     const hpRatio = Math.max(0, player.hp / player.maxHp);
     hpFill.style.width = `${Math.round(hpRatio * 100)}%`;
-    hpFill.style.background = hpRatio > 0.5 ? "#2db84b" : hpRatio > 0.25 ? "#e8c01a" : "#e84a1a";
+    hpFill.style.background =
+      hpRatio > 0.5 ? "#2db84b" : hpRatio > 0.25 ? "#e8c01a" : "#e84a1a";
     playerLvlLabel.textContent = `Level ${player.level}`;
 
     // Mana circles
