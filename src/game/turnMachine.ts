@@ -70,7 +70,7 @@ export function processMonsterPhase(state: GameState): {
   return {
     state: {
       ...next,
-      monster: { ...next.monster, actionPoints: 0 },
+      monster: { ...next.monster, actionPoints: -1 },
       phase: "CHECK_END",
     },
     attacked: true,

@@ -84,7 +84,7 @@ describe("processPlayerAction", () => {
 });
 
 describe("processMonsterPhase", () => {
-  it("attack occurred → AP reset to 0", () => {
+  it("attack occurred → AP reset to -1", () => {
     vi.spyOn(Math, "random").mockReturnValue(0.01);
     const state = {
       ...initCombat(),
@@ -92,7 +92,7 @@ describe("processMonsterPhase", () => {
     };
     const { attacked, state: next } = processMonsterPhase(state);
     expect(attacked).toBe(true);
-    expect(next.monster.actionPoints).toBe(0);
+    expect(next.monster.actionPoints).toBe(-1);
   });
 
   it("no attack → AP unchanged", () => {

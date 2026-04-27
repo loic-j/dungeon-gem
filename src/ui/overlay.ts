@@ -79,7 +79,7 @@ export function createOverlay(
   const charOval = document.createElement("img");
   charOval.src = "/sprites/player-mage2.png";
   charOval.style.cssText =
-    "flex-shrink:0; height:400px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
+    "position:absolute; bottom:52px; left:22.5%; transform:translateX(-50%); height:400px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
 
   const skipBtn = document.createElement("button");
   skipBtn.textContent = "Skip turn";
@@ -88,7 +88,7 @@ export function createOverlay(
     touch-action:manipulation;`;
   skipBtn.dataset["testid"] = "skip-btn";
   skipBtn.addEventListener("click", () => callbacks.onSkip());
-  leftCol.append(charOval, skipBtn);
+  leftCol.append(skipBtn);
 
   // Right: HP / Level / Mana / Spells
   const rightCol = div(`width:55%; display:flex; flex-direction:column;
@@ -123,7 +123,7 @@ export function createOverlay(
   const spellsCol = div("display:flex; flex-direction:column; gap:5px;");
   rightCol.append(hpWrapper, playerLvlLabel, xpWrapper, manaRow, spellsCol);
 
-  bottom.append(leftCol, rightCol);
+  bottom.append(charOval, leftCol, rightCol);
   container.appendChild(bottom);
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -145,7 +145,10 @@ export function createOverlay(
             ? "#e8c01a"
             : "#e84a1a";
       enemyLvlLabel.textContent = "Level 1";
-      const prob = Math.min(1, monster.actionPoints / monster.threshold);
+      const prob = Math.max(
+        0,
+        Math.min(1, monster.actionPoints / monster.threshold),
+      );
       dangerFill.style.width = `${Math.round(prob * 100)}%`;
     }
 
