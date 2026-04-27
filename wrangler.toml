@@ -1,0 +1,10 @@
+name            = "dungeon-crawler-gem"
+compatibility_date = "2025-04-01"
+
+routes = [
+  { pattern = "dungeon-crawler.loicj.org", custom_domain = true }
+]
+
+[assets]
+directory      = "./dist"
+not_found_handling = "single-page-application"
