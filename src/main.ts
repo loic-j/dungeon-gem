@@ -27,7 +27,7 @@ import type { EncounterState } from "./game/encounterSystem";
 
 import type { GameState } from "./game/types";
 
-type AppPhase = "EXPLORING" | "COMBAT";
+type AppPhase = "EXPLORING" | "COMBAT" | "CHEST";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;
@@ -35,6 +35,7 @@ const uiRoot = document.getElementById("ui") as HTMLDivElement;
 let state: GameState = initCombat();
 let appPhase: AppPhase = "EXPLORING";
 let encounterState: EncounterState = initEncounterState();
+let chestAnimPhase: "closed" | "open" = "closed";
 
 const { objects, animateWalk } = initScene(canvas, state.monster);
 let locked = false;
@@ -70,6 +71,22 @@ moveBtn.addEventListener("mouseleave", () => {
 });
 document.getElementById("app")!.appendChild(moveBtn);
 
+// ── Chest click overlay (full-screen, active only during CHEST closed phase) ──
+const chestClickOverlay = document.createElement("div");
+chestClickOverlay.style.cssText =
+  "position:absolute;inset:0;z-index:4;pointer-events:none;cursor:pointer;";
+document.getElementById("app")!.appendChild(chestClickOverlay);
+
+chestClickOverlay.addEventListener("click", async () => {
+  if (appPhase !== "CHEST" || chestAnimPhase !== "closed") return;
+  chestAnimPhase = "open";
+  chestClickOverlay.style.pointerEvents = "none";
+  objects.chestClosedSprite.visible = false;
+  objects.chestOpenSprite.visible = true;
+  await delay(500);
+  showItemSelection();
+});
+
 moveBtn.addEventListener("click", async () => {
   if (appPhase !== "EXPLORING" || locked) return;
   locked = true;
@@ -87,6 +104,13 @@ moveBtn.addEventListener("click", async () => {
     locked = false;
     moveBtn.style.display = "";
     tick();
+  } else if (encounter === "chest") {
+    appPhase = "CHEST";
+    chestAnimPhase = "closed";
+    objects.chestClosedSprite.visible = true;
+    chestClickOverlay.style.pointerEvents = "auto";
+    locked = false;
+    tick();
   } else {
     appPhase = "COMBAT";
     state = resetCombat(state);
@@ -101,6 +125,73 @@ function tick() {
   const inCombat = appPhase === "COMBAT";
   render(state, locked, inCombat);
   objects.monsterSprite.visible = inCombat && state.monster.hp > 0;
+}
+
+const PLACEHOLDER_ITEMS = ["Health Potion", "Mana Crystal", "Ancient Scroll"];
+
+function showItemSelection() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px;
+    background:rgba(0,0,0,0.75); z-index:20; pointer-events:auto;
+  `;
+
+  const title = document.createElement("div");
+  title.textContent = "Choose an item";
+  title.style.cssText =
+    "font-family:sans-serif; font-size:22px; font-weight:bold; color:#f0c040; text-shadow:0 2px 8px #000; letter-spacing:1px;";
+  overlay.appendChild(title);
+
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex; gap:12px;";
+  overlay.appendChild(row);
+
+  for (const name of PLACEHOLDER_ITEMS) {
+    const card = document.createElement("button");
+    card.style.cssText = `
+      width:100px; padding:14px 8px; border-radius:8px;
+      background:rgba(20,14,4,0.92); border:2px solid #b8901a;
+      color:#f0c040; font-family:sans-serif; font-size:13px; font-weight:bold;
+      cursor:pointer; pointer-events:auto; touch-action:manipulation;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      transition:border-color 0.15s, background 0.15s;
+    `;
+    card.addEventListener("mouseenter", () => {
+      card.style.borderColor = "#ffd700";
+      card.style.background = "rgba(40,28,4,0.95)";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.borderColor = "#b8901a";
+      card.style.background = "rgba(20,14,4,0.92)";
+    });
+
+    const icon = document.createElement("div");
+    icon.style.cssText =
+      "width:48px; height:48px; border-radius:6px; background:rgba(184,144,26,0.2); border:1px solid #b8901a;";
+    card.appendChild(icon);
+
+    const label = document.createElement("div");
+    label.textContent = name;
+    card.appendChild(label);
+
+    card.addEventListener("click", () => {
+      overlay.remove();
+      finishChestEncounter();
+    });
+    row.appendChild(card);
+  }
+
+  document.getElementById("app")!.appendChild(overlay);
+}
+
+function finishChestEncounter() {
+  encounterState = onEncounterFinished("chest", encounterState);
+  appPhase = "EXPLORING";
+  objects.chestClosedSprite.visible = false;
+  objects.chestOpenSprite.visible = false;
+  moveBtn.style.display = "";
+  tick();
 }
 
 async function act(spellId: string | null) {

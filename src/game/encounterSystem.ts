@@ -16,6 +16,11 @@ export const ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
     baseChance: 0.5,
     chanceIncrement: 0.2,
   },
+  {
+    id: "chest",
+    baseChance: 0.2,
+    chanceIncrement: 0.1,
+  },
 ];
 
 export function initEncounterState(
@@ -30,7 +35,7 @@ export function initEncounterState(
 
 /**
  * Roll encounter on room entry.
- * Configs are tried in order — first roll success wins.
+ * Configs are tried highest-chance first — first roll success wins.
  * Empty room → increment all encounter chances.
  * Encounter triggered → state unchanged (call onEncounterFinished after it resolves).
  */
@@ -38,8 +43,11 @@ export function enterRoom(state: EncounterState): {
   encounter: string;
   nextState: EncounterState;
 } {
+  const sorted = [...state.configs].sort(
+    (a, b) => state.currentChances[b.id] - state.currentChances[a.id],
+  );
   let triggered: string | null = null;
-  for (const config of state.configs) {
+  for (const config of sorted) {
     if (Math.random() < state.currentChances[config.id]) {
       triggered = config.id;
       break;

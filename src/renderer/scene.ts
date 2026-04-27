@@ -1,10 +1,16 @@
 import * as THREE from "three";
 import type { MonsterType } from "../game/types";
 import { createDungeon } from "./dungeon";
-import { createMonsterSprite } from "./sprites";
+import {
+  createMonsterSprite,
+  createChestClosedSprite,
+  createChestOpenSprite,
+} from "./sprites";
 
 export interface SceneObjects {
   monsterSprite: THREE.Sprite;
+  chestClosedSprite: THREE.Sprite;
+  chestOpenSprite: THREE.Sprite;
 }
 
 export function initScene(
@@ -31,6 +37,14 @@ export function initScene(
 
   const monsterSprite = createMonsterSprite(monsterType);
   scene.add(monsterSprite);
+
+  const chestClosedSprite = createChestClosedSprite();
+  chestClosedSprite.visible = false;
+  scene.add(chestClosedSprite);
+
+  const chestOpenSprite = createChestOpenSprite();
+  chestOpenSprite.visible = false;
+  scene.add(chestOpenSprite);
 
   const ambient = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambient);
@@ -85,5 +99,10 @@ export function initScene(
     renderer.dispose();
   }
 
-  return { renderer, objects: { monsterSprite }, animateWalk, dispose };
+  return {
+    renderer,
+    objects: { monsterSprite, chestClosedSprite, chestOpenSprite },
+    animateWalk,
+    dispose,
+  };
 }

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60" width="320" height="240">
+  <ellipse cx="40" cy="57" rx="26" ry="3" fill="#000" opacity="0.4"/>
+
+  <rect x="10" y="33" width="60" height="22" rx="2" fill="#6b3d14"/>
+  <rect x="10" y="33" width="60" height="5" rx="2" fill="#7c4a1a"/>
+
+  <path d="M10 33 Q10 14 40 12 Q70 14 70 33 Z" fill="#7c4a1a"/>
+  <path d="M16 30 Q16 18 40 16 Q64 18 64 30" fill="none" stroke="#9a5c22" stroke-width="1.5" opacity="0.6"/>
+
+  <rect x="10" y="37" width="60" height="3.5" fill="#b8901a"/>
+  <rect x="10" y="49" width="60" height="3.5" fill="#b8901a"/>
+  <rect x="10" y="37" width="60" height="1" fill="#d4aa30" opacity="0.7"/>
+  <rect x="10" y="49" width="60" height="1" fill="#d4aa30" opacity="0.7"/>
+
+  <path d="M10 33 Q10 20 40 18 Q70 20 70 33" fill="none" stroke="#b8901a" stroke-width="3.5"/>
+  <path d="M10 33 Q10 20 40 18 Q70 20 70 33" fill="none" stroke="#d4aa30" stroke-width="1" opacity="0.7"/>
+
+  <rect x="10" y="33" width="5" height="22" rx="1" fill="#a07818"/>
+  <rect x="65" y="33" width="5" height="22" rx="1" fill="#a07818"/>
+
+  <rect x="34.5" y="30" width="11" height="9" rx="1.5" fill="#c8a020"/>
+  <rect x="35" y="30.5" width="10" height="8" rx="1" fill="#d4b030"/>
+  <circle cx="40" cy="33.5" r="2.2" fill="#1a0e00"/>
+  <rect x="39" y="33.5" width="2" height="3.5" rx="0.8" fill="#1a0e00"/>
+
+  <rect x="10" y="12" width="60" height="43" rx="4" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.35"/>
+</svg>
