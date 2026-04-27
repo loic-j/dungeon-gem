@@ -5,6 +5,7 @@ import {
   playSpellSound,
   playVictorySound,
   playGameOverSound,
+  playFootstepSound,
   startBackgroundMusic,
   stopBackgroundMusic,
 } from "./audio/soundManager";
@@ -65,6 +66,7 @@ moveBtn.addEventListener("click", async () => {
   if (appPhase !== "EXPLORING" || locked) return;
   locked = true;
   moveBtn.style.display = "none";
+  playFootstepSound();
 
   await animateWalk();
 
@@ -184,8 +186,45 @@ function delay(ms: number): Promise<void> {
 
 tick();
 
+// ── Music toggle ───────────────────────────────────────────────────────────────
+let musicEnabled = true;
+
+const musicBtn = document.createElement("button");
+musicBtn.style.cssText = `
+  position:absolute; top:10px; right:10px; z-index:30;
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.25);
+  color:#fff; font-size:16px; line-height:1; cursor:pointer;
+  pointer-events:auto; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+`;
+
+const musicBtnCross = document.createElement("span");
+musicBtnCross.style.cssText =
+  "position:absolute;width:2px;height:130%;top:-15%;left:calc(50% - 1px);background:#ff6666;transform:rotate(45deg);border-radius:1px;pointer-events:none;";
+
+function updateMusicBtn() {
+  musicBtn.textContent = "♪";
+  if (musicEnabled) {
+    musicBtnCross.remove();
+  } else {
+    musicBtn.appendChild(musicBtnCross);
+  }
+  musicBtn.style.opacity = musicEnabled ? "1" : "0.7";
+}
+updateMusicBtn();
+musicBtn.title = "Toggle music";
+musicBtn.addEventListener("click", () => {
+  musicEnabled = !musicEnabled;
+  updateMusicBtn();
+  if (musicEnabled) startBackgroundMusic();
+  else stopBackgroundMusic();
+});
+document.getElementById("app")!.appendChild(musicBtn);
+
 const startMusicOnce = () => {
-  startBackgroundMusic();
+  if (musicEnabled) startBackgroundMusic();
   window.removeEventListener("click", startMusicOnce);
   window.removeEventListener("touchstart", startMusicOnce);
   window.removeEventListener("keydown", startMusicOnce);

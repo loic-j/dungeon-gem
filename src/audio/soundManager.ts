@@ -114,6 +114,55 @@ export function playVictorySound(): void {
   });
 }
 
+let footstepToggle = false;
+
+function playOneFootstep(delaySeconds: number): void {
+  const c = getCtx();
+  const t = c.currentTime + delaySeconds;
+  const pitch = footstepToggle ? 90 : 110;
+  footstepToggle = !footstepToggle;
+
+  const bufSize = Math.ceil(c.sampleRate * 0.12);
+  const buf = c.createBuffer(1, bufSize, c.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+  const source = c.createBufferSource();
+  source.buffer = buf;
+  const filter = c.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 180;
+  filter.Q.value = 1.5;
+  const noiseGain = c.createGain();
+  noiseGain.gain.setValueAtTime(0.35, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  source.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(c.destination);
+  source.start(t);
+
+  const osc = c.createOscillator();
+  const oscGain = c.createGain();
+  osc.connect(oscGain);
+  oscGain.connect(c.destination);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(pitch, t);
+  osc.frequency.exponentialRampToValueAtTime(pitch * 0.6, t + 0.1);
+  oscGain.gain.setValueAtTime(0.4, t);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  osc.start(t);
+  osc.stop(t + 0.1);
+}
+
+export function playFootstepSound(): void {
+  resume();
+  const stepInterval = 0.28;
+  const steps = 3;
+  for (let i = 0; i < steps; i++) {
+    playOneFootstep(i * stepInterval);
+  }
+}
+
 export function playGameOverSound(): void {
   resume();
   playTone(300, "sawtooth", 0.8, 0.5, 80);
