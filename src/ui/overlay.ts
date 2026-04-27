@@ -34,7 +34,7 @@ export function createOverlay(
     "display:flex; flex-direction:column; gap:3px; max-width:160px;",
   );
   const enemyHpLabel = span(
-    "font-size:15px; font-weight:bold; text-shadow:0 1px 4px #000;",
+    "font-size:19px; font-weight:bold; text-shadow:0 1px 4px #000;",
   );
   enemyHpLabel.dataset["testid"] = "enemy-hp";
   const enemyHpBar = div(
@@ -47,13 +47,13 @@ export function createOverlay(
   enemyHpWrapper.append(enemyHpLabel, enemyHpBar);
 
   const enemyLvlLabel = span(
-    "font-size:13px; opacity:0.8; text-shadow:0 1px 4px #000;",
+    "font-size:17px; opacity:0.8; text-shadow:0 1px 4px #000;",
   );
 
   const dangerWrap = div(
     "margin-top:6px; display:flex; align-items:center; gap:6px;",
   );
-  const dangerLabel = span("font-size:11px; opacity:0.7;");
+  const dangerLabel = span("font-size:15px; opacity:0.7;");
   dangerLabel.textContent = "Danger";
   const dangerBar = div(
     "flex:1; max-width:100px; height:6px; background:#333; border-radius:3px; overflow:hidden;",
@@ -84,7 +84,7 @@ export function createOverlay(
   const skipBtn = document.createElement("button");
   skipBtn.textContent = "Skip turn";
   skipBtn.style.cssText = `width:100%; padding:10px 0; background:#222; border:1px solid #555;
-    border-radius:6px; color:#ccc; font-size:14px; cursor:pointer; pointer-events:auto;
+    border-radius:6px; color:#ccc; font-size:18px; cursor:pointer; pointer-events:auto;
     touch-action:manipulation;`;
   skipBtn.dataset["testid"] = "skip-btn";
   skipBtn.addEventListener("click", () => callbacks.onSkip());
@@ -94,7 +94,7 @@ export function createOverlay(
   const rightCol = div(`width:55%; display:flex; flex-direction:column;
     padding:0 10px 14px 6px; gap:6px; justify-content:flex-end;`);
   const hpWrapper = div("display:flex; flex-direction:column; gap:3px;");
-  const playerHpLabel = div("font-size:15px; font-weight:bold;");
+  const playerHpLabel = div("font-size:19px; font-weight:bold;");
   playerHpLabel.dataset["testid"] = "player-hp";
   const hpBar = div(
     "width:100%; height:8px; background:#333; border-radius:4px; overflow:hidden;",
@@ -105,10 +105,10 @@ export function createOverlay(
   hpBar.appendChild(hpFill);
   hpWrapper.append(playerHpLabel, hpBar);
 
-  const playerLvlLabel = div("font-size:13px; opacity:0.7;");
+  const playerLvlLabel = div("font-size:17px; opacity:0.7;");
 
   const xpWrapper = div("display:flex; flex-direction:column; gap:2px;");
-  const xpLabel = div("font-size:11px; opacity:0.6;");
+  const xpLabel = div("font-size:15px; opacity:0.6;");
   const xpBar = div(
     "width:100%; height:5px; background:#333; border-radius:3px; overflow:hidden;",
   );
@@ -187,7 +187,7 @@ export function createOverlay(
         background:${castable ? "#1a2a3a" : "#111"};
         border:1px solid ${castable ? color : "#333"};
         border-radius:5px; color:${castable ? "#fff" : "#555"};
-        font-size:13px; cursor:${castable ? "pointer" : "default"};
+        font-size:17px; cursor:${castable ? "pointer" : "default"};
         pointer-events:${castable ? "auto" : "none"};
         touch-action:manipulation;
         display:flex; justify-content:space-between; align-items:center;`;
@@ -201,7 +201,7 @@ export function createOverlay(
       nameSpan.appendChild(dot);
       nameSpan.appendChild(document.createTextNode(spell.name));
 
-      const dmgSpan = span("opacity:0.6; font-size:11px;");
+      const dmgSpan = span("opacity:0.6; font-size:15px;");
       dmgSpan.textContent = `${spell.damage} dmg`;
 
       btn.dataset["testid"] = `spell-${spell.id}`;
