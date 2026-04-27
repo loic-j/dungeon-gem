@@ -4,7 +4,9 @@ import { playTone, playNoise } from "../../audio/soundManager";
 export const SKELETON: MonsterType = {
   id: "skeleton",
   name: "Skeleton",
+  level: 1,
   maxHp: 10,
+  experienceReward: 15,
   threshold: 3,
   resistances: ["fire"],
   weaknesses: ["water"],

@@ -106,10 +106,22 @@ export function createOverlay(
   hpWrapper.append(playerHpLabel, hpBar);
 
   const playerLvlLabel = div("font-size:13px; opacity:0.7;");
+
+  const xpWrapper = div("display:flex; flex-direction:column; gap:2px;");
+  const xpLabel = div("font-size:11px; opacity:0.6;");
+  const xpBar = div(
+    "width:100%; height:5px; background:#333; border-radius:3px; overflow:hidden;",
+  );
+  const xpFill = div(
+    "height:100%; border-radius:3px; transition:width .4s, background .3s; width:0%; background:#a064e8;",
+  );
+  xpBar.appendChild(xpFill);
+  xpWrapper.append(xpLabel, xpBar);
+
   const manaRow = div("display:flex; gap:5px; flex-wrap:wrap;");
   manaRow.dataset["testid"] = "mana-row";
   const spellsCol = div("display:flex; flex-direction:column; gap:5px;");
-  rightCol.append(hpWrapper, playerLvlLabel, manaRow, spellsCol);
+  rightCol.append(hpWrapper, playerLvlLabel, xpWrapper, manaRow, spellsCol);
 
   bottom.append(leftCol, rightCol);
   container.appendChild(bottom);
@@ -143,6 +155,10 @@ export function createOverlay(
     hpFill.style.background =
       hpRatio > 0.5 ? "#2db84b" : hpRatio > 0.25 ? "#e8c01a" : "#e84a1a";
     playerLvlLabel.textContent = `Level ${player.level}`;
+
+    xpLabel.textContent = `XP: ${player.experience} / ${player.experienceToNextLevel}`;
+    const xpRatio = player.experience / player.experienceToNextLevel;
+    xpFill.style.width = `${Math.round(Math.min(1, xpRatio) * 100)}%`;
 
     // Mana circles
     manaRow.replaceChildren();

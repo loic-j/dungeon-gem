@@ -17,6 +17,7 @@ import {
   checkCombatEnd,
   resetCombat,
 } from "./game/turnMachine";
+import { applyExperience } from "./game/experience";
 
 import type { GameState } from "./game/types";
 
@@ -140,8 +141,16 @@ async function act(spellId: string | null) {
 }
 
 function handleVictory() {
+  const xp = state.monster.experienceReward;
+  const prevLevel = state.player.level;
+  state = { ...state, player: applyExperience(state.player, xp) };
+  const leveledUp = state.player.level > prevLevel;
+
   playVictorySound();
-  showMessage("Victory!", "#2b8", () => {
+  const msg = leveledUp
+    ? `Victory!\n+${xp} XP\nLevel Up! → ${state.player.level}`
+    : `Victory!\n+${xp} XP`;
+  showMessage(msg, "#2b8", () => {
     appPhase = "EXPLORING";
     objects.monsterSprite.visible = false;
     locked = false;

@@ -16,12 +16,16 @@ export interface Player {
   maxMana: number;
   spells: Spell[];
   level: number;
+  experience: number;
+  experienceToNextLevel: number;
 }
 
 export interface MonsterType {
   id: string;
   name: string;
+  level: number;
   maxHp: number;
+  experienceReward: number;
   spells: Spell[];
   threshold: number;
   resistances: Element[];

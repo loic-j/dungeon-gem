@@ -3,6 +3,8 @@ import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
   PLAYER_START_LEVEL,
+  PLAYER_START_EXPERIENCE,
+  xpToNextLevel,
 } from "./constants";
 import { SPELL_LIBRARY } from "./data/spells";
 import { pickMonster, spawnMonster } from "./data/monsters";
@@ -19,6 +21,8 @@ export function initCombat(): GameState {
       maxMana: PLAYER_START_MAX_MANA,
       spells: SPELL_LIBRARY,
       level: PLAYER_START_LEVEL,
+      experience: PLAYER_START_EXPERIENCE,
+      experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
     },
     monster: spawnMonster(pickMonster(PLAYER_START_LEVEL)),
     phase: "PLAYER_ACTION",

@@ -23,6 +23,8 @@ function makeState(overrides?: {
       maxMana: 3,
       spells: SPELL_LIBRARY,
       level: 1,
+      experience: 0,
+      experienceToNextLevel: 20,
     },
     monster: { ...monster, hp: overrides?.monsterHp ?? monster.maxHp },
     phase: "PLAYER_ACTION",

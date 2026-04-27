@@ -94,24 +94,162 @@ export function playSpellSound(element: Element): void {
   SPELL_SOUNDS[element]?.();
 }
 
-export function playVictorySound(): void {
+export function playVictorySoundBright(): void {
   resume();
   const c = getCtx();
-  const notes = [523, 659, 784, 1047];
-  notes.forEach((freq, i) => {
+  const now = c.currentTime;
+
+  function schedNote(
+    freq: number,
+    type: OscillatorType,
+    t: number,
+    dur: number,
+    vol: number,
+  ) {
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.connect(gain);
     gain.connect(c.destination);
-    osc.type = "triangle";
+    osc.type = type;
     osc.frequency.value = freq;
-    const t = c.currentTime + i * 0.12;
     gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.45, t + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
     osc.start(t);
-    osc.stop(t + 0.25);
-  });
+    osc.stop(t + dur + 0.05);
+  }
+
+  const kick = c.createOscillator();
+  const kickGain = c.createGain();
+  kick.connect(kickGain);
+  kickGain.connect(c.destination);
+  kick.type = "sine";
+  kick.frequency.setValueAtTime(120, now);
+  kick.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+  kickGain.gain.setValueAtTime(0.8, now);
+  kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+  kick.start(now);
+  kick.stop(now + 0.2);
+
+  const bufSize = Math.ceil(c.sampleRate * 0.6);
+  const buf = c.createBuffer(1, bufSize, c.sampleRate);
+  const bufData = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) bufData[i] = Math.random() * 2 - 1;
+  const cymbal = c.createBufferSource();
+  cymbal.buffer = buf;
+  const cymbalHp = c.createBiquadFilter();
+  cymbalHp.type = "highpass";
+  cymbalHp.frequency.value = 7000;
+  const cymbalGain = c.createGain();
+  cymbalGain.gain.setValueAtTime(0.25, now);
+  cymbalGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+  cymbal.connect(cymbalHp);
+  cymbalHp.connect(cymbalGain);
+  cymbalGain.connect(c.destination);
+  cymbal.start(now);
+
+  schedNote(392.0, "sawtooth", now + 0.08, 0.07, 0.35);
+  schedNote(440.0, "sawtooth", now + 0.15, 0.07, 0.35);
+  schedNote(493.88, "sawtooth", now + 0.22, 0.07, 0.35);
+  schedNote(523.25, "sawtooth", now + 0.32, 0.2, 0.5);
+  schedNote(659.26, "sawtooth", now + 0.52, 0.2, 0.5);
+  schedNote(783.99, "sawtooth", now + 0.72, 0.65, 0.55);
+  schedNote(261.63, "square", now + 0.08, 0.07, 0.15);
+  schedNote(329.63, "square", now + 0.15, 0.07, 0.15);
+  schedNote(392.0, "square", now + 0.22, 0.07, 0.15);
+  schedNote(261.63, "square", now + 0.32, 0.2, 0.18);
+  schedNote(329.63, "square", now + 0.52, 0.2, 0.18);
+  schedNote(392.0, "square", now + 0.72, 0.65, 0.18);
+  schedNote(65.41, "sine", now, 0.35, 0.5);
+  schedNote(98.0, "sine", now + 0.32, 0.42, 0.35);
+  schedNote(65.41, "sine", now + 0.72, 0.75, 0.45);
+}
+
+export function playVictorySound(): void {
+  resume();
+  const c = getCtx();
+  const now = c.currentTime;
+
+  function schedNote(
+    freq: number,
+    type: OscillatorType,
+    t: number,
+    dur: number,
+    vol: number,
+    detune = 0,
+  ) {
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.detune.value = detune;
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
+  }
+
+  // Deep kick
+  const kick = c.createOscillator();
+  const kickGain = c.createGain();
+  kick.connect(kickGain);
+  kickGain.connect(c.destination);
+  kick.type = "sine";
+  kick.frequency.setValueAtTime(100, now);
+  kick.frequency.exponentialRampToValueAtTime(35, now + 0.15);
+  kickGain.gain.setValueAtTime(0.8, now);
+  kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  kick.start(now);
+  kick.stop(now + 0.22);
+
+  // Low stone thud (mid noise, not bright cymbal)
+  const bufSize = Math.ceil(c.sampleRate * 0.4);
+  const buf = c.createBuffer(1, bufSize, c.sampleRate);
+  const bufData = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) bufData[i] = Math.random() * 2 - 1;
+  const thud = c.createBufferSource();
+  thud.buffer = buf;
+  const thudBp = c.createBiquadFilter();
+  thudBp.type = "bandpass";
+  thudBp.frequency.value = 800;
+  thudBp.Q.value = 1.0;
+  const thudGain = c.createGain();
+  thudGain.gain.setValueAtTime(0.18, now);
+  thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  thud.connect(thudBp);
+  thudBp.connect(thudGain);
+  thudGain.connect(c.destination);
+  thud.start(now);
+
+  // Grace notes: E4, G4, A4 (ascending A minor)
+  schedNote(329.63, "sawtooth", now + 0.08, 0.07, 0.32);
+  schedNote(392.0, "sawtooth", now + 0.15, 0.07, 0.32);
+  schedNote(440.0, "sawtooth", now + 0.22, 0.07, 0.32);
+
+  // Fanfare: C5, E5 staccato → A5 held (Am chord, root on top)
+  schedNote(523.25, "sawtooth", now + 0.32, 0.2, 0.48);
+  schedNote(659.26, "sawtooth", now + 0.52, 0.2, 0.48);
+  schedNote(880.0, "sawtooth", now + 0.72, 0.7, 0.52);
+  schedNote(880.0, "sawtooth", now + 0.72, 0.7, 0.18, 8); // slight detune chorus
+
+  // Harmony (square, Am chord below)
+  schedNote(164.81, "square", now + 0.08, 0.07, 0.12);
+  schedNote(196.0, "square", now + 0.15, 0.07, 0.12);
+  schedNote(220.0, "square", now + 0.22, 0.07, 0.12);
+  schedNote(261.63, "square", now + 0.32, 0.2, 0.15);
+  schedNote(329.63, "square", now + 0.52, 0.2, 0.15);
+  schedNote(440.0, "square", now + 0.72, 0.7, 0.15);
+
+  // Long resonant A2 gong on final beat (matches bg drone)
+  schedNote(110.0, "sine", now + 0.72, 1.6, 0.45);
+  schedNote(220.0, "sine", now + 0.72, 1.2, 0.22);
+
+  // Bass pedal: A2 throughout
+  schedNote(110.0, "sine", now, 0.38, 0.5);
+  schedNote(110.0, "sine", now + 0.32, 0.42, 0.4);
 }
 
 let footstepToggle = false;
