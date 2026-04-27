@@ -77,9 +77,9 @@ export function createOverlay(
     align-items:center; justify-content:flex-end; padding:0 8px 14px 10px;`);
 
   const charOval = document.createElement("img");
-  charOval.src = "/sprites/player-mage2.png";
+  charOval.src = "/sprites/water-mage-3.png";
   charOval.style.cssText =
-    "position:absolute; bottom:52px; left:22.5%; transform:translateX(-50%); height:400px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
+    "margin:20px 0; position:absolute; bottom:52px; left:22.5%; transform:translateX(-50%); height:300px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
 
   const skipBtn = document.createElement("button");
   skipBtn.textContent = "Skip turn";

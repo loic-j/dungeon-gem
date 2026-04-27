@@ -18,6 +18,12 @@ import {
   resetCombat,
 } from "./game/turnMachine";
 import { applyExperience } from "./game/experience";
+import {
+  initEncounterState,
+  enterRoom,
+  onEncounterFinished,
+} from "./game/encounterSystem";
+import type { EncounterState } from "./game/encounterSystem";
 
 import type { GameState } from "./game/types";
 
@@ -28,6 +34,7 @@ const uiRoot = document.getElementById("ui") as HTMLDivElement;
 
 let state: GameState = initCombat();
 let appPhase: AppPhase = "EXPLORING";
+let encounterState: EncounterState = initEncounterState();
 
 const { objects, animateWalk } = initScene(canvas, state.monster);
 let locked = false;
@@ -71,7 +78,11 @@ moveBtn.addEventListener("click", async () => {
 
   await animateWalk();
 
-  if (Math.random() < 0.5) {
+  const { encounter, nextState: nextEncounterState } =
+    enterRoom(encounterState);
+  encounterState = nextEncounterState;
+
+  if (encounter === "empty") {
     appPhase = "EXPLORING";
     locked = false;
     moveBtn.style.display = "";
@@ -124,6 +135,7 @@ async function act(spellId: string | null) {
 
   const outcome = checkCombatEnd(state);
   if (outcome === "GAME_OVER") {
+    encounterState = onEncounterFinished("monster", encounterState);
     stopBackgroundMusic();
     playGameOverSound();
     showMessage("GAME OVER", "#c00");
@@ -141,6 +153,7 @@ async function act(spellId: string | null) {
 }
 
 function handleVictory() {
+  encounterState = onEncounterFinished("monster", encounterState);
   const xp = state.monster.experienceReward;
   const prevLevel = state.player.level;
   state = { ...state, player: applyExperience(state.player, xp) };

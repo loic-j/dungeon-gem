@@ -1,0 +1,29 @@
+- generic [ref=e2]:
+  - generic:
+    - generic:
+      - img
+      - generic:
+        - generic:
+          - generic: "HP: 20 / 20"
+        - generic: Level 1
+        - generic:
+          - generic: "XP: 0 / 20"
+        - generic:
+          - img
+          - img
+          - img
+        - generic:
+          - button "Flame 5 dmg":
+            - generic: Flame
+            - generic: 5 dmg
+          - button "Wave 5 dmg":
+            - generic: Wave
+            - generic: 5 dmg
+          - button "Bolt 5 dmg":
+            - generic: Bolt
+            - generic: 5 dmg
+          - button "Roots 5 dmg":
+            - generic: Roots
+            - generic: 5 dmg
+  - button "↑" [ref=e4] [cursor=pointer]
+  - button "♪" [ref=e5] [cursor=pointer]
