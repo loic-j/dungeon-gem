@@ -231,10 +231,10 @@ export function createOverlay(
   async function animatePlayerAttack(): Promise<void> {
     const anim = charOval.animate(
       [
-        { transform: "translate(0px, 0px)", offset: 0 },
-        { transform: "translate(-14px, 10px)", offset: 0.28 },
-        { transform: "translate(60px, -48px)", offset: 0.62 },
-        { transform: "translate(0px, 0px)", offset: 1 },
+        { transform: "translateX(-50%) translate(0px, 0px)", offset: 0 },
+        { transform: "translateX(-50%) translate(-14px, 10px)", offset: 0.28 },
+        { transform: "translateX(-50%) translate(60px, -48px)", offset: 0.62 },
+        { transform: "translateX(-50%) translate(0px, 0px)", offset: 1 },
       ],
       { duration: 340, fill: "none" },
     );
