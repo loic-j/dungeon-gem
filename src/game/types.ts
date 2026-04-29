@@ -7,6 +7,15 @@ export interface Spell {
   element: Element;
   damage: number;
   manaCost: ManaToken[];
+  weight: number;
+}
+
+export interface MonsterSpell {
+  id: string;
+  name: string;
+  element: Element;
+  damage: number;
+  weight: number;
 }
 
 export interface Player {
@@ -26,7 +35,8 @@ export interface MonsterType {
   level: number;
   maxHp: number;
   experienceReward: number;
-  spells: Spell[];
+  spells: MonsterSpell[];
+  spellWeightOverrides?: Record<string, number>;
   threshold: number;
   resistances: Element[];
   weaknesses: Element[];
@@ -42,6 +52,7 @@ export interface MonsterType {
 export type Monster = MonsterType & {
   hp: number;
   actionPoints: number;
+  spellLastCastTurn: Record<string, number>;
 };
 
 export type TurnPhase =

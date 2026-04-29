@@ -1,5 +1,6 @@
 import type { MonsterType, Monster } from "../types";
 import { playTone, playNoise } from "../../audio/soundManager";
+import { MONSTER_SPELL_CATALOG } from "./monsterSpells";
 
 export const SKELETON: MonsterType = {
   id: "skeleton",
@@ -21,15 +22,7 @@ export const SKELETON: MonsterType = {
     setTimeout(() => playNoise(0.06, 0.3, 4200), 160);
     setTimeout(() => playNoise(0.06, 0.25, 3000), 240);
   },
-  spells: [
-    {
-      id: "basic_attack",
-      name: "Basic Attack",
-      element: "nature",
-      damage: 3,
-      manaCost: [],
-    },
-  ],
+  spells: [MONSTER_SPELL_CATALOG.basic_attack!, MONSTER_SPELL_CATALOG.bone_strike!],
   sprite: {
     path: "/sprites/monster-skeleton.svg",
     scale: [1.4, 1.8, 1],
@@ -44,5 +37,9 @@ export function pickMonster(_playerLevel: number): MonsterType {
 }
 
 export function spawnMonster(type: MonsterType): Monster {
-  return { ...type, hp: type.maxHp, actionPoints: 0 };
+  const spellLastCastTurn: Record<string, number> = {};
+  for (const spell of type.spells) {
+    spellLastCastTurn[spell.id] = -1;
+  }
+  return { ...type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn };
 }

@@ -46,7 +46,24 @@ describe("rollMonsterAttack", () => {
 describe("chooseMonsterSpell", () => {
   it("returns a spell from the monster set", () => {
     const monster = spawnMonster(SKELETON);
-    const spell = chooseMonsterSpell(monster);
+    const spell = chooseMonsterSpell(monster, 1);
     expect(SKELETON.spells).toContainEqual(spell);
+  });
+
+  it("favors stale spells over recently cast spells", () => {
+    // bone_strike cast last turn (turn 5), basic_attack never cast
+    // basic_attack weight: ratio 1 × (1 + 6) = 7
+    // bone_strike weight:  ratio 2 × (1 + 1) = 4  → basic_attack should win majority
+    const monster = {
+      ...spawnMonster(SKELETON),
+      spellLastCastTurn: { basic_attack: -1, bone_strike: 5 },
+    };
+    let basicCount = 0;
+    for (let i = 0; i < 200; i++) {
+      const spell = chooseMonsterSpell(monster, 6);
+      if (spell.id === "basic_attack") basicCount++;
+    }
+    // basic_attack has 7/(7+4) ≈ 63.6% weight — expect well above 50%
+    expect(basicCount).toBeGreaterThan(100);
   });
 });

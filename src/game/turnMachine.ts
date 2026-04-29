@@ -65,12 +65,19 @@ export function processMonsterPhase(state: GameState): {
   if (!rollMonsterAttack(state.monster)) {
     return { state: { ...state, phase: "CHECK_END" }, attacked: false };
   }
-  const spell = chooseMonsterSpell(state.monster);
+  const spell = chooseMonsterSpell(state.monster, state.turn);
   const next = applyMonsterSpell(state, spell);
   return {
     state: {
       ...next,
-      monster: { ...next.monster, actionPoints: -1 },
+      monster: {
+        ...next.monster,
+        actionPoints: -1,
+        spellLastCastTurn: {
+          ...next.monster.spellLastCastTurn,
+          [spell.id]: state.turn,
+        },
+      },
       phase: "CHECK_END",
     },
     attacked: true,

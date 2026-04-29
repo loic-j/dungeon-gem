@@ -7,6 +7,7 @@ export const SPELL_LIBRARY: Spell[] = [
     element: "fire",
     damage: 5,
     manaCost: ["fire"],
+    weight: 1,
   },
   {
     id: "wave",
@@ -14,6 +15,7 @@ export const SPELL_LIBRARY: Spell[] = [
     element: "water",
     damage: 5,
     manaCost: ["water"],
+    weight: 1,
   },
   {
     id: "bolt",
@@ -21,6 +23,7 @@ export const SPELL_LIBRARY: Spell[] = [
     element: "lightning",
     damage: 5,
     manaCost: ["lightning"],
+    weight: 1,
   },
   {
     id: "roots",
@@ -28,5 +31,6 @@ export const SPELL_LIBRARY: Spell[] = [
     element: "nature",
     damage: 5,
     manaCost: ["nature"],
+    weight: 1,
   },
 ];

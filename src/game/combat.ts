@@ -1,4 +1,4 @@
-import type { Element, Monster, Spell, GameState } from "./types";
+import type { Element, Monster, Spell, MonsterSpell, GameState } from "./types";
 import { DAMAGE_MULTIPLIER } from "./constants";
 import { consumeMana } from "./mana";
 
@@ -33,7 +33,7 @@ export function applyPlayerSpell(state: GameState, spell: Spell): GameState {
   };
 }
 
-export function applyMonsterSpell(state: GameState, spell: Spell): GameState {
+export function applyMonsterSpell(state: GameState, spell: MonsterSpell): GameState {
   return {
     ...state,
     player: {
