@@ -129,8 +129,6 @@ export const PUTRID_OOZE: MonsterType = {
   },
 };
 
-export const MONSTER_LIBRARY: MonsterType[] = [SKELETON];
-
 const ALL_MONSTERS: MonsterType[] = [
   SKELETON,
   SKELETON_KING,
@@ -142,18 +140,11 @@ export function findMonster(id: string): MonsterType | undefined {
   return ALL_MONSTERS.find((m) => m.id === id);
 }
 
-export function pickMonster(_playerLevel: number): MonsterType {
-  return MONSTER_LIBRARY[Math.floor(Math.random() * MONSTER_LIBRARY.length)]!;
-}
-
-export function pickMonsterFromIds(
-  ids: string[],
-  playerLevel: number,
-): MonsterType {
+export function pickMonsterFromIds(ids: string[]): MonsterType {
   const candidates = ids
     .map((id) => findMonster(id))
     .filter((m): m is MonsterType => m !== undefined);
-  if (candidates.length === 0) return pickMonster(playerLevel);
+  if (candidates.length === 0) throw new Error(`No valid monsters for ids: ${ids.join(", ")}`);
   return candidates[Math.floor(Math.random() * candidates.length)]!;
 }
 

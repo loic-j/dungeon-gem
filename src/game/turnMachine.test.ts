@@ -7,6 +7,7 @@ import {
   checkCombatEnd,
   resetCombat,
 } from "./turnMachine";
+import { SKELETON } from "./data/monsters";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -141,7 +142,7 @@ describe("resetCombat", () => {
       ...initCombat(),
       monster: { ...initCombat().monster, hp: 2 },
     };
-    const next = resetCombat(state);
+    const next = resetCombat(state, SKELETON);
     expect(next.monster.hp).toBe(10);
     expect(next.monster.definition.maxHp).toBe(10);
   });
@@ -151,7 +152,7 @@ describe("resetCombat", () => {
       ...initCombat(),
       monster: { ...initCombat().monster, actionPoints: 5 },
     };
-    const next = resetCombat(state);
+    const next = resetCombat(state, SKELETON);
     expect(next.monster.actionPoints).toBe(0);
   });
 
@@ -163,7 +164,7 @@ describe("resetCombat", () => {
         manaPool: ["fire" as const, "water" as const, "nature" as const],
       },
     };
-    const next = resetCombat(state);
+    const next = resetCombat(state, SKELETON);
     expect(next.player.manaPool).toHaveLength(1);
   });
 });

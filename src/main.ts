@@ -62,9 +62,17 @@ const startStageIndex = Math.max(
     startDungeonConfig.stages.length - 1,
   ),
 );
+const startRoomIndex = Math.max(
+  0,
+  Math.min(
+    Number(import.meta.env.VITE_START_ROOM ?? 0) || 0,
+    startDungeonConfig.stages[startStageIndex]!.roomCount - 1,
+  ),
+);
 const initialDungeon: DungeonProgress = {
   ...createDungeonProgress(startDungeonConfig),
   currentStageIndex: startStageIndex,
+  roomsCleared: startRoomIndex,
 };
 
 let appState: AppState = {
@@ -78,7 +86,7 @@ let chestAnimPhase: "closed" | "open" = "closed";
 let isBossFight = false;
 let stageTransitionOverlay: HTMLElement | null = null;
 
-const { objects, animateWalk, setStairsMode } = initScene(
+const { objects, animateWalk, setMonsterType, setStairsMode } = initScene(
   canvas,
   appState.combat.monster.definition,
   startDungeonConfig.graphics,
@@ -176,6 +184,7 @@ moveBtn.addEventListener("click", async () => {
       isBossFight = true;
       const combat = resetCombat(appState.combat, bossMonsterDef);
       appState = { ...appState, phase: "COMBAT", combat };
+      setMonsterType(bossMonsterDef);
       objects.monsterSprite.visible = true;
       bossMonsterDef.appearSound();
       setBossMode(true, appState.dungeon.dungeon.bossTitle);
@@ -203,9 +212,10 @@ moveBtn.addEventListener("click", async () => {
     tick();
   } else {
     const stage = getCurrentStage(appState.dungeon);
-    const monster = pickMonsterFromIds(stage.availableMonsters, appState.combat.player.level);
+    const monster = pickMonsterFromIds(stage.availableMonsters);
     const combat = resetCombat(appState.combat, monster);
     appState = { ...appState, phase: "COMBAT", combat };
+    setMonsterType(monster);
     objects.monsterSprite.visible = true;
     appState.combat.monster.definition.appearSound();
     locked = false;
@@ -375,7 +385,6 @@ function handleVictory() {
   };
   const leveledUp = appState.combat.player.level > prevLevel;
 
-  const wasBoss = isBossFight;
   if (isBossFight) {
     stopBossMusic();
     setBossMode(false);
@@ -394,16 +403,7 @@ function handleVictory() {
     locked = false;
     tick();
 
-    if (wasBoss && isStageComplete(appState.dungeon)) {
-      if (isFinalStage(appState.dungeon)) {
-        handleDungeonComplete();
-      } else {
-        appState = { ...appState, phase: "STAGE_TRANSITION" };
-        showStageTransition();
-      }
-    } else {
-      moveBtn.style.display = "";
-    }
+    onRoomCompleted();
   });
 }
 

@@ -22,6 +22,7 @@ export function initScene(
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
   animateWalk: () => Promise<void>;
+  setMonsterType: (monster: MonsterType) => void;
   setStairsMode: (enabled: boolean) => void;
   dispose: () => void;
 } {
@@ -46,6 +47,16 @@ export function initScene(
   function setStairsMode(enabled: boolean) {
     dungeonGroup.visible = !enabled;
     stairsGroup.visible = enabled;
+  }
+
+  function setMonsterType(monster: MonsterType) {
+    const { path, scale, position } = monster.sprite;
+    const texture = new THREE.TextureLoader().load(path);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    (monsterSprite.material as THREE.SpriteMaterial).map = texture;
+    (monsterSprite.material as THREE.SpriteMaterial).needsUpdate = true;
+    monsterSprite.scale.set(...scale);
+    monsterSprite.position.set(...position);
   }
 
   const monsterSprite = createMonsterSprite(monsterType);
@@ -116,6 +127,7 @@ export function initScene(
     renderer,
     objects: { monsterSprite, chestClosedSprite, chestOpenSprite },
     animateWalk,
+    setMonsterType,
     setStairsMode,
     dispose,
   };

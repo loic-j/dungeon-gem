@@ -7,7 +7,7 @@ import {
   xpToNextLevel,
 } from "./constants";
 import { SPELL_LIBRARY } from "./data/spells";
-import { pickMonster, spawnMonster } from "./data/monsters";
+import { SKELETON, spawnMonster } from "./data/monsters";
 import { addManaToPool, initManaPool } from "./mana";
 import { applyPlayerSpell, applyMonsterSpell } from "./combat";
 import { rollMonsterAttack, chooseMonsterSpell } from "./monsterAI";
@@ -24,7 +24,7 @@ export function initCombat(): CombatState {
       experience: PLAYER_START_EXPERIENCE,
       experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
     },
-    monster: spawnMonster(pickMonster(PLAYER_START_LEVEL)),
+    monster: spawnMonster(SKELETON),
     phase: "PLAYER_ACTION",
     turn: 1,
   };
@@ -99,17 +99,14 @@ export function checkCombatEnd(
   return null;
 }
 
-export function resetCombat(
-  state: CombatState,
-  monsterOverride?: MonsterType,
-): CombatState {
+export function resetCombat(state: CombatState, monster: MonsterType): CombatState {
   return {
     ...state,
     player: {
       ...state.player,
       manaPool: initManaPool(),
     },
-    monster: spawnMonster(monsterOverride ?? pickMonster(state.player.level)),
+    monster: spawnMonster(monster),
     phase: "PLAYER_ACTION",
     turn: 1,
   };
