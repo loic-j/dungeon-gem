@@ -63,9 +63,66 @@ export const SKELETON_KING: MonsterType = {
   },
 };
 
+export const CRYPT_SPIDER: MonsterType = {
+  id: "crypt_spider",
+  name: "Crypt Spider",
+  level: 2,
+  maxHp: 14,
+  experienceReward: 20,
+  threshold: 2,
+  resistances: ["nature"],
+  weaknesses: ["fire"],
+  attackSound: () => {
+    playNoise(0.08, 0.5, 5000);
+    setTimeout(() => playTone(300, "square", 0.15, 0.6, 200), 60);
+    setTimeout(() => playNoise(0.1, 0.4, 4000), 120);
+  },
+  appearSound: () => {
+    playNoise(0.05, 0.3, 6000);
+    setTimeout(() => playNoise(0.05, 0.25, 5500), 80);
+    setTimeout(() => playNoise(0.05, 0.3, 7000), 160);
+    setTimeout(() => playNoise(0.05, 0.25, 6500), 240);
+    setTimeout(() => playTone(350, "square", 0.3, 0.4, 280), 320);
+  },
+  spells: [MONSTER_SPELL_CATALOG.fang_strike!, MONSTER_SPELL_CATALOG.toxic_spit!],
+  sprite: {
+    path: "/sprites/monster-spider.svg",
+    scale: [1.3, 1.1, 1],
+    position: [0, -0.2, -3.5],
+  },
+};
+
+export const PUTRID_OOZE: MonsterType = {
+  id: "putrid_ooze",
+  name: "Putrid Ooze",
+  level: 2,
+  maxHp: 22,
+  experienceReward: 25,
+  threshold: 4,
+  resistances: ["water", "nature"],
+  weaknesses: ["lightning", "fire"],
+  attackSound: () => {
+    playNoise(0.5, 0.6, 250);
+    setTimeout(() => playNoise(0.3, 0.4, 400), 150);
+    playTone(60, "sine", 0.5, 0.3, 40);
+  },
+  appearSound: () => {
+    playNoise(0.3, 0.4, 200);
+    setTimeout(() => playNoise(0.2, 0.35, 350), 200);
+    setTimeout(() => playNoise(0.15, 0.3, 280), 400);
+    setTimeout(() => playTone(50, "sine", 0.6, 0.5, 35), 600);
+  },
+  spells: [MONSTER_SPELL_CATALOG.corrosive_glob!, MONSTER_SPELL_CATALOG.acid_surge!],
+  sprite: {
+    path: "/sprites/monster-ooze.svg",
+    scale: [1.7, 1.2, 1],
+    position: [0, -0.3, -3.5],
+  },
+};
+
 export const MONSTER_LIBRARY: MonsterType[] = [SKELETON];
 
-const ALL_MONSTERS: MonsterType[] = [SKELETON, SKELETON_KING];
+const ALL_MONSTERS: MonsterType[] = [SKELETON, SKELETON_KING, CRYPT_SPIDER, PUTRID_OOZE];
 
 export function findMonster(id: string): MonsterType | undefined {
   return ALL_MONSTERS.find((m) => m.id === id);

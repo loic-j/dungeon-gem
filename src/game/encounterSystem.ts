@@ -10,22 +10,7 @@ export interface EncounterState {
   currentChances: Record<string, number>;
 }
 
-export const ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
-  {
-    id: "monster",
-    baseChance: 0.5,
-    chanceIncrement: 0.2,
-  },
-  {
-    id: "chest",
-    baseChance: 0.2,
-    chanceIncrement: 0.1,
-  },
-];
-
-export function initEncounterState(
-  configs: EncounterTypeConfig[] = ENCOUNTER_CONFIGS,
-): EncounterState {
+export function initEncounterState(configs: EncounterTypeConfig[]): EncounterState {
   const currentChances: Record<string, number> = {};
   for (const c of configs) {
     currentChances[c.id] = c.baseChance;

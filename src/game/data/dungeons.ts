@@ -1,6 +1,15 @@
 import type { DungeonConfig } from "../dungeon";
-import { ENCOUNTER_CONFIGS } from "../encounterSystem";
 import { startBossMusic } from "../../audio/soundManager";
+
+const STAGE_1_ENCOUNTER_CONFIGS = [
+  { id: "monster", baseChance: 0.5, chanceIncrement: 0.2 },
+  { id: "chest", baseChance: 0.2, chanceIncrement: 0.1 },
+];
+
+const STAGE_2_ENCOUNTER_CONFIGS = [
+  { id: "monster", baseChance: 0.65, chanceIncrement: 0.2 },
+  { id: "chest", baseChance: 0.15, chanceIncrement: 0.1 },
+];
 
 export const DUNGEON_1: DungeonConfig = {
   id: "dungeon_1",
@@ -8,8 +17,13 @@ export const DUNGEON_1: DungeonConfig = {
   stages: [
     {
       roomCount: 10,
-      encounterConfigs: ENCOUNTER_CONFIGS,
+      encounterConfigs: STAGE_1_ENCOUNTER_CONFIGS,
       availableMonsters: ["skeleton"],
+    },
+    {
+      roomCount: 12,
+      encounterConfigs: STAGE_2_ENCOUNTER_CONFIGS,
+      availableMonsters: ["skeleton", "crypt_spider", "putrid_ooze"],
     },
   ],
   bossMonster: "skeleton_king",
