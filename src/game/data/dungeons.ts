@@ -29,6 +29,7 @@ export const DUNGEON_1: DungeonConfig = {
   bossMonster: "skeleton_king",
   bossTitle: "SKELETON KING",
   bossMusic: startBossMusic,
+  stageTransitionType: "stairs",
   graphics: {
     floor: "/sprites/floor.png",
     ceiling: "/sprites/ceiling.png",

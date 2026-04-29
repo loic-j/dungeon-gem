@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { MonsterType } from "../game/types";
 import type { DungeonGraphics } from "../game/dungeon";
-import { createDungeon } from "./dungeon";
+import { createDungeon, createStairsRoom } from "./dungeon";
 import {
   createMonsterSprite,
   createChestClosedSprite,
@@ -22,6 +22,7 @@ export function initScene(
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
   animateWalk: () => Promise<void>;
+  setStairsMode: (enabled: boolean) => void;
   dispose: () => void;
 } {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -35,7 +36,17 @@ export function initScene(
   camera.position.set(0, 0, 2);
   camera.lookAt(0, 0, -1);
 
-  scene.add(createDungeon(dungeonGraphics));
+  const dungeonGroup = createDungeon(dungeonGraphics);
+  scene.add(dungeonGroup);
+
+  const stairsGroup = createStairsRoom(dungeonGraphics);
+  stairsGroup.visible = false;
+  scene.add(stairsGroup);
+
+  function setStairsMode(enabled: boolean) {
+    dungeonGroup.visible = !enabled;
+    stairsGroup.visible = enabled;
+  }
 
   const monsterSprite = createMonsterSprite(monsterType);
   scene.add(monsterSprite);
@@ -105,6 +116,7 @@ export function initScene(
     renderer,
     objects: { monsterSprite, chestClosedSprite, chestOpenSprite },
     animateWalk,
+    setStairsMode,
     dispose,
   };
 }

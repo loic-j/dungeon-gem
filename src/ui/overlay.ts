@@ -57,6 +57,10 @@ export function createOverlay(
     "display:none; font-size:18px; font-weight:bold; letter-spacing:2px; text-align:center; padding:4px 0 2px; text-shadow:0 0 12px #e84a1a, 0 2px 6px #000; color:#e8c01a;",
   );
 
+  const monsterNameLabel = div(
+    "font-size:16px; font-weight:bold; letter-spacing:1px; text-align:center; padding:4px 0 2px; text-shadow:0 1px 4px #000; color:#e0d0b0;",
+  );
+
   const dangerWrap = div(
     "margin-top:6px; display:flex; align-items:center; gap:6px;",
   );
@@ -72,7 +76,7 @@ export function createOverlay(
   dangerBar.appendChild(dangerFill);
   dangerWrap.append(dangerLabel, dangerBar);
   const nextSpellWrap = div("margin-top:6px; display:flex; gap:6px; pointer-events:none;");
-  topBar.append(bossLabel, enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
+  topBar.append(bossLabel, monsterNameLabel, enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
   container.appendChild(topBar);
 
   // ── Bottom: combat controls ────────────────────────────────────────────────
@@ -237,7 +241,8 @@ export function createOverlay(
           : enemyHpRatio > 0.25
             ? "#e8c01a"
             : "#e84a1a";
-      enemyLvlLabel.textContent = "Level 1";
+      monsterNameLabel.textContent = monster.definition.name;
+      enemyLvlLabel.textContent = `Level ${monster.definition.level}`;
       const prob = Math.max(
         0,
         Math.min(1, monster.actionPoints / monster.definition.threshold),
@@ -345,6 +350,7 @@ export function createOverlay(
   function setBossMode(active: boolean, title?: string): void {
     bossLabel.style.display = active ? "" : "none";
     bossLabel.textContent = active && title ? `★ ${title} ★` : "";
+    monsterNameLabel.style.display = active ? "none" : "";
     enemyLvlLabel.style.display = active ? "none" : "";
   }
 

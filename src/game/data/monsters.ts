@@ -22,7 +22,10 @@ export const SKELETON: MonsterType = {
     setTimeout(() => playNoise(0.06, 0.3, 4200), 160);
     setTimeout(() => playNoise(0.06, 0.25, 3000), 240);
   },
-  spells: [MONSTER_SPELL_CATALOG.basic_attack!, MONSTER_SPELL_CATALOG.bone_strike!],
+  spells: [
+    MONSTER_SPELL_CATALOG.basic_attack!,
+    MONSTER_SPELL_CATALOG.bone_strike!,
+  ],
   sprite: {
     path: "/sprites/monster-skeleton.svg",
     scale: [1.4, 1.8, 1],
@@ -84,7 +87,10 @@ export const CRYPT_SPIDER: MonsterType = {
     setTimeout(() => playNoise(0.05, 0.25, 6500), 240);
     setTimeout(() => playTone(350, "square", 0.3, 0.4, 280), 320);
   },
-  spells: [MONSTER_SPELL_CATALOG.fang_strike!, MONSTER_SPELL_CATALOG.toxic_spit!],
+  spells: [
+    MONSTER_SPELL_CATALOG.fang_strike!,
+    MONSTER_SPELL_CATALOG.toxic_spit!,
+  ],
   sprite: {
     path: "/sprites/monster-spider.svg",
     scale: [1.3, 1.1, 1],
@@ -112,7 +118,10 @@ export const PUTRID_OOZE: MonsterType = {
     setTimeout(() => playNoise(0.15, 0.3, 280), 400);
     setTimeout(() => playTone(50, "sine", 0.6, 0.5, 35), 600);
   },
-  spells: [MONSTER_SPELL_CATALOG.corrosive_glob!, MONSTER_SPELL_CATALOG.acid_surge!],
+  spells: [
+    MONSTER_SPELL_CATALOG.corrosive_glob!,
+    MONSTER_SPELL_CATALOG.acid_surge!,
+  ],
   sprite: {
     path: "/sprites/monster-ooze.svg",
     scale: [1.7, 1.2, 1],
@@ -122,7 +131,12 @@ export const PUTRID_OOZE: MonsterType = {
 
 export const MONSTER_LIBRARY: MonsterType[] = [SKELETON];
 
-const ALL_MONSTERS: MonsterType[] = [SKELETON, SKELETON_KING, CRYPT_SPIDER, PUTRID_OOZE];
+const ALL_MONSTERS: MonsterType[] = [
+  SKELETON,
+  SKELETON_KING,
+  CRYPT_SPIDER,
+  PUTRID_OOZE,
+];
 
 export function findMonster(id: string): MonsterType | undefined {
   return ALL_MONSTERS.find((m) => m.id === id);
@@ -148,6 +162,13 @@ export function spawnMonster(type: MonsterType): ActiveMonster {
   for (const spell of type.spells) {
     spellLastCastTurn[spell.id] = -1;
   }
-  const nextSpell = type.spells[Math.floor(Math.random() * type.spells.length)]!;
-  return { definition: type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn, nextSpell };
+  const nextSpell =
+    type.spells[Math.floor(Math.random() * type.spells.length)]!;
+  return {
+    definition: type,
+    hp: type.maxHp,
+    actionPoints: 0,
+    spellLastCastTurn,
+    nextSpell,
+  };
 }

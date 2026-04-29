@@ -35,7 +35,7 @@ import {
   advanceToNextStage,
   resetDungeonProgress,
 } from "./game/dungeon";
-import type { DungeonProgress } from "./game/dungeon";
+import type { DungeonConfig, DungeonProgress } from "./game/dungeon";
 import { DUNGEON_1 } from "./game/data/dungeons";
 import { findMonster, pickMonsterFromIds } from "./game/data/monsters";
 import type { CombatState } from "./game/types";
@@ -52,7 +52,20 @@ interface AppState {
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;
 
-const initialDungeon = createDungeonProgress(DUNGEON_1);
+const DUNGEONS: Record<string, DungeonConfig> = { [DUNGEON_1.id]: DUNGEON_1 };
+const startDungeonConfig =
+  DUNGEONS[import.meta.env.VITE_START_DUNGEON ?? ""] ?? DUNGEON_1;
+const startStageIndex = Math.max(
+  0,
+  Math.min(
+    Number(import.meta.env.VITE_START_STAGE ?? 0) || 0,
+    startDungeonConfig.stages.length - 1,
+  ),
+);
+const initialDungeon: DungeonProgress = {
+  ...createDungeonProgress(startDungeonConfig),
+  currentStageIndex: startStageIndex,
+};
 
 let appState: AppState = {
   phase: "EXPLORING",
@@ -63,11 +76,12 @@ let appState: AppState = {
 
 let chestAnimPhase: "closed" | "open" = "closed";
 let isBossFight = false;
+let stageTransitionOverlay: HTMLElement | null = null;
 
-const { objects, animateWalk } = initScene(
+const { objects, animateWalk, setStairsMode } = initScene(
   canvas,
   appState.combat.monster.definition,
-  DUNGEON_1.graphics,
+  startDungeonConfig.graphics,
 );
 let locked = false;
 
@@ -126,7 +140,29 @@ chestClickOverlay.addEventListener("click", async () => {
 });
 
 moveBtn.addEventListener("click", async () => {
-  if (appState.phase !== "EXPLORING" || locked) return;
+  if (locked) return;
+
+  if (appState.phase === "STAGE_TRANSITION") {
+    locked = true;
+    playFootstepSound();
+    await animateWalk();
+    stageTransitionOverlay?.remove();
+    stageTransitionOverlay = null;
+    moveBtn.textContent = "↑";
+    setStairsMode(false);
+    const nextDungeon = advanceToNextStage(appState.dungeon);
+    appState = {
+      ...appState,
+      phase: "EXPLORING",
+      dungeon: nextDungeon,
+      encounter: initEncounterState(getCurrentStage(nextDungeon).encounterConfigs),
+    };
+    locked = false;
+    tick();
+    return;
+  }
+
+  if (appState.phase !== "EXPLORING") return;
   locked = true;
   moveBtn.style.display = "none";
   playFootstepSound();
@@ -390,82 +426,35 @@ function handleDungeonComplete() {
 }
 
 function showStageTransition() {
-  const overlay = document.createElement("div");
-  overlay.style.cssText = `
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:24px;
-    background:rgba(0,0,0,0.88); z-index:20; pointer-events:auto;
+  const transitionType = appState.dungeon.dungeon.stageTransitionType ?? "stairs";
+
+  if (transitionType === "stairs") setStairsMode(true);
+
+  stageTransitionOverlay = document.createElement("div");
+  stageTransitionOverlay.style.cssText = `
+    position:absolute; top:0; left:0; right:0; padding:24px 16px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    pointer-events:none; z-index:4;
   `;
 
   const title = document.createElement("div");
   title.textContent = "Stage Complete!";
   title.style.cssText =
-    "font-family:sans-serif; font-size:26px; font-weight:bold; color:#e8c01a; text-shadow:0 2px 8px #000; letter-spacing:2px;";
-  overlay.appendChild(title);
+    "font-family:sans-serif; font-size:26px; font-weight:bold; color:#e8c01a; text-shadow:0 2px 10px #000; letter-spacing:2px;";
+  stageTransitionOverlay.appendChild(title);
 
-  overlay.appendChild(makeStairsSvg());
+  const hint = document.createElement("div");
+  hint.textContent = "Descend...";
+  hint.style.cssText =
+    "font-family:sans-serif; font-size:15px; color:rgba(255,255,255,0.5); letter-spacing:1px; text-shadow:0 1px 6px #000;";
+  stageTransitionOverlay.appendChild(hint);
 
-  const descBtn = document.createElement("button");
-  descBtn.textContent = "↓ Descend";
-  descBtn.style.cssText = `
-    padding:14px 36px; border-radius:8px; font-size:20px; font-weight:bold;
-    background:#1a1208; border:2px solid #b8901a; color:#f0c040;
-    cursor:pointer; pointer-events:auto; touch-action:manipulation;
-    transition:border-color 0.15s, background 0.15s;
-  `;
-  descBtn.addEventListener("mouseenter", () => {
-    descBtn.style.borderColor = "#ffd700";
-    descBtn.style.background = "#2a1e0a";
-  });
-  descBtn.addEventListener("mouseleave", () => {
-    descBtn.style.borderColor = "#b8901a";
-    descBtn.style.background = "#1a1208";
-  });
-  descBtn.addEventListener("click", () => {
-    overlay.remove();
-    const nextDungeon = advanceToNextStage(appState.dungeon);
-    appState = {
-      ...appState,
-      phase: "EXPLORING",
-      dungeon: nextDungeon,
-      encounter: initEncounterState(getCurrentStage(nextDungeon).encounterConfigs),
-    };
-    moveBtn.style.display = "";
-    tick();
-  });
-  overlay.appendChild(descBtn);
+  document.getElementById("app")!.appendChild(stageTransitionOverlay);
 
-  document.getElementById("app")!.appendChild(overlay);
+  moveBtn.textContent = "↓";
+  moveBtn.style.display = "";
 }
 
-function makeStairsSvg(): SVGSVGElement {
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("width", "120");
-  svg.setAttribute("height", "90");
-  svg.setAttribute("viewBox", "0 0 120 90");
-  const steps = 5;
-  const stepW = 20;
-  const stepH = 14;
-  for (let i = 0; i < steps; i++) {
-    const x = i * stepW;
-    const y = i * stepH;
-    const tread = document.createElementNS(ns, "rect");
-    tread.setAttribute("x", String(x));
-    tread.setAttribute("y", String(y));
-    tread.setAttribute("width", String(120 - x));
-    tread.setAttribute("height", "3");
-    tread.setAttribute("fill", "#b8901a");
-    const riser = document.createElementNS(ns, "rect");
-    riser.setAttribute("x", String(x));
-    riser.setAttribute("y", String(y));
-    riser.setAttribute("width", "3");
-    riser.setAttribute("height", String(90 - y));
-    riser.setAttribute("fill", "#7a5e10");
-    svg.append(tread, riser);
-  }
-  return svg;
-}
 
 function flashScreen() {
   const flash = document.createElement("div");

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:debug": "VITE_DEBUG=true vite",
+    "dev:stage2": "VITE_START_DUNGEON=dungeon_1 VITE_START_STAGE=1 vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

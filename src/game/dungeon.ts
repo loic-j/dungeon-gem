@@ -20,6 +20,7 @@ export interface DungeonConfig {
   bossTitle: string;
   bossMusic?: () => void;
   graphics: DungeonGraphics;
+  stageTransitionType?: string;
 }
 
 export interface DungeonProgress {
