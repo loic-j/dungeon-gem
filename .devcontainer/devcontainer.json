@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--shm-size=2gb"],
+  "runArgs": ["--shm-size=2gb", "-p", "8080:8080"],
   "forwardPorts": [5173, 8080],
   "portsAttributes": {
     "5173": {
@@ -31,12 +31,12 @@
   "remoteEnv": {
     "HOST_HOME": "${localEnv:HOME}"
   },
-  "postCreateCommand": "bash .devcontainer/setup-claude.sh && pnpm install && npx playwright install chromium && mkdir -p /home/node/.local/bin && curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-linux-x64' -o /tmp/vscode_cli.tar.gz && tar -xf /tmp/vscode_cli.tar.gz -C /home/node/.local/bin",
+  "postCreateCommand": "bash .devcontainer/setup-claude.sh && pnpm install && npx playwright install chromium && mkdir -p /home/node/.local/bin && curl -sL 'https://update.code.visualstudio.com/latest/cli-linux-x64/stable' -o /tmp/vscode_cli.tar.gz && tar -xf /tmp/vscode_cli.tar.gz -C /home/node/.local/bin",
   "remoteUser": "node",
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/tmp/.claude-host,type=bind,readonly,consistency=cached",
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
   ],
-  "postStartCommand": "chmod 700 /home/node/.ssh && chmod 600 /home/node/.ssh/id_* 2>/dev/null || true && /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token &"
+  "postStartCommand": "chmod 700 /home/node/.ssh && chmod 600 /home/node/.ssh/id_* 2>/dev/null || true && nohup /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token --default-folder /workspaces/dungeon-crawler-gem > /tmp/vscode-web.log 2>&1 &"
 }
