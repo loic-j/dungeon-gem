@@ -24,10 +24,13 @@
       }
     }
   },
-  "postCreateCommand": "pnpm install && npx playwright install chromium",
+  "remoteEnv": {
+    "HOST_HOME": "${localEnv:HOME}"
+  },
+  "postCreateCommand": "bash .devcontainer/setup-claude.sh && pnpm install && npx playwright install chromium",
   "remoteUser": "node",
   "mounts": [
-    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/tmp/.claude-host,type=bind,readonly,consistency=cached",
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
   ],
