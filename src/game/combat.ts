@@ -1,6 +1,7 @@
 import type { Element, ActiveMonster, Spell, MonsterSpell, CombatState } from "./types";
 import { DAMAGE_MULTIPLIER } from "./constants";
 import { consumeMana } from "./mana";
+import { DEBUG } from "./debug";
 
 export function getElementModifier(
   spellElement: Element,
@@ -19,7 +20,7 @@ export function calculateDamage(baseDamage: number, modifier: number): number {
 
 export function applyPlayerSpell(state: CombatState, spell: Spell): CombatState {
   const modifier = getElementModifier(spell.element, state.monster);
-  const damage = calculateDamage(spell.damage, modifier);
+  const damage = DEBUG ? state.monster.hp : calculateDamage(spell.damage, modifier);
   return {
     ...state,
     player: {
