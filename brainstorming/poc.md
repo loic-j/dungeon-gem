@@ -41,14 +41,22 @@ No reward system, no progression. Combat only.
 
 ## Monster (unique type)
 
-| Property | Value |
-|----------|-------|
-| Max HP | 10 |
-| Starting HP | 10 |
-| Spell | Basic Attack — 3 damage |
-| Threshold | 3 |
-| Resistance | 🔥 Fire (×0.8) |
-| Weakness | 💧 Water (×1.2) |
+| Property   | Value                                      |
+|------------|--------------------------------------------|
+| Max HP     | 10                                         |
+| Starting HP| 10                                         |
+| Threshold  | 3                                          |
+| Resistance | 🔥 Fire (×0.8)                             |
+| Weakness   | 💧 Water (×1.2)                            |
+
+### Skeleton Spells
+
+| Spell        | Level | Damage | Weight | Notes              |
+|--------------|-------|--------|--------|--------------------|
+| Basic Attack | 1     | 3      | 0.7    | Frequent, weak     |
+| Bone Strike  | 2     | 5      | 0.3    | Less frequent, stronger |
+
+Spell selection uses weighted random + staleness (see game-design.md). Next spell pre-picked after each cast → sword icons show 1 or 2 swords in enemy info area.
 
 ---
 
@@ -57,18 +65,23 @@ No reward system, no progression. Combat only.
 ```
 Combat start
   → Player: 1 random mana, 20/20 HP
-  → Monster: 10/10 HP, 0 action points
+  → Monster: 10/10 HP, 0 AP, random initial nextSpell picked
 
-Each turn:
-  1. Player gains 1 mana (random)
+Each turn (turn counter increments at mana phase):
+  1. Player gains 1 mana (random) — turn counter +1
   2. Monster gains 1 action point
   3. Player chooses a spell (if mana available) or skip
-  4. Monster roll: points/3 → attack chance (visual bar)
-     if attack → player loses 3 HP, points reset to 0
+  4. Monster roll: AP/3 → attack chance (danger bar shows this)
+     if attack:
+       → cast nextSpell (shown to player via sword icons)
+       → player loses spell.damage HP
+       → AP reset to -1 (becomes 0 next mana phase)
+       → new nextSpell immediately picked (weighted random + staleness)
+       → attack notification shown (spell name + damage), auto-disappears
   5. (no status effects in POC)
 
 Combat end:
-  → Monster HP ≤ 0: victory → new combat (same monster)
+  → Monster HP ≤ 0: victory → new combat (same monster type)
   → Player HP ≤ 0: Game Over
 ```
 
@@ -79,8 +92,11 @@ Combat end:
 - [ ] Mana generates and accumulates correctly
 - [ ] Spells disable when mana is insufficient
 - [ ] Correct damage calculation (fire resistance, water weakness)
-- [ ] Monster tension bar grows visually each turn
+- [ ] Monster danger bar grows visually each turn
 - [ ] Monster attacks probabilistically (not systematically)
+- [ ] Both Skeleton spells fire over time (no spell permanently ignored)
+- [ ] Sword icons update correctly after each monster cast (1 = Basic Attack, 2 = Bone Strike)
+- [ ] Attack notification appears and auto-dismisses (~2s)
 - [ ] Combat chain → new combat works
 - [ ] Game Over triggered correctly
 - [ ] Interface readable on mobile (vertical format)
