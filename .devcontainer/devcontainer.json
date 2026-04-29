@@ -29,9 +29,7 @@
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind"
+    "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
   ],
-  "remoteEnv": {
-    "SSH_AUTH_SOCK": "/ssh-agent"
-  }
+  "postStartCommand": "chmod 700 /home/node/.ssh && chmod 600 /home/node/.ssh/id_* 2>/dev/null || true"
 }
