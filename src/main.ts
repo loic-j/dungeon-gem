@@ -25,27 +25,36 @@ import {
 } from "./game/encounterSystem";
 import type { EncounterState } from "./game/encounterSystem";
 
-import type { GameState } from "./game/types";
+import type { CombatState } from "./game/types";
 
 type AppPhase = "EXPLORING" | "COMBAT" | "CHEST";
+
+interface AppState {
+  phase: AppPhase;
+  encounter: EncounterState;
+  combat: CombatState;
+}
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;
 
-let state: GameState = initCombat();
-let appPhase: AppPhase = "EXPLORING";
-let encounterState: EncounterState = initEncounterState();
+let appState: AppState = {
+  phase: "EXPLORING",
+  encounter: initEncounterState(),
+  combat: initCombat(),
+};
+
 let chestAnimPhase: "closed" | "open" = "closed";
 
-const { objects, animateWalk } = initScene(canvas, state.monster);
+const { objects, animateWalk } = initScene(canvas, appState.combat.monster.definition);
 let locked = false;
 
 const { render, animatePlayerAttack, animateManaGain, showMonsterAttack } = createOverlay(uiRoot, {
   onSpell: (spellId) => {
-    if (!locked && appPhase === "COMBAT") act(spellId);
+    if (!locked && appState.phase === "COMBAT") act(spellId);
   },
   onSkip: () => {
-    if (!locked && appPhase === "COMBAT") act(null);
+    if (!locked && appState.phase === "COMBAT") act(null);
   },
 });
 
@@ -78,7 +87,7 @@ chestClickOverlay.style.cssText =
 document.getElementById("app")!.appendChild(chestClickOverlay);
 
 chestClickOverlay.addEventListener("click", async () => {
-  if (appPhase !== "CHEST" || chestAnimPhase !== "closed") return;
+  if (appState.phase !== "CHEST" || chestAnimPhase !== "closed") return;
   chestAnimPhase = "open";
   chestClickOverlay.style.pointerEvents = "none";
   objects.chestClosedSprite.visible = false;
@@ -88,43 +97,42 @@ chestClickOverlay.addEventListener("click", async () => {
 });
 
 moveBtn.addEventListener("click", async () => {
-  if (appPhase !== "EXPLORING" || locked) return;
+  if (appState.phase !== "EXPLORING" || locked) return;
   locked = true;
   moveBtn.style.display = "none";
   playFootstepSound();
 
   await animateWalk();
 
-  const { encounter, nextState: nextEncounterState } =
-    enterRoom(encounterState);
-  encounterState = nextEncounterState;
+  const { encounter, nextState: nextEncounterState } = enterRoom(appState.encounter);
+  appState = { ...appState, encounter: nextEncounterState };
 
   if (encounter === "empty") {
-    appPhase = "EXPLORING";
+    appState = { ...appState, phase: "EXPLORING" };
     locked = false;
     moveBtn.style.display = "";
     tick();
   } else if (encounter === "chest") {
-    appPhase = "CHEST";
+    appState = { ...appState, phase: "CHEST" };
     chestAnimPhase = "closed";
     objects.chestClosedSprite.visible = true;
     chestClickOverlay.style.pointerEvents = "auto";
     locked = false;
     tick();
   } else {
-    appPhase = "COMBAT";
-    state = resetCombat(state);
+    const combat = resetCombat(appState.combat);
+    appState = { ...appState, phase: "COMBAT", combat };
     objects.monsterSprite.visible = true;
-    state.monster.appearSound();
+    appState.combat.monster.definition.appearSound();
     locked = false;
     tick();
   }
 });
 
 function tick() {
-  const inCombat = appPhase === "COMBAT";
-  render(state, locked, inCombat);
-  objects.monsterSprite.visible = inCombat && state.monster.hp > 0;
+  const inCombat = appState.phase === "COMBAT";
+  render(appState.combat, locked, inCombat);
+  objects.monsterSprite.visible = inCombat && appState.combat.monster.hp > 0;
 }
 
 const PLACEHOLDER_ITEMS = ["Health Potion", "Mana Crystal", "Ancient Scroll"];
@@ -186,8 +194,11 @@ function showItemSelection() {
 }
 
 function finishChestEncounter() {
-  encounterState = onEncounterFinished("chest", encounterState);
-  appPhase = "EXPLORING";
+  appState = {
+    ...appState,
+    phase: "EXPLORING",
+    encounter: onEncounterFinished("chest", appState.encounter),
+  };
   objects.chestClosedSprite.visible = false;
   objects.chestOpenSprite.visible = false;
   moveBtn.style.display = "";
@@ -198,25 +209,25 @@ async function act(spellId: string | null) {
   locked = true;
 
   if (spellId !== null) {
-    const spell = state.player.spells.find((s) => s.id === spellId);
+    const spell = appState.combat.player.spells.find((s) => s.id === spellId);
     if (spell) playSpellSound(spell.element);
     await animatePlayerAttack();
   }
 
-  state = processPlayerAction(state, spellId);
+  appState = { ...appState, combat: processPlayerAction(appState.combat, spellId) };
   tick();
 
   await delay(100);
 
-  if (checkCombatEnd(state) === "VICTORY") {
+  if (checkCombatEnd(appState.combat) === "VICTORY") {
     handleVictory();
     return;
   }
 
-  const { state: afterMonster, attacked, spell } = processMonsterPhase(state);
-  state = afterMonster;
+  const { state: afterMonster, attacked, spell } = processMonsterPhase(appState.combat);
+  appState = { ...appState, combat: afterMonster };
   if (attacked && spell) {
-    state.monster.attackSound();
+    appState.combat.monster.definition.attackSound();
     await animateMonsterAttack(objects.monsterSprite);
     flashScreen();
     showMonsterAttack(spell.name, spell.damage);
@@ -225,9 +236,9 @@ async function act(spellId: string | null) {
 
   await delay(300);
 
-  const outcome = checkCombatEnd(state);
+  const outcome = checkCombatEnd(appState.combat);
   if (outcome === "GAME_OVER") {
-    encounterState = onEncounterFinished("monster", encounterState);
+    appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
     stopBackgroundMusic();
     playGameOverSound();
     showMessage("GAME OVER", "#c00");
@@ -238,25 +249,28 @@ async function act(spellId: string | null) {
     return;
   }
 
-  state = processManaPhase(state);
+  appState = { ...appState, combat: processManaPhase(appState.combat) };
   locked = false;
   tick();
-  animateManaGain(state.player.manaPool.length - 1);
+  animateManaGain(appState.combat.player.manaPool.length - 1);
 }
 
 function handleVictory() {
-  encounterState = onEncounterFinished("monster", encounterState);
-  const xp = state.monster.experienceReward;
-  const prevLevel = state.player.level;
-  state = { ...state, player: applyExperience(state.player, xp) };
-  const leveledUp = state.player.level > prevLevel;
+  appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
+  const xp = appState.combat.monster.definition.experienceReward;
+  const prevLevel = appState.combat.player.level;
+  appState = {
+    ...appState,
+    combat: { ...appState.combat, player: applyExperience(appState.combat.player, xp) },
+  };
+  const leveledUp = appState.combat.player.level > prevLevel;
 
   playVictorySound();
   const msg = leveledUp
-    ? `Victory!\n+${xp} XP\nLevel Up! → ${state.player.level}`
+    ? `Victory!\n+${xp} XP\nLevel Up! → ${appState.combat.player.level}`
     : `Victory!\n+${xp} XP`;
   showMessage(msg, "#2b8", () => {
-    appPhase = "EXPLORING";
+    appState = { ...appState, phase: "EXPLORING" };
     objects.monsterSprite.visible = false;
     locked = false;
     moveBtn.style.display = "";
@@ -349,9 +363,9 @@ window.addEventListener("keydown", startMusicOnce);
 
 if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>)["__game"] = {
-    getState: () => state,
-    setState: (s: GameState) => {
-      state = s;
+    getState: () => appState.combat,
+    setState: (s: CombatState) => {
+      appState = { ...appState, combat: s };
       locked = false;
       tick();
     },

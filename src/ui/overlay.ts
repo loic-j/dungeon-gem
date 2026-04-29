@@ -1,4 +1,4 @@
-import type { GameState, ManaToken, Monster, MonsterSpell } from "../game/types";
+import type { CombatState, ManaToken, ActiveMonster, MonsterSpell } from "../game/types";
 import { canCastSpell } from "../game/mana";
 
 const ELEMENT_COLOR: Record<ManaToken, string> = {
@@ -14,7 +14,7 @@ export interface OverlayCallbacks {
 }
 
 export interface OverlayControls {
-  render: (state: GameState, locked: boolean, inCombat: boolean) => void;
+  render: (state: CombatState, locked: boolean, inCombat: boolean) => void;
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => void;
   showMonsterAttack: (spellName: string, damage: number) => void;
@@ -129,8 +129,8 @@ export function createOverlay(
   container.appendChild(bottom);
 
   // ── Next spell helpers ─────────────────────────────────────────────────────
-  function getSwordCount(spell: MonsterSpell, monster: Monster): number {
-    const levels = monster.spells.map((s) => s.level);
+  function getSwordCount(spell: MonsterSpell, monster: ActiveMonster): number {
+    const levels = monster.definition.spells.map((s) => s.level);
     const maxLevel = Math.max(...levels);
     const minLevel = Math.min(...levels);
     if (maxLevel === minLevel) return 2;
@@ -174,7 +174,7 @@ export function createOverlay(
     return svg;
   }
 
-  function updateSwords(spell: MonsterSpell, monster: Monster): void {
+  function updateSwords(spell: MonsterSpell, monster: ActiveMonster): void {
     nextSpellWrap.replaceChildren();
     const count = getSwordCount(spell, monster);
     for (let i = 0; i < count; i++) {
@@ -203,7 +203,7 @@ export function createOverlay(
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  function render(state: GameState, locked: boolean, inCombat: boolean) {
+  function render(state: CombatState, locked: boolean, inCombat: boolean) {
     const { player, monster } = state;
 
     topBar.style.display = inCombat ? "" : "none";
@@ -211,8 +211,8 @@ export function createOverlay(
     skipBtn.style.pointerEvents = inCombat ? "auto" : "none";
 
     if (inCombat) {
-      enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.maxHp}`;
-      const enemyHpRatio = Math.max(0, monster.hp / monster.maxHp);
+      enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.definition.maxHp}`;
+      const enemyHpRatio = Math.max(0, monster.hp / monster.definition.maxHp);
       enemyHpFill.style.width = `${Math.round(enemyHpRatio * 100)}%`;
       enemyHpFill.style.background =
         enemyHpRatio > 0.5
@@ -223,7 +223,7 @@ export function createOverlay(
       enemyLvlLabel.textContent = "Level 1";
       const prob = Math.max(
         0,
-        Math.min(1, monster.actionPoints / monster.threshold),
+        Math.min(1, monster.actionPoints / monster.definition.threshold),
       );
       dangerFill.style.width = `${Math.round(prob * 100)}%`;
       updateSwords(monster.nextSpell, monster);

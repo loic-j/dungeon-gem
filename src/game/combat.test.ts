@@ -7,13 +7,13 @@ import {
 } from "./combat";
 import { SKELETON, spawnMonster } from "./data/monsters";
 import { SPELL_LIBRARY } from "./data/spells";
-import type { GameState } from "./types";
+import type { CombatState } from "./types";
 
 function makeState(overrides?: {
   playerHp?: number;
   monsterHp?: number;
-  mana?: GameState["player"]["manaPool"];
-}): GameState {
+  mana?: CombatState["player"]["manaPool"];
+}): CombatState {
   const monster = spawnMonster(SKELETON);
   return {
     player: {
@@ -26,10 +26,9 @@ function makeState(overrides?: {
       experience: 0,
       experienceToNextLevel: 20,
     },
-    monster: { ...monster, hp: overrides?.monsterHp ?? monster.maxHp },
+    monster: { ...monster, hp: overrides?.monsterHp ?? monster.definition.maxHp },
     phase: "PLAYER_ACTION",
     turn: 1,
-    log: [],
   };
 }
 
@@ -55,6 +54,7 @@ describe("getElementModifier", () => {
   it("nature vs neutral → 1.0", () => {
     expect(getElementModifier("nature", spawnMonster(SKELETON))).toBe(1.0);
   });
+
 });
 
 describe("calculateDamage", () => {

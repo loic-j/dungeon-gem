@@ -25,7 +25,7 @@ describe("initCombat", () => {
   it("monster starts at 10/10 HP", () => {
     const state = initCombat();
     expect(state.monster.hp).toBe(10);
-    expect(state.monster.maxHp).toBe(10);
+    expect(state.monster.definition.maxHp).toBe(10);
   });
 
   it("monster starts with 0 action points", () => {
@@ -143,7 +143,7 @@ describe("resetCombat", () => {
     };
     const next = resetCombat(state);
     expect(next.monster.hp).toBe(10);
-    expect(next.monster.maxHp).toBe(10);
+    expect(next.monster.definition.maxHp).toBe(10);
   });
 
   it("monster AP reset to 0", () => {

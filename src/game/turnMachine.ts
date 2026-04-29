@@ -1,4 +1,4 @@
-import type { GameState, MonsterSpell } from "./types";
+import type { CombatState, MonsterSpell } from "./types";
 import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
@@ -12,7 +12,7 @@ import { addManaToPool, initManaPool } from "./mana";
 import { applyPlayerSpell, applyMonsterSpell } from "./combat";
 import { rollMonsterAttack, chooseMonsterSpell } from "./monsterAI";
 
-export function initCombat(): GameState {
+export function initCombat(): CombatState {
   return {
     player: {
       hp: PLAYER_START_HP,
@@ -27,11 +27,10 @@ export function initCombat(): GameState {
     monster: spawnMonster(pickMonster(PLAYER_START_LEVEL)),
     phase: "PLAYER_ACTION",
     turn: 1,
-    log: [],
   };
 }
 
-export function processManaPhase(state: GameState): GameState {
+export function processManaPhase(state: CombatState): CombatState {
   return {
     ...state,
     turn: state.turn + 1,
@@ -48,9 +47,9 @@ export function processManaPhase(state: GameState): GameState {
 }
 
 export function processPlayerAction(
-  state: GameState,
+  state: CombatState,
   spellId: string | null,
-): GameState {
+): CombatState {
   if (spellId === null) {
     return { ...state, phase: "MONSTER_ACTION" };
   }
@@ -59,8 +58,8 @@ export function processPlayerAction(
   return { ...applyPlayerSpell(state, spell), phase: "MONSTER_ACTION" };
 }
 
-export function processMonsterPhase(state: GameState): {
-  state: GameState;
+export function processMonsterPhase(state: CombatState): {
+  state: CombatState;
   attacked: boolean;
   spell: MonsterSpell | null;
 } {
@@ -93,14 +92,14 @@ export function processMonsterPhase(state: GameState): {
 }
 
 export function checkCombatEnd(
-  state: GameState,
+  state: CombatState,
 ): "VICTORY" | "GAME_OVER" | null {
   if (state.monster.hp <= 0) return "VICTORY";
   if (state.player.hp <= 0) return "GAME_OVER";
   return null;
 }
 
-export function resetCombat(state: GameState): GameState {
+export function resetCombat(state: CombatState): CombatState {
   return {
     ...state,
     player: {
@@ -110,6 +109,5 @@ export function resetCombat(state: GameState): GameState {
     monster: spawnMonster(pickMonster(state.player.level)),
     phase: "PLAYER_ACTION",
     turn: 1,
-    log: [],
   };
 }

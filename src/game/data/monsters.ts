@@ -1,4 +1,4 @@
-import type { MonsterType, Monster } from "../types";
+import type { MonsterType, ActiveMonster } from "../types";
 import { playTone, playNoise } from "../../audio/soundManager";
 import { MONSTER_SPELL_CATALOG } from "./monsterSpells";
 
@@ -36,11 +36,11 @@ export function pickMonster(_playerLevel: number): MonsterType {
   return MONSTER_LIBRARY[Math.floor(Math.random() * MONSTER_LIBRARY.length)]!;
 }
 
-export function spawnMonster(type: MonsterType): Monster {
+export function spawnMonster(type: MonsterType): ActiveMonster {
   const spellLastCastTurn: Record<string, number> = {};
   for (const spell of type.spells) {
     spellLastCastTurn[spell.id] = -1;
   }
   const nextSpell = type.spells[Math.floor(Math.random() * type.spells.length)]!;
-  return { ...type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn, nextSpell };
+  return { definition: type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn, nextSpell };
 }

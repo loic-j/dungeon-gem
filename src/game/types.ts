@@ -19,15 +19,18 @@ export interface MonsterSpell {
   level: number;
 }
 
-export interface Player {
-  hp: number;
-  maxHp: number;
-  manaPool: ManaToken[];
-  maxMana: number;
-  spells: Spell[];
+export interface PlayerProfile {
   level: number;
   experience: number;
   experienceToNextLevel: number;
+  maxHp: number;
+  maxMana: number;
+  spells: Spell[];
+}
+
+export interface Player extends PlayerProfile {
+  hp: number;
+  manaPool: ManaToken[];
 }
 
 export interface MonsterType {
@@ -50,12 +53,13 @@ export interface MonsterType {
   };
 }
 
-export type Monster = MonsterType & {
+export interface ActiveMonster {
+  definition: MonsterType;
   hp: number;
   actionPoints: number;
   spellLastCastTurn: Record<string, number>;
   nextSpell: MonsterSpell;
-};
+}
 
 export type TurnPhase =
   | "GAIN_MANA"
@@ -63,10 +67,9 @@ export type TurnPhase =
   | "MONSTER_ACTION"
   | "CHECK_END";
 
-export interface GameState {
+export interface CombatState {
   player: Player;
-  monster: Monster;
+  monster: ActiveMonster;
   phase: TurnPhase;
   turn: number;
-  log: string[];
 }

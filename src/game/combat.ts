@@ -1,14 +1,14 @@
-import type { Element, Monster, Spell, MonsterSpell, GameState } from "./types";
+import type { Element, ActiveMonster, Spell, MonsterSpell, CombatState } from "./types";
 import { DAMAGE_MULTIPLIER } from "./constants";
 import { consumeMana } from "./mana";
 
 export function getElementModifier(
   spellElement: Element,
-  monster: Monster,
+  monster: ActiveMonster,
 ): number {
-  if (monster.weaknesses.includes(spellElement))
+  if (monster.definition.weaknesses.includes(spellElement))
     return DAMAGE_MULTIPLIER.weakness;
-  if (monster.resistances.includes(spellElement))
+  if (monster.definition.resistances.includes(spellElement))
     return DAMAGE_MULTIPLIER.resistance;
   return DAMAGE_MULTIPLIER.neutral;
 }
@@ -17,7 +17,7 @@ export function calculateDamage(baseDamage: number, modifier: number): number {
   return Math.ceil(baseDamage * modifier);
 }
 
-export function applyPlayerSpell(state: GameState, spell: Spell): GameState {
+export function applyPlayerSpell(state: CombatState, spell: Spell): CombatState {
   const modifier = getElementModifier(spell.element, state.monster);
   const damage = calculateDamage(spell.damage, modifier);
   return {
@@ -33,7 +33,7 @@ export function applyPlayerSpell(state: GameState, spell: Spell): GameState {
   };
 }
 
-export function applyMonsterSpell(state: GameState, spell: MonsterSpell): GameState {
+export function applyMonsterSpell(state: CombatState, spell: MonsterSpell): CombatState {
   return {
     ...state,
     player: {
