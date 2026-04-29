@@ -18,6 +18,8 @@ export interface OverlayControls {
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => void;
   showMonsterAttack: (spellName: string, damage: number) => void;
+  updateStageProgress: (roomsCleared: number, totalRooms: number, stageIndex: number) => void;
+  setBossMode: (active: boolean, title?: string) => void;
 }
 
 export function createOverlay(
@@ -51,6 +53,10 @@ export function createOverlay(
     "font-size:17px; opacity:0.8; text-shadow:0 1px 4px #000;",
   );
 
+  const bossLabel = div(
+    "display:none; font-size:18px; font-weight:bold; letter-spacing:2px; text-align:center; padding:4px 0 2px; text-shadow:0 0 12px #e84a1a, 0 2px 6px #000; color:#e8c01a;",
+  );
+
   const dangerWrap = div(
     "margin-top:6px; display:flex; align-items:center; gap:6px;",
   );
@@ -66,7 +72,7 @@ export function createOverlay(
   dangerBar.appendChild(dangerFill);
   dangerWrap.append(dangerLabel, dangerBar);
   const nextSpellWrap = div("margin-top:6px; display:flex; gap:6px; pointer-events:none;");
-  topBar.append(enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
+  topBar.append(bossLabel, enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
   container.appendChild(topBar);
 
   // ── Bottom: combat controls ────────────────────────────────────────────────
@@ -120,10 +126,21 @@ export function createOverlay(
   xpBar.appendChild(xpFill);
   xpWrapper.append(xpLabel, xpBar);
 
+  const stageWrapper = div("display:flex; flex-direction:column; gap:2px;");
+  const stageLabel = div("font-size:15px; opacity:0.6;");
+  const stageBar = div(
+    "width:100%; height:5px; background:#333; border-radius:3px; overflow:hidden;",
+  );
+  const stageFill = div(
+    "height:100%; border-radius:3px; transition:width .4s; width:0%; background:#e8c01a;",
+  );
+  stageBar.appendChild(stageFill);
+  stageWrapper.append(stageLabel, stageBar);
+
   const manaRow = div("display:flex; gap:5px; flex-wrap:wrap;");
   manaRow.dataset["testid"] = "mana-row";
   const spellsCol = div("display:flex; flex-direction:column; gap:5px;");
-  rightCol.append(hpWrapper, playerLvlLabel, xpWrapper, manaRow, spellsCol);
+  rightCol.append(hpWrapper, playerLvlLabel, xpWrapper, stageWrapper, manaRow, spellsCol);
 
   bottom.append(charOval, leftCol, rightCol);
   container.appendChild(bottom);
@@ -320,7 +337,18 @@ export function createOverlay(
     await anim.finished;
   }
 
-  return { render, animatePlayerAttack, animateManaGain, showMonsterAttack };
+  function updateStageProgress(roomsCleared: number, totalRooms: number, stageIndex: number): void {
+    stageLabel.textContent = `Stage ${stageIndex + 1} — ${roomsCleared}/${totalRooms} Rooms`;
+    stageFill.style.width = `${Math.round((roomsCleared / totalRooms) * 100)}%`;
+  }
+
+  function setBossMode(active: boolean, title?: string): void {
+    bossLabel.style.display = active ? "" : "none";
+    bossLabel.textContent = active && title ? `★ ${title} ★` : "";
+    enemyLvlLabel.style.display = active ? "none" : "";
+  }
+
+  return { render, animatePlayerAttack, animateManaGain, showMonsterAttack, updateStageProgress, setBossMode };
 }
 
 function div(css: string): HTMLDivElement {

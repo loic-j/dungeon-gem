@@ -23,23 +23,49 @@ pnpm typecheck   # tsc --noEmit
 
 ## Network access (WSL2 → other devices)
 
-To access dev server from other devices on local network:
+> WSL2 IP changes on reboot — redo portproxy commands each time.
+> Use explicit Windows LAN IP (e.g. `192.168.0.139`) — `0.0.0.0` does not bind to LAN interface reliably.
+
+### Vite dev server (port 5173)
 
 **1. Vite — bind all interfaces** (already set in `vite.config.ts`)
+
 ```ts
-server: { host: '0.0.0.0' }
+server: {
+  host: "0.0.0.0";
+}
 ```
 
-**2. Windows portproxy** (run in PowerShell admin, redo after reboot — WSL2 IP changes)
+**2. Windows portproxy** (PowerShell admin)
+
 ```powershell
 netsh interface portproxy add v4tov4 listenport=5173 listenaddress=<windows-lan-ip> connectport=5173 connectaddress=$(wsl hostname -I)
 ```
-Use explicit Windows LAN IP (e.g. `192.168.0.139`) — `0.0.0.0` does not bind to LAN interface reliably.
 
-**3. Windows Firewall — allow port**
+**3. Windows Firewall**
+
 ```powershell
 netsh advfirewall firewall add rule name="Vite Dev" dir=in action=allow protocol=TCP localport=5173
 ```
+
+### VS Code Web (port 8080)
+
+Devcontainer auto-starts `code serve-web` on port 8080 at container start (`postStartCommand`).
+VS Code CLI is installed at `postCreateCommand` time into `/home/node/.local/bin`.
+
+**1. Windows portproxy** (PowerShell admin)
+
+```powershell
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=<windows-lan-ip> connectport=8080 connectaddress=$(wsl hostname -I)
+```
+
+**2. Windows Firewall**
+
+```powershell
+netsh advfirewall firewall add rule name="VSCode Web" dir=in action=allow protocol=TCP localport=8080
+```
+
+Access from any LAN device: `http://<windows-lan-ip>:8080`
 
 Verify portproxy: `netsh interface portproxy show all`
 

@@ -308,7 +308,7 @@ export function playGameOverSound(): void {
   playNoise(0.6, 0.25, 300);
 }
 
-// Background music
+// ── Background & boss music ────────────────────────────────────────────────────
 interface Note {
   f: number;
   d: number;
@@ -373,6 +373,7 @@ let melodyScheduler: ReturnType<typeof setTimeout> | null = null;
 let bassScheduler: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleVoice(
+  gainNode: GainNode,
   notes: Note[],
   startTime: number,
   gainValue: number,
@@ -384,7 +385,7 @@ function scheduleVoice(
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.connect(gain);
-    gain.connect(bgGain!);
+    gain.connect(gainNode);
     osc.type = type;
     osc.frequency.value = note.f;
     gain.gain.setValueAtTime(0.001, t);
@@ -422,7 +423,7 @@ export function startBackgroundMusic(): void {
   let nextBass = c.currentTime;
 
   function melodyLoop() {
-    scheduleVoice(MELODY, nextMelody, 0.12);
+    scheduleVoice(bgGain!, MELODY, nextMelody, 0.12);
     nextMelody += MELODY_LOOP_DUR;
     melodyScheduler = setTimeout(
       melodyLoop,
@@ -431,7 +432,7 @@ export function startBackgroundMusic(): void {
   }
 
   function bassLoop() {
-    scheduleVoice(BASS, nextBass, 0.08, "sine");
+    scheduleVoice(bgGain!, BASS, nextBass, 0.08, "sine");
     nextBass += BASS_LOOP_DUR;
     bassScheduler = setTimeout(
       bassLoop,
@@ -458,4 +459,100 @@ export function stopBackgroundMusic(): void {
   bgDrones = [];
   melodyScheduler = null;
   bassScheduler = null;
+}
+
+// Boss music — faster, heavier, E minor battle theme
+const BOSS_MELODY: Note[] = [
+  { f: 329.63, d: 0.15 }, { f: 329.63, d: 0.15 }, { f: 293.66, d: 0.15 },
+  { f: 329.63, d: 0.3 },  { f: 370.0, d: 0.15 },  { f: 329.63, d: 0.15 },
+  { f: 293.66, d: 0.3 },  { f: 261.63, d: 0.15 },  { f: 246.94, d: 0.15 },
+  { f: 220.0, d: 0.5 },
+  { f: 246.94, d: 0.15 }, { f: 261.63, d: 0.15 }, { f: 293.66, d: 0.15 },
+  { f: 329.63, d: 0.15 }, { f: 370.0, d: 0.15 },  { f: 392.0, d: 0.3 },
+  { f: 370.0, d: 0.15 },  { f: 329.63, d: 0.15 }, { f: 293.66, d: 0.5 },
+  { f: 440.0, d: 0.2 },   { f: 392.0, d: 0.2 },   { f: 370.0, d: 0.2 },
+  { f: 329.63, d: 0.4 },  { f: 293.66, d: 0.2 },  { f: 261.63, d: 0.2 },
+  { f: 220.0, d: 0.7 },
+];
+
+const BOSS_BASS: Note[] = [
+  { f: 82.41, d: 0.3 },  { f: 82.41, d: 0.3 },
+  { f: 73.42, d: 0.3 },  { f: 65.41, d: 0.3 },
+  { f: 73.42, d: 0.3 },  { f: 82.41, d: 0.3 },
+  { f: 73.42, d: 0.6 },  { f: 82.41, d: 0.3 },
+  { f: 98.0, d: 0.3 },   { f: 110.0, d: 0.6 },
+];
+
+const BOSS_MELODY_DUR = BOSS_MELODY.reduce((s, n) => s + n.d, 0);
+const BOSS_BASS_DUR = BOSS_BASS.reduce((s, n) => s + n.d, 0);
+
+let bossMusicGain: GainNode | null = null;
+let bossDrones: OscillatorNode[] = [];
+let bossMelodyScheduler: ReturnType<typeof setTimeout> | null = null;
+let bossBassScheduler: ReturnType<typeof setTimeout> | null = null;
+
+export function startBossMusic(): void {
+  stopBackgroundMusic();
+  if (bossMusicGain) return;
+  resume();
+  const c = getCtx();
+
+  bossMusicGain = c.createGain();
+  bossMusicGain.gain.value = 1;
+  bossMusicGain.connect(c.destination);
+
+  // Dissonant low drones
+  const droneFreqs = [55, 55.9, 82.41, 83.3];
+  bossDrones = droneFreqs.map((freq, i) => {
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.value = freq;
+    g.gain.value = i < 2 ? 0.05 : 0.03;
+    osc.connect(g);
+    g.connect(bossMusicGain!);
+    osc.start();
+    return osc;
+  });
+
+  let nextMelody = c.currentTime;
+  let nextBass = c.currentTime;
+
+  function melodyLoop() {
+    scheduleVoice(bossMusicGain!, BOSS_MELODY, nextMelody, 0.15, "sawtooth");
+    nextMelody += BOSS_MELODY_DUR;
+    bossMelodyScheduler = setTimeout(
+      melodyLoop,
+      Math.max(0, (nextMelody - c.currentTime - 0.5) * 1000),
+    );
+  }
+
+  function bassLoop() {
+    scheduleVoice(bossMusicGain!, BOSS_BASS, nextBass, 0.14, "square");
+    nextBass += BOSS_BASS_DUR;
+    bossBassScheduler = setTimeout(
+      bassLoop,
+      Math.max(0, (nextBass - c.currentTime - 0.5) * 1000),
+    );
+  }
+
+  melodyLoop();
+  bassLoop();
+}
+
+export function stopBossMusic(): void {
+  if (bossMelodyScheduler !== null) clearTimeout(bossMelodyScheduler);
+  if (bossBassScheduler !== null) clearTimeout(bossBassScheduler);
+  bossDrones.forEach((n) => {
+    try {
+      n.stop();
+    } catch {
+      /* already stopped */
+    }
+  });
+  bossMusicGain?.disconnect();
+  bossMusicGain = null;
+  bossDrones = [];
+  bossMelodyScheduler = null;
+  bossBassScheduler = null;
 }

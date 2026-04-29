@@ -17,4 +17,20 @@ export const MONSTER_SPELL_CATALOG: Record<string, MonsterSpell> = {
     weight: 0.3,
     level: 2,
   },
+  royal_strike: {
+    id: "royal_strike",
+    name: "Royal Strike",
+    element: "lightning",
+    damage: 8,
+    weight: 0.4,
+    level: 3,
+  },
+  bone_crush: {
+    id: "bone_crush",
+    name: "Bone Crush",
+    element: "nature",
+    damage: 6,
+    weight: 0.3,
+    level: 2,
+  },
 };

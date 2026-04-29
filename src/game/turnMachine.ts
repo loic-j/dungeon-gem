@@ -1,4 +1,4 @@
-import type { CombatState, MonsterSpell } from "./types";
+import type { CombatState, MonsterSpell, MonsterType } from "./types";
 import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
@@ -99,14 +99,17 @@ export function checkCombatEnd(
   return null;
 }
 
-export function resetCombat(state: CombatState): CombatState {
+export function resetCombat(
+  state: CombatState,
+  monsterOverride?: MonsterType,
+): CombatState {
   return {
     ...state,
     player: {
       ...state.player,
       manaPool: initManaPool(),
     },
-    monster: spawnMonster(pickMonster(state.player.level)),
+    monster: spawnMonster(monsterOverride ?? pickMonster(state.player.level)),
     phase: "PLAYER_ACTION",
     turn: 1,
   };

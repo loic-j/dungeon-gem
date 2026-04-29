@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { MonsterType } from "../game/types";
+import type { DungeonGraphics } from "../game/dungeon";
 import { createDungeon } from "./dungeon";
 import {
   createMonsterSprite,
@@ -16,6 +17,7 @@ export interface SceneObjects {
 export function initScene(
   canvas: HTMLCanvasElement,
   monsterType: MonsterType,
+  dungeonGraphics: DungeonGraphics,
 ): {
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
@@ -33,7 +35,7 @@ export function initScene(
   camera.position.set(0, 0, 2);
   camera.lookAt(0, 0, -1);
 
-  scene.add(createDungeon());
+  scene.add(createDungeon(dungeonGraphics));
 
   const monsterSprite = createMonsterSprite(monsterType);
   scene.add(monsterSprite);

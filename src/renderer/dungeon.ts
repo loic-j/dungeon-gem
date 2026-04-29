@@ -1,10 +1,11 @@
 import * as THREE from "three";
+import type { DungeonGraphics } from "../game/dungeon";
 
-export function createDungeon(): THREE.Group {
+export function createDungeon(graphics: DungeonGraphics): THREE.Group {
   const group = new THREE.Group();
 
   const loader = new THREE.TextureLoader();
-  const wallTex = loader.load("/sprites/wall-1.png");
+  const wallTex = loader.load(graphics.wall);
   wallTex.wrapS = THREE.RepeatWrapping;
   wallTex.wrapT = THREE.RepeatWrapping;
   // Wall plane is 60 units deep × 3 units tall; tile every 3 units along depth
@@ -13,13 +14,13 @@ export function createDungeon(): THREE.Group {
   const wallTexRight = wallTex.clone();
   wallTexRight.repeat.set(-20, 1); // mirror horizontally for right wall
 
-  const floorTex = loader.load("/sprites/floor.png");
+  const floorTex = loader.load(graphics.floor);
   floorTex.wrapS = THREE.RepeatWrapping;
   floorTex.wrapT = THREE.RepeatWrapping;
   floorTex.repeat.set(2, 20);
   const floorMat = new THREE.MeshBasicMaterial({ map: floorTex });
 
-  const ceilTex = loader.load("/sprites/ceiling.png");
+  const ceilTex = loader.load(graphics.ceiling);
   ceilTex.wrapS = THREE.RepeatWrapping;
   ceilTex.wrapT = THREE.RepeatWrapping;
   ceilTex.repeat.set(2, 20);

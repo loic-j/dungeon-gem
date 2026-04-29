@@ -30,10 +30,60 @@ export const SKELETON: MonsterType = {
   },
 };
 
+export const SKELETON_KING: MonsterType = {
+  id: "skeleton_king",
+  name: "Skeleton King",
+  level: 3,
+  maxHp: 25,
+  experienceReward: 50,
+  threshold: 4,
+  resistances: ["fire", "nature"],
+  weaknesses: ["water", "lightning"],
+  attackSound: () => {
+    playTone(50, "sawtooth", 0.8, 0.8, 35);
+    playNoise(0.5, 0.4, 200);
+    setTimeout(() => playNoise(0.3, 0.3, 500), 200);
+  },
+  appearSound: () => {
+    playTone(55, "sawtooth", 1.2, 0.5, 40);
+    playNoise(0.12, 0.5, 2000);
+    setTimeout(() => playNoise(0.12, 0.4, 1500), 120);
+    setTimeout(() => playNoise(0.12, 0.3, 1000), 240);
+    setTimeout(() => playTone(110, "square", 0.8, 0.3, 80), 500);
+  },
+  spells: [
+    MONSTER_SPELL_CATALOG.bone_crush!,
+    MONSTER_SPELL_CATALOG.royal_strike!,
+    MONSTER_SPELL_CATALOG.bone_strike!,
+  ],
+  sprite: {
+    path: "/sprites/monster-skeleton.svg",
+    scale: [1.8, 2.3, 1],
+    position: [0, 0.4, -3.5],
+  },
+};
+
 export const MONSTER_LIBRARY: MonsterType[] = [SKELETON];
+
+const ALL_MONSTERS: MonsterType[] = [SKELETON, SKELETON_KING];
+
+export function findMonster(id: string): MonsterType | undefined {
+  return ALL_MONSTERS.find((m) => m.id === id);
+}
 
 export function pickMonster(_playerLevel: number): MonsterType {
   return MONSTER_LIBRARY[Math.floor(Math.random() * MONSTER_LIBRARY.length)]!;
+}
+
+export function pickMonsterFromIds(
+  ids: string[],
+  playerLevel: number,
+): MonsterType {
+  const candidates = ids
+    .map((id) => findMonster(id))
+    .filter((m): m is MonsterType => m !== undefined);
+  if (candidates.length === 0) return pickMonster(playerLevel);
+  return candidates[Math.floor(Math.random() * candidates.length)]!;
 }
 
 export function spawnMonster(type: MonsterType): ActiveMonster {
