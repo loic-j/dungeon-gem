@@ -245,14 +245,95 @@ Excess XP carries over when leveling up. Multiple level-ups per kill are possibl
 
 ---
 
+## Dungeon System
+
+### Concept
+
+The game is structured around **dungeons**. Each dungeon is a themed location with its own visual identity, enemy pool, and a boss that guards its end. Dungeons are divided into **stages**; each stage is a linear sequence of rooms.
+
+```
+Dungeon
+  └─> Stage 1 (N rooms)
+        └─> Room 1..N-1  (random encounters)
+        └─> Room N       (stage transition or boss)
+  └─> Stage 2 (N rooms)
+        └─> ...
+  └─> Final Stage
+        └─> Room 1..N-1  (random encounters)
+        └─> Room N       (BOSS)
+```
+
+### Dungeons
+
+Each dungeon defines:
+
+| Property       | Description                                               |
+| -------------- | --------------------------------------------------------- |
+| `name`         | Display name (e.g. "Crypt of Bones")                      |
+| `stages`       | Ordered list of `StageConfig`                             |
+| `bossMonster`  | Monster type id used in the final room of the final stage |
+| `bossTitle`    | Text displayed at the top during the boss fight           |
+| `bossMusic`    | Optional audio callback triggered when the boss fight starts |
+| `graphics`     | Texture paths for floor, ceiling, and walls               |
+
+### Stages
+
+Each stage defines:
+
+| Property           | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `roomCount`        | Number of rooms before stage ends                        |
+| `encounterConfigs` | Encounter probabilities for this stage (see Encounter System) |
+| `availableMonsters`| Monster type ids that can spawn in this stage            |
+
+Default stage count per dungeon: **3** (configurable per dungeon).
+
+### Room Progression
+
+- Every **move forward** = one room explored
+- All room types (empty corridor, chest, monster) count toward `roomsCleared`
+- Stage clears when `roomsCleared >= roomCount`
+- Progress is shown as a bar: `roomsCleared / roomCount` in the player UI
+
+### Stage Transition
+
+When a non-final stage clears, a **transition room** is shown before the next stage begins. Each dungeon can define its own transition type:
+
+| Dungeon 1        | Stairs going down |
+| --------------- | ------------------|
+| _(future dungeons)_ | To be defined |
+
+Player clicks through the transition to advance to the next stage.
+
+### Boss Room
+
+- Triggers on the **last room of the final stage** only
+- The encounter roll is skipped — boss fight is forced
+- Boss is defined by `DungeonConfig.bossMonster` (a standard `MonsterType`)
+- During the boss fight:
+  - Boss title shown at top (replaces enemy level)
+  - Epic music plays (replaces background music)
+  - Combat system is identical to normal fights
+- After defeating the boss: dungeon complete → loops back to stage 1
+
+### Dungeon Graphics
+
+Each dungeon has its own floor, ceiling, and wall textures loaded at scene creation. Texture paths are defined in `DungeonConfig.graphics`.
+
+---
+
 ## Game Loop
 
 ```
 START
-  └─> Combat
-        └─> [Victory] Reward Phase
-              └─> Next Combat
-        └─> [Defeat] Game Over
+  └─> Dungeon
+        └─> Stage 1
+              └─> Room → Room → ... → Room (stage clear)
+                    └─> [Stage Transition] → Stage 2
+        └─> Final Stage
+              └─> Room → ... → [BOSS ROOM]
+                    └─> [Victory] Dungeon Complete → loop
+                    └─> [Defeat]  Game Over
 ```
 
 ---
