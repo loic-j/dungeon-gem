@@ -1,4 +1,4 @@
-import type { GameState } from "./types";
+import type { GameState, MonsterSpell } from "./types";
 import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
@@ -34,6 +34,7 @@ export function initCombat(): GameState {
 export function processManaPhase(state: GameState): GameState {
   return {
     ...state,
+    turn: state.turn + 1,
     player: {
       ...state.player,
       manaPool: addManaToPool(state.player.manaPool, state.player.maxMana),
@@ -61,26 +62,33 @@ export function processPlayerAction(
 export function processMonsterPhase(state: GameState): {
   state: GameState;
   attacked: boolean;
+  spell: MonsterSpell | null;
 } {
   if (!rollMonsterAttack(state.monster)) {
-    return { state: { ...state, phase: "CHECK_END" }, attacked: false };
+    return { state: { ...state, phase: "CHECK_END" }, attacked: false, spell: null };
   }
-  const spell = chooseMonsterSpell(state.monster, state.turn);
+
+  const spell = state.monster.nextSpell;
   const next = applyMonsterSpell(state, spell);
+  const updatedLastCast = { ...next.monster.spellLastCastTurn, [spell.id]: state.turn };
+  const nextSpell = chooseMonsterSpell(
+    { ...next.monster, spellLastCastTurn: updatedLastCast },
+    state.turn + 1,
+  );
+
   return {
     state: {
       ...next,
       monster: {
         ...next.monster,
         actionPoints: -1,
-        spellLastCastTurn: {
-          ...next.monster.spellLastCastTurn,
-          [spell.id]: state.turn,
-        },
+        spellLastCastTurn: updatedLastCast,
+        nextSpell,
       },
       phase: "CHECK_END",
     },
     attacked: true,
+    spell,
   };
 }
 

@@ -7,6 +7,7 @@ export const MONSTER_SPELL_CATALOG: Record<string, MonsterSpell> = {
     element: "nature",
     damage: 3,
     weight: 0.7,
+    level: 1,
   },
   bone_strike: {
     id: "bone_strike",
@@ -14,5 +15,6 @@ export const MONSTER_SPELL_CATALOG: Record<string, MonsterSpell> = {
     element: "nature",
     damage: 5,
     weight: 0.3,
+    level: 2,
   },
 };

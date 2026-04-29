@@ -16,6 +16,7 @@ export interface MonsterSpell {
   element: Element;
   damage: number;
   weight: number;
+  level: number;
 }
 
 export interface Player {
@@ -53,6 +54,7 @@ export type Monster = MonsterType & {
   hp: number;
   actionPoints: number;
   spellLastCastTurn: Record<string, number>;
+  nextSpell: MonsterSpell;
 };
 
 export type TurnPhase =

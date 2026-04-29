@@ -1,4 +1,4 @@
-import type { GameState, ManaToken } from "../game/types";
+import type { GameState, ManaToken, Monster, MonsterSpell } from "../game/types";
 import { canCastSpell } from "../game/mana";
 
 const ELEMENT_COLOR: Record<ManaToken, string> = {
@@ -17,6 +17,7 @@ export interface OverlayControls {
   render: (state: GameState, locked: boolean, inCombat: boolean) => void;
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => void;
+  showMonsterAttack: (spellName: string, damage: number) => void;
 }
 
 export function createOverlay(
@@ -64,7 +65,8 @@ export function createOverlay(
   dangerFill.dataset["testid"] = "danger-fill";
   dangerBar.appendChild(dangerFill);
   dangerWrap.append(dangerLabel, dangerBar);
-  topBar.append(enemyHpWrapper, enemyLvlLabel, dangerWrap);
+  const nextSpellWrap = div("margin-top:6px; display:flex; gap:6px; pointer-events:none;");
+  topBar.append(enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
   container.appendChild(topBar);
 
   // ── Bottom: combat controls ────────────────────────────────────────────────
@@ -126,6 +128,80 @@ export function createOverlay(
   bottom.append(charOval, leftCol, rightCol);
   container.appendChild(bottom);
 
+  // ── Next spell helpers ─────────────────────────────────────────────────────
+  function getSwordCount(spell: MonsterSpell, monster: Monster): number {
+    const levels = monster.spells.map((s) => s.level);
+    const maxLevel = Math.max(...levels);
+    const minLevel = Math.min(...levels);
+    if (maxLevel === minLevel) return 2;
+    const normalized = (spell.level - minLevel) / (maxLevel - minLevel);
+    return normalized < 0.4 ? 1 : normalized < 0.7 ? 2 : 3;
+  }
+
+  function makeSword(): SVGSVGElement {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("width", "16");
+    svg.setAttribute("height", "34");
+    svg.setAttribute("viewBox", "0 0 8 17");
+    const tip = document.createElementNS(ns, "polygon");
+    tip.setAttribute("points", "4,0 2.5,4 5.5,4");
+    tip.setAttribute("fill", "#cc2222");
+    const blade = document.createElementNS(ns, "rect");
+    blade.setAttribute("x", "3");
+    blade.setAttribute("y", "3");
+    blade.setAttribute("width", "2");
+    blade.setAttribute("height", "6");
+    blade.setAttribute("fill", "#cc2222");
+    const guard = document.createElementNS(ns, "rect");
+    guard.setAttribute("x", "0.5");
+    guard.setAttribute("y", "8.5");
+    guard.setAttribute("width", "7");
+    guard.setAttribute("height", "1.5");
+    guard.setAttribute("fill", "#991111");
+    const grip = document.createElementNS(ns, "rect");
+    grip.setAttribute("x", "3");
+    grip.setAttribute("y", "10");
+    grip.setAttribute("width", "2");
+    grip.setAttribute("height", "4.5");
+    grip.setAttribute("fill", "#771111");
+    const pommel = document.createElementNS(ns, "circle");
+    pommel.setAttribute("cx", "4");
+    pommel.setAttribute("cy", "15.5");
+    pommel.setAttribute("r", "1.5");
+    pommel.setAttribute("fill", "#991111");
+    svg.append(tip, blade, guard, grip, pommel);
+    return svg;
+  }
+
+  function updateSwords(spell: MonsterSpell, monster: Monster): void {
+    nextSpellWrap.replaceChildren();
+    const count = getSwordCount(spell, monster);
+    for (let i = 0; i < count; i++) {
+      nextSpellWrap.appendChild(makeSword());
+    }
+  }
+
+  function showMonsterAttack(spellName: string, damage: number): void {
+    const el = div(
+      "position:absolute; top:52%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.82); border:2px solid #cc2222; border-radius:8px; padding:10px 18px; text-align:center; pointer-events:none; z-index:15; animation:monsterAttackFade 2s ease-out forwards;",
+    );
+    const nameEl = div("font-size:16px; font-weight:bold; color:#e84a1a; margin-bottom:3px;");
+    nameEl.textContent = spellName;
+    const dmgEl = div("font-size:22px; font-weight:bold; color:#ff6666;");
+    dmgEl.textContent = `-${damage} HP`;
+    el.append(nameEl, dmgEl);
+    const style = document.createElement("style");
+    style.textContent =
+      "@keyframes monsterAttackFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.85)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%)}}";
+    document.head.appendChild(style);
+    container.appendChild(el);
+    setTimeout(() => {
+      el.remove();
+      style.remove();
+    }, 2000);
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   function render(state: GameState, locked: boolean, inCombat: boolean) {
     const { player, monster } = state;
@@ -150,6 +226,9 @@ export function createOverlay(
         Math.min(1, monster.actionPoints / monster.threshold),
       );
       dangerFill.style.width = `${Math.round(prob * 100)}%`;
+      updateSwords(monster.nextSpell, monster);
+    } else {
+      nextSpellWrap.replaceChildren();
     }
 
     playerHpLabel.textContent = `HP: ${player.hp} / ${player.maxHp}`;
@@ -241,7 +320,7 @@ export function createOverlay(
     await anim.finished;
   }
 
-  return { render, animatePlayerAttack, animateManaGain };
+  return { render, animatePlayerAttack, animateManaGain, showMonsterAttack };
 }
 
 function div(css: string): HTMLDivElement {

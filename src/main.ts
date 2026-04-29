@@ -40,7 +40,7 @@ let chestAnimPhase: "closed" | "open" = "closed";
 const { objects, animateWalk } = initScene(canvas, state.monster);
 let locked = false;
 
-const { render, animatePlayerAttack, animateManaGain } = createOverlay(uiRoot, {
+const { render, animatePlayerAttack, animateManaGain, showMonsterAttack } = createOverlay(uiRoot, {
   onSpell: (spellId) => {
     if (!locked && appPhase === "COMBAT") act(spellId);
   },
@@ -213,12 +213,13 @@ async function act(spellId: string | null) {
     return;
   }
 
-  const { state: afterMonster, attacked } = processMonsterPhase(state);
+  const { state: afterMonster, attacked, spell } = processMonsterPhase(state);
   state = afterMonster;
-  if (attacked) {
+  if (attacked && spell) {
     state.monster.attackSound();
     await animateMonsterAttack(objects.monsterSprite);
     flashScreen();
+    showMonsterAttack(spell.name, spell.damage);
   }
   tick();
 

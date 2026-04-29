@@ -41,5 +41,6 @@ export function spawnMonster(type: MonsterType): Monster {
   for (const spell of type.spells) {
     spellLastCastTurn[spell.id] = -1;
   }
-  return { ...type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn };
+  const nextSpell = type.spells[Math.floor(Math.random() * type.spells.length)]!;
+  return { ...type, hp: type.maxHp, actionPoints: 0, spellLastCastTurn, nextSpell };
 }
