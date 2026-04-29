@@ -143,23 +143,55 @@ Infinite progression (endless roguelike).
 
 ### Monster Type Properties
 
-| Property          | Description                                  |
-| ----------------- | -------------------------------------------- |
-| Level             | Monster power level (used in XP calculation) |
-| Max HP            | Fixed per type                               |
-| Starting HP       | Fixed per type                               |
-| Experience Reward | Base XP granted on kill                      |
-| Spells            | Set of 1 to 4 predefined spells              |
-| Threshold         | Action point threshold to cast a spell       |
-| Resistances       | 0 to N elements (reduced damage)             |
-| Weaknesses        | 0 to N elements (increased damage)           |
+| Property              | Description                                          |
+| --------------------- | ---------------------------------------------------- |
+| Level                 | Monster power level (used in XP calculation)         |
+| Max HP                | Fixed per type                                       |
+| Starting HP           | Fixed per type                                       |
+| Experience Reward     | Base XP granted on kill                              |
+| Spells                | Set of 1 to 4 spells from the monster spell catalog  |
+| Spell Weight Overrides| Optional per-spell weight overrides (0–1)            |
+| Threshold             | Action point threshold to cast a spell               |
+| Resistances           | 0 to N elements (reduced damage)                     |
+| Weaknesses            | 0 to N elements (increased damage)                   |
+
+### Monster Spell System
+
+Monster spells are defined in a shared catalog (`monsterSpells.ts`) and referenced by monsters. They differ from player spells: no mana cost, and two additional fields:
+
+| Field   | Description                                                     |
+| ------- | --------------------------------------------------------------- |
+| `weight`| Base selection probability (0–1). Higher = cast more often.     |
+| `level` | Informational tier (1–N). Used to display sword count UI only.  |
+
+**Spell selection — weighted random with staleness:**
+
+When the monster attacks, it picks from its spell list using:
+
+```
+effective_weight = spell.weight × (1 + turns_since_last_cast)
+```
+
+- Freshly cast spell: staleness = 1 → minimum weight
+- Never cast / stale spell: staleness grows → weight grows
+- Result: all spells eventually fire; high-weight spells fire more often overall
+
+`spellWeightOverrides` on `MonsterType` can override catalog defaults for a specific monster instance:
+
+```typescript
+spellWeightOverrides: { bone_strike: 0.8 }  // this monster favors bone_strike
+```
+
+**Next spell pre-selection:**
+
+The next spell is picked **immediately after each cast** and stored as `ActiveMonster.nextSpell`. On spawn, a random initial spell is picked. This enables UI telegraphing without revealing which spell mid-turn.
 
 ### Monster Action Mechanic (per turn)
 
 1. Monster gains **+1 action point**
 2. Calculate chance to cast a spell: `action_points / threshold`
    - Example: threshold=4, points=3 → **75% chance** to cast a spell
-3. If spell cast → **action points reset to 0**, effects applied
+3. If spell cast → cast `nextSpell`, **action points reset** (set to -1, becomes 0 after mana phase), pick new `nextSpell`
 4. If damage spell → player loses HP
 
 ### Implications
@@ -167,6 +199,7 @@ Infinite progression (endless roguelike).
 - Monster inactive at combat start (few action points)
 - Growing tension each turn without an attack
 - Threshold **fixed per type** → defines the monster's "rhythm": high = slow but unpredictable, low = aggressive
+- Spell variety guaranteed over time → no spell permanently ignored
 
 ---
 
@@ -272,18 +305,26 @@ modifier:
 ### Turn Structure
 
 ```
-1. Player mana gain          (+1 random)
+1. Player mana gain          (+1 random) — turn counter increments
 2. Monster action point gain (+1)
 3. Player phase              → choose spell or skip
 4. Monster phase             → roll (points/threshold)
-                                if success: cast spell + reset points to 0
+                                if success: cast nextSpell + reset AP + pick new nextSpell
 5. End of turn               → apply active status effects (burn, poison...)
 ```
 
 ### Monster Telegraphing
 
-- Visual "rage" bar showing attack pressure
-- **Exact value not displayed** → tension maintained for the player
+Two layers of information shown to the player:
+
+- **Danger bar**: visual representation of `action_points / threshold` — shows how close the monster is to attacking. Exact value not displayed → tension maintained.
+- **Sword icons** (1–3 red swords): displayed in the enemy info area, reflect the **level** of the pre-selected next spell relative to the monster's spell range:
+  - 1 sword → weakest spell tier
+  - 2 swords → mid tier
+  - 3 swords → strongest spell tier
+  - Count updates immediately after each monster cast (next spell already chosen)
+
+Player can therefore anticipate both **when** (danger bar) and **how hard** (swords) the next hit will be.
 
 ### Spell Effect Ideas (not element-related)
 
