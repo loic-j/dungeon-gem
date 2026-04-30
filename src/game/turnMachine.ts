@@ -5,6 +5,7 @@ import {
   PLAYER_START_LEVEL,
   PLAYER_START_EXPERIENCE,
   xpToNextLevel,
+  ACTION_POINTS_AFTER_ATTACK,
 } from "./constants";
 import { SPELL_LIBRARY } from "./data/spells";
 import { SKELETON, spawnMonster } from "./data/monsters";
@@ -80,7 +81,7 @@ export function processMonsterPhase(state: CombatState): {
       ...next,
       monster: {
         ...next.monster,
-        actionPoints: -1,
+        actionPoints: ACTION_POINTS_AFTER_ATTACK,
         spellLastCastTurn: updatedLastCast,
         nextSpell,
       },

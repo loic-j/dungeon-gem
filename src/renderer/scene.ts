@@ -51,10 +51,12 @@ export function initScene(
 
   function setMonsterType(monster: MonsterType) {
     const { path, scale, position } = monster.sprite;
+    const material = monsterSprite.material as THREE.SpriteMaterial;
+    material.map?.dispose();
     const texture = new THREE.TextureLoader().load(path);
     texture.colorSpace = THREE.SRGBColorSpace;
-    (monsterSprite.material as THREE.SpriteMaterial).map = texture;
-    (monsterSprite.material as THREE.SpriteMaterial).needsUpdate = true;
+    material.map = texture;
+    material.needsUpdate = true;
     monsterSprite.scale.set(...scale);
     monsterSprite.position.set(...position);
   }
@@ -120,6 +122,18 @@ export function initScene(
   function dispose() {
     ro.disconnect();
     cancelAnimationFrame(animId);
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.Sprite) {
+        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const mat of mats) {
+          if (mat instanceof THREE.SpriteMaterial || mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshBasicMaterial) {
+            mat.map?.dispose();
+          }
+          mat.dispose();
+        }
+      }
+    });
     renderer.dispose();
   }
 

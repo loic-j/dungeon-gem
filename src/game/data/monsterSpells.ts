@@ -1,6 +1,6 @@
 import type { MonsterSpell } from "../types";
 
-export const MONSTER_SPELL_CATALOG: Record<string, MonsterSpell> = {
+export const MONSTER_SPELL_CATALOG: Readonly<Record<string, MonsterSpell>> = {
   basic_attack: {
     id: "basic_attack",
     name: "Basic Attack",
@@ -66,3 +66,9 @@ export const MONSTER_SPELL_CATALOG: Record<string, MonsterSpell> = {
     level: 2,
   },
 };
+
+export function getMonsterSpell(id: string): MonsterSpell {
+  const spell = MONSTER_SPELL_CATALOG[id];
+  if (!spell) throw new Error(`Unknown monster spell: "${id}"`);
+  return spell;
+}

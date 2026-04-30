@@ -1,6 +1,6 @@
 import type { MonsterType, ActiveMonster } from "../types";
 import { playTone, playNoise } from "../../audio/soundManager";
-import { MONSTER_SPELL_CATALOG } from "./monsterSpells";
+import { getMonsterSpell } from "./monsterSpells";
 
 export const SKELETON: MonsterType = {
   id: "skeleton",
@@ -23,8 +23,8 @@ export const SKELETON: MonsterType = {
     setTimeout(() => playNoise(0.06, 0.25, 3000), 240);
   },
   spells: [
-    MONSTER_SPELL_CATALOG.basic_attack!,
-    MONSTER_SPELL_CATALOG.bone_strike!,
+    getMonsterSpell("basic_attack"),
+    getMonsterSpell("bone_strike"),
   ],
   sprite: {
     path: "/sprites/monster-skeleton.svg",
@@ -55,9 +55,9 @@ export const SKELETON_KING: MonsterType = {
     setTimeout(() => playTone(110, "square", 0.8, 0.3, 80), 500);
   },
   spells: [
-    MONSTER_SPELL_CATALOG.bone_crush!,
-    MONSTER_SPELL_CATALOG.royal_strike!,
-    MONSTER_SPELL_CATALOG.bone_strike!,
+    getMonsterSpell("bone_crush"),
+    getMonsterSpell("royal_strike"),
+    getMonsterSpell("bone_strike"),
   ],
   sprite: {
     path: "/sprites/monster-skeleton.svg",
@@ -88,8 +88,8 @@ export const CRYPT_SPIDER: MonsterType = {
     setTimeout(() => playTone(350, "square", 0.3, 0.4, 280), 320);
   },
   spells: [
-    MONSTER_SPELL_CATALOG.fang_strike!,
-    MONSTER_SPELL_CATALOG.toxic_spit!,
+    getMonsterSpell("fang_strike"),
+    getMonsterSpell("toxic_spit"),
   ],
   sprite: {
     path: "/sprites/monster-spider.svg",
@@ -119,8 +119,8 @@ export const PUTRID_OOZE: MonsterType = {
     setTimeout(() => playTone(50, "sine", 0.6, 0.5, 35), 600);
   },
   spells: [
-    MONSTER_SPELL_CATALOG.corrosive_glob!,
-    MONSTER_SPELL_CATALOG.acid_surge!,
+    getMonsterSpell("corrosive_glob"),
+    getMonsterSpell("acid_surge"),
   ],
   sprite: {
     path: "/sprites/monster-ooze.svg",
@@ -149,6 +149,7 @@ export function pickMonsterFromIds(ids: string[]): MonsterType {
 }
 
 export function spawnMonster(type: MonsterType): ActiveMonster {
+  if (type.spells.length === 0) throw new Error(`Monster "${type.id}" has no spells`);
   const spellLastCastTurn: Record<string, number> = {};
   for (const spell of type.spells) {
     spellLastCastTurn[spell.id] = -1;

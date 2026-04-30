@@ -147,11 +147,9 @@ chestClickOverlay.addEventListener("click", async () => {
   showItemSelection();
 });
 
-moveBtn.addEventListener("click", async () => {
-  if (locked) return;
-
-  if (appState.phase === "STAGE_TRANSITION") {
-    locked = true;
+async function handleStageTransitionMove(): Promise<void> {
+  locked = true;
+  try {
     playFootstepSound();
     await animateWalk();
     stageTransitionOverlay?.remove();
@@ -167,60 +165,76 @@ moveBtn.addEventListener("click", async () => {
     };
     locked = false;
     tick();
-    return;
+  } catch (err) {
+    console.error("Stage transition failed:", err);
+    locked = false;
   }
+}
 
-  if (appState.phase !== "EXPLORING") return;
+async function handleExplorationMove(): Promise<void> {
   locked = true;
   moveBtn.style.display = "none";
-  playFootstepSound();
+  try {
+    playFootstepSound();
+    await animateWalk();
 
-  await animateWalk();
+    if (isBossRoom(appState.dungeon)) {
+      const bossMonsterDef = findMonster(appState.dungeon.dungeon.bossMonster);
+      if (bossMonsterDef) {
+        isBossFight = true;
+        const combat = resetCombat(appState.combat, bossMonsterDef);
+        appState = { ...appState, phase: "COMBAT", combat };
+        setMonsterType(bossMonsterDef);
+        objects.monsterSprite.visible = true;
+        bossMonsterDef.appearSound();
+        setBossMode(true, appState.dungeon.dungeon.bossTitle);
+        appState.dungeon.dungeon.bossMusic?.();
+        locked = false;
+        tick();
+        return;
+      }
+    }
 
-  // Boss room: skip random roll, force boss encounter
-  if (isBossRoom(appState.dungeon)) {
-    const bossMonsterDef = findMonster(appState.dungeon.dungeon.bossMonster);
-    if (bossMonsterDef) {
-      isBossFight = true;
-      const combat = resetCombat(appState.combat, bossMonsterDef);
-      appState = { ...appState, phase: "COMBAT", combat };
-      setMonsterType(bossMonsterDef);
-      objects.monsterSprite.visible = true;
-      bossMonsterDef.appearSound();
-      setBossMode(true, appState.dungeon.dungeon.bossTitle);
-      appState.dungeon.dungeon.bossMusic?.();
+    const { encounter, nextState: nextEncounterState } = enterRoom(appState.encounter);
+    appState = { ...appState, encounter: nextEncounterState };
+
+    if (encounter === "empty") {
+      appState = { ...appState, phase: "EXPLORING", dungeon: completeRoom(appState.dungeon) };
+      locked = false;
+      onRoomCompleted();
+      tick();
+    } else if (encounter === "chest") {
+      appState = { ...appState, phase: "CHEST" };
+      chestAnimPhase = "closed";
+      objects.chestClosedSprite.visible = true;
+      chestClickOverlay.style.pointerEvents = "auto";
       locked = false;
       tick();
-      return;
+    } else {
+      const stage = getCurrentStage(appState.dungeon);
+      const monster = pickMonsterFromIds(stage.availableMonsters);
+      const combat = resetCombat(appState.combat, monster);
+      appState = { ...appState, phase: "COMBAT", combat };
+      setMonsterType(monster);
+      objects.monsterSprite.visible = true;
+      appState.combat.monster.definition.appearSound();
+      locked = false;
+      tick();
     }
+  } catch (err) {
+    console.error("Move failed:", err);
+    locked = false;
   }
+}
 
-  const { encounter, nextState: nextEncounterState } = enterRoom(appState.encounter);
-  appState = { ...appState, encounter: nextEncounterState };
-
-  if (encounter === "empty") {
-    appState = { ...appState, phase: "EXPLORING", dungeon: completeRoom(appState.dungeon) };
-    onRoomCompleted();
-    locked = false;
-    tick();
-  } else if (encounter === "chest") {
-    appState = { ...appState, phase: "CHEST" };
-    chestAnimPhase = "closed";
-    objects.chestClosedSprite.visible = true;
-    chestClickOverlay.style.pointerEvents = "auto";
-    locked = false;
-    tick();
-  } else {
-    const stage = getCurrentStage(appState.dungeon);
-    const monster = pickMonsterFromIds(stage.availableMonsters);
-    const combat = resetCombat(appState.combat, monster);
-    appState = { ...appState, phase: "COMBAT", combat };
-    setMonsterType(monster);
-    objects.monsterSprite.visible = true;
-    appState.combat.monster.definition.appearSound();
-    locked = false;
-    tick();
+moveBtn.addEventListener("click", async () => {
+  if (locked) return;
+  if (appState.phase === "STAGE_TRANSITION") {
+    await handleStageTransitionMove();
+    return;
   }
+  if (appState.phase !== "EXPLORING") return;
+  await handleExplorationMove();
 });
 
 function onRoomCompleted() {
@@ -320,58 +334,63 @@ function finishChestEncounter() {
   tick();
 }
 
-async function act(spellId: string | null) {
+async function act(spellId: string | null): Promise<void> {
   locked = true;
+  try {
+    if (spellId !== null) {
+      const spell = appState.combat.player.spells.find((s) => s.id === spellId);
+      if (spell) playSpellSound(spell.element);
+      await animatePlayerAttack();
+    }
 
-  if (spellId !== null) {
-    const spell = appState.combat.player.spells.find((s) => s.id === spellId);
-    if (spell) playSpellSound(spell.element);
-    await animatePlayerAttack();
+    appState = { ...appState, combat: processPlayerAction(appState.combat, spellId) };
+    tick();
+
+    await delay(100);
+
+    if (checkCombatEnd(appState.combat) === "VICTORY") {
+      handleVictory();
+      return;
+    }
+
+    const { state: afterMonster, attacked, spell } = processMonsterPhase(appState.combat);
+    appState = { ...appState, combat: afterMonster };
+    if (attacked && spell) {
+      appState.combat.monster.definition.attackSound();
+      await animateMonsterAttack(objects.monsterSprite);
+      flashScreen();
+      showMonsterAttack(spell.name, spell.damage);
+    }
+    tick();
+
+    await delay(300);
+
+    const outcome = checkCombatEnd(appState.combat);
+    if (outcome === "GAME_OVER") {
+      appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
+      stopBossMusic();
+      stopBackgroundMusic();
+      if (musicEnabled) startBackgroundMusic();
+      setBossMode(false);
+      isBossFight = false;
+      playGameOverSound();
+      showMessage("GAME OVER", "#c00");
+      return;
+    }
+    if (outcome === "VICTORY") {
+      handleVictory();
+      return;
+    }
+
+    appState = { ...appState, combat: processManaPhase(appState.combat) };
+    locked = false;
+    tick();
+    animateManaGain(appState.combat.player.manaPool.length - 1);
+  } catch (err) {
+    console.error("Turn processing failed:", err);
+    locked = false;
+    tick();
   }
-
-  appState = { ...appState, combat: processPlayerAction(appState.combat, spellId) };
-  tick();
-
-  await delay(100);
-
-  if (checkCombatEnd(appState.combat) === "VICTORY") {
-    handleVictory();
-    return;
-  }
-
-  const { state: afterMonster, attacked, spell } = processMonsterPhase(appState.combat);
-  appState = { ...appState, combat: afterMonster };
-  if (attacked && spell) {
-    appState.combat.monster.definition.attackSound();
-    await animateMonsterAttack(objects.monsterSprite);
-    flashScreen();
-    showMonsterAttack(spell.name, spell.damage);
-  }
-  tick();
-
-  await delay(300);
-
-  const outcome = checkCombatEnd(appState.combat);
-  if (outcome === "GAME_OVER") {
-    appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
-    stopBossMusic();
-    stopBackgroundMusic();
-    if (musicEnabled) startBackgroundMusic();
-    setBossMode(false);
-    isBossFight = false;
-    playGameOverSound();
-    showMessage("GAME OVER", "#c00");
-    return;
-  }
-  if (outcome === "VICTORY") {
-    handleVictory();
-    return;
-  }
-
-  appState = { ...appState, combat: processManaPhase(appState.combat) };
-  locked = false;
-  tick();
-  animateManaGain(appState.combat.player.manaPool.length - 1);
 }
 
 function handleVictory() {

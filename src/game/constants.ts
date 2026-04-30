@@ -11,6 +11,12 @@ export function xpToNextLevel(level: number): number {
 
 export const ELEMENTS = ["fire", "water", "nature", "lightning"] as const;
 
+// After attacking, AP resets to -1 so the +1 gain in the next mana phase brings it to 0.
+export const ACTION_POINTS_AFTER_ATTACK = -1;
+
+// Base staleness multiplier for monster spell selection weight.
+export const SPELL_STALENESS_BASE = 1;
+
 export const DAMAGE_MULTIPLIER = {
   weakness: 1.2,
   neutral: 1.0,

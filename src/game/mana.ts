@@ -31,6 +31,7 @@ export function consumeMana(pool: ManaToken[], cost: ManaToken[]): ManaToken[] {
   const next = [...pool];
   for (const token of cost) {
     const idx = next.indexOf(token);
+    if (idx === -1) throw new Error(`Mana token "${token}" not found in pool`);
     next.splice(idx, 1);
   }
   return next;
