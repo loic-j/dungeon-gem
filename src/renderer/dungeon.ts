@@ -63,7 +63,7 @@ export function createStairsRoom(graphics: DungeonGraphics): THREE.Group {
     new THREE.MeshBasicMaterial({ map: stairsTex }),
   );
   stairsPanel.rotation.x = -Math.PI / 2;
-  stairsPanel.position.set(0, -1.19, -0.5);
+  stairsPanel.position.set(0, -1.19, -5);
   group.add(stairsPanel);
 
   return group;
