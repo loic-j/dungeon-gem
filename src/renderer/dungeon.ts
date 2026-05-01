@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import type { DungeonGraphics } from "../game/dungeon";
 
-
 export function createStairsRoom(graphics: DungeonGraphics): THREE.Group {
   const group = new THREE.Group();
   const loader = new THREE.TextureLoader();

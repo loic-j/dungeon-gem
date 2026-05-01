@@ -45,12 +45,14 @@ const initialDungeon: DungeonProgress = {
   roomsCleared: startRoomIndex,
 };
 
-let appState: AppState = {
-  phase: "EXPLORING",
-  encounter: initEncounterState(getCurrentStage(initialDungeon).encounterConfigs),
-  combat: initCombat(),
-  dungeon: initialDungeon,
-};
+const debugStairs = import.meta.env.DEV && import.meta.env.VITE_DEBUG_STAIRS === "true";
+
+const initialEncounter = initEncounterState(getCurrentStage(initialDungeon).encounterConfigs);
+const initialCombat = initCombat();
+
+let appState: AppState = debugStairs
+  ? { phase: "STAGE_TRANSITION", encounter: initialEncounter, combat: initialCombat, dungeon: initialDungeon }
+  : { phase: "EXPLORING", encounter: initialEncounter, combat: initialCombat, dungeon: initialDungeon };
 
 let isDispatching = false;
 let musicEnabled = true;
@@ -386,6 +388,11 @@ function delay(ms: number): Promise<void> {
 }
 
 tick();
+
+if (debugStairs) {
+  setStairsMode(true);
+  showStageTransitionOverlay();
+}
 
 // ── Music toggle ───────────────────────────────────────────────────────────────
 const musicBtn = document.createElement("button");
