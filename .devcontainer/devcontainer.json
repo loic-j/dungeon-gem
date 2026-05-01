@@ -38,5 +38,5 @@
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
   ],
-  "postStartCommand": "chmod 700 /home/node/.ssh && chmod 600 /home/node/.ssh/id_* 2>/dev/null || true && nohup /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token --default-folder /workspaces/dungeon-crawler-gem > /tmp/vscode-web.log 2>&1 &"
+  "postStartCommand": "nohup /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token --default-folder /workspaces/dungeon-crawler-gem > /tmp/vscode-web.log 2>&1 &"
 }
