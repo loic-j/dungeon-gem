@@ -10,44 +10,14 @@ import {
   stopBackgroundMusic,
   stopBossMusic,
 } from "./audio/soundManager";
-import {
-  initCombat,
-  processManaPhase,
-  processPlayerAction,
-  processMonsterPhase,
-  checkCombatEnd,
-  resetCombat,
-} from "./game/turnMachine";
-import { applyExperience } from "./game/experience";
-import {
-  initEncounterState,
-  enterRoom,
-  onEncounterFinished,
-} from "./game/encounterSystem";
-import type { EncounterState } from "./game/encounterSystem";
-import {
-  createDungeonProgress,
-  getCurrentStage,
-  isBossRoom,
-  isStageComplete,
-  isFinalStage,
-  completeRoom,
-  advanceToNextStage,
-  resetDungeonProgress,
-} from "./game/dungeon";
+import { initCombat } from "./game/turnMachine";
+import { initEncounterState } from "./game/encounterSystem";
+import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
 import type { DungeonConfig, DungeonProgress } from "./game/dungeon";
 import { DUNGEON_1 } from "./game/data/dungeons";
-import { findMonster, pickMonsterFromIds } from "./game/data/monsters";
+import type { AppState, Effect, Step } from "./game/appState";
+import { moveForward, descend, openChest, takeTurn } from "./game/transitions";
 import type { CombatState } from "./game/types";
-
-type AppPhase = "EXPLORING" | "COMBAT" | "CHEST" | "STAGE_TRANSITION";
-
-interface AppState {
-  phase: AppPhase;
-  encounter: EncounterState;
-  combat: CombatState;
-  dungeon: DungeonProgress;
-}
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;
@@ -82,8 +52,8 @@ let appState: AppState = {
   dungeon: initialDungeon,
 };
 
-let chestAnimPhase: "closed" | "open" = "closed";
-let isBossFight = false;
+let isDispatching = false;
+let musicEnabled = true;
 let stageTransitionOverlay: HTMLElement | null = null;
 
 const { objects, animateWalk, setMonsterType, setStairsMode } = initScene(
@@ -91,7 +61,6 @@ const { objects, animateWalk, setMonsterType, setStairsMode } = initScene(
   appState.combat.monster.definition,
   startDungeonConfig.graphics,
 );
-let locked = false;
 
 const {
   render,
@@ -102,10 +71,14 @@ const {
   setBossMode,
 } = createOverlay(uiRoot, {
   onSpell: (spellId) => {
-    if (!locked && appState.phase === "COMBAT") act(spellId);
+    if (!isDispatching && appState.phase === "COMBAT") {
+      void dispatch(takeTurn(appState, spellId));
+    }
   },
   onSkip: () => {
-    if (!locked && appState.phase === "COMBAT") act(null);
+    if (!isDispatching && appState.phase === "COMBAT") {
+      void dispatch(takeTurn(appState, null));
+    }
   },
 });
 
@@ -129,131 +102,153 @@ moveBtn.addEventListener("mouseleave", () => {
   moveBtn.style.background = "rgba(255,255,255,0.08)";
   moveBtn.style.borderColor = "rgba(255,255,255,0.25)";
 });
+moveBtn.addEventListener("click", () => {
+  if (isDispatching) return;
+  if (appState.phase === "STAGE_TRANSITION") {
+    void dispatch(descend(appState));
+  } else if (appState.phase === "EXPLORING") {
+    void dispatch(moveForward(appState));
+  }
+});
 document.getElementById("app")!.appendChild(moveBtn);
 
 // ── Chest click overlay ────────────────────────────────────────────────────────
 const chestClickOverlay = document.createElement("div");
 chestClickOverlay.style.cssText =
   "position:absolute;inset:0;z-index:4;pointer-events:none;cursor:pointer;";
+chestClickOverlay.addEventListener("click", () => {
+  if (appState.phase === "CHEST") {
+    void dispatch(openChest(appState));
+  }
+});
 document.getElementById("app")!.appendChild(chestClickOverlay);
 
-chestClickOverlay.addEventListener("click", async () => {
-  if (appState.phase !== "CHEST" || chestAnimPhase !== "closed") return;
-  chestAnimPhase = "open";
-  chestClickOverlay.style.pointerEvents = "none";
-  objects.chestClosedSprite.visible = false;
-  objects.chestOpenSprite.visible = true;
-  await delay(500);
-  showItemSelection();
-});
-
-async function handleStageTransitionMove(): Promise<void> {
-  locked = true;
+// ── Core dispatch loop ─────────────────────────────────────────────────────────
+async function dispatch(steps: Step[]): Promise<void> {
+  if (isDispatching) return;
+  isDispatching = true;
+  tick();
   try {
-    playFootstepSound();
-    await animateWalk();
-    stageTransitionOverlay?.remove();
-    stageTransitionOverlay = null;
-    moveBtn.textContent = "↑";
-    setStairsMode(false);
-    const nextDungeon = advanceToNextStage(appState.dungeon);
-    appState = {
-      ...appState,
-      phase: "EXPLORING",
-      dungeon: nextDungeon,
-      encounter: initEncounterState(getCurrentStage(nextDungeon).encounterConfigs),
-    };
-    locked = false;
-    tick();
-  } catch (err) {
-    console.error("Stage transition failed:", err);
-    locked = false;
-  }
-}
-
-async function handleExplorationMove(): Promise<void> {
-  locked = true;
-  moveBtn.style.display = "none";
-  try {
-    playFootstepSound();
-    await animateWalk();
-
-    if (isBossRoom(appState.dungeon)) {
-      const bossMonsterDef = findMonster(appState.dungeon.dungeon.bossMonster);
-      if (bossMonsterDef) {
-        isBossFight = true;
-        const combat = resetCombat(appState.combat, bossMonsterDef);
-        appState = { ...appState, phase: "COMBAT", combat };
-        setMonsterType(bossMonsterDef);
-        objects.monsterSprite.visible = true;
-        bossMonsterDef.appearSound();
-        setBossMode(true, appState.dungeon.dungeon.bossTitle);
-        appState.dungeon.dungeon.bossMusic?.();
-        locked = false;
+    for (const step of steps) {
+      if (step.type === "state") {
+        appState = step.state;
         tick();
-        return;
+      } else {
+        await executeEffect(step.effect);
       }
     }
-
-    const { encounter, nextState: nextEncounterState } = enterRoom(appState.encounter);
-    appState = { ...appState, encounter: nextEncounterState };
-
-    if (encounter === "empty") {
-      appState = { ...appState, phase: "EXPLORING", dungeon: completeRoom(appState.dungeon) };
-      locked = false;
-      onRoomCompleted();
-      tick();
-    } else if (encounter === "chest") {
-      appState = { ...appState, phase: "CHEST" };
-      chestAnimPhase = "closed";
-      objects.chestClosedSprite.visible = true;
-      chestClickOverlay.style.pointerEvents = "auto";
-      locked = false;
-      tick();
-    } else {
-      const stage = getCurrentStage(appState.dungeon);
-      const monster = pickMonsterFromIds(stage.availableMonsters);
-      const combat = resetCombat(appState.combat, monster);
-      appState = { ...appState, phase: "COMBAT", combat };
-      setMonsterType(monster);
-      objects.monsterSprite.visible = true;
-      appState.combat.monster.definition.appearSound();
-      locked = false;
-      tick();
-    }
   } catch (err) {
-    console.error("Move failed:", err);
-    locked = false;
+    console.error("Dispatch failed:", err);
+  } finally {
+    isDispatching = false;
+    tick();
   }
 }
 
-moveBtn.addEventListener("click", async () => {
-  if (locked) return;
-  if (appState.phase === "STAGE_TRANSITION") {
-    await handleStageTransitionMove();
-    return;
-  }
-  if (appState.phase !== "EXPLORING") return;
-  await handleExplorationMove();
-});
-
-function onRoomCompleted() {
-  if (isStageComplete(appState.dungeon)) {
-    if (isFinalStage(appState.dungeon)) {
-      handleDungeonComplete();
-    } else {
-      appState = { ...appState, phase: "STAGE_TRANSITION" };
-      showStageTransition();
-    }
-  } else {
-    moveBtn.style.display = "";
+async function executeEffect(effect: Effect): Promise<void> {
+  switch (effect.type) {
+    case "PLAY_FOOTSTEP":
+      playFootstepSound();
+      break;
+    case "ANIMATE_WALK":
+      await animateWalk();
+      break;
+    case "ANIMATE_PLAYER_ATTACK":
+      await animatePlayerAttack();
+      break;
+    case "ANIMATE_MONSTER_ATTACK":
+      await animateMonsterAttack(objects.monsterSprite);
+      break;
+    case "FLASH_SCREEN":
+      flashScreen();
+      break;
+    case "DELAY":
+      await delay(effect.ms);
+      break;
+    case "PLAY_SPELL_SOUND":
+      playSpellSound(effect.element);
+      break;
+    case "PLAY_VICTORY_SOUND":
+      playVictorySound();
+      break;
+    case "PLAY_GAME_OVER_SOUND":
+      playGameOverSound();
+      break;
+    case "PLAY_MONSTER_APPEAR_SOUND":
+      appState.combat.monster.definition.appearSound();
+      break;
+    case "PLAY_MONSTER_ATTACK_SOUND":
+      appState.combat.monster.definition.attackSound();
+      break;
+    case "START_BACKGROUND_MUSIC":
+      if (musicEnabled) startBackgroundMusic();
+      break;
+    case "STOP_BACKGROUND_MUSIC":
+      stopBackgroundMusic();
+      break;
+    case "STOP_BOSS_MUSIC":
+      stopBossMusic();
+      break;
+    case "PLAY_BOSS_MUSIC":
+      if (musicEnabled) appState.dungeon.dungeon.bossMusic?.();
+      break;
+    case "SET_MONSTER_TYPE":
+      setMonsterType(effect.monster);
+      break;
+    case "SET_STAIRS_MODE":
+      setStairsMode(effect.enabled);
+      break;
+    case "SET_BOSS_MODE":
+      setBossMode(effect.enabled, effect.title);
+      break;
+    case "SHOW_MONSTER_ATTACK_POPUP":
+      showMonsterAttack(effect.name, effect.damage);
+      break;
+    case "SHOW_MESSAGE":
+      await showMessageAsync(effect.text, effect.color);
+      break;
+    case "SHOW_STAGE_TRANSITION_OVERLAY":
+      showStageTransitionOverlay();
+      break;
+    case "REMOVE_STAGE_TRANSITION_OVERLAY":
+      removeStageTransitionOverlay();
+      break;
+    case "SHOW_ITEM_SELECTION":
+      await showItemSelectionAsync();
+      break;
+    case "ANIMATE_MANA_GAIN":
+      animateManaGain(effect.index);
+      break;
+    case "SHOW_CHEST_CLOSED":
+      objects.chestClosedSprite.visible = true;
+      objects.chestOpenSprite.visible = false;
+      break;
+    case "ANIMATE_CHEST_OPEN":
+      objects.chestClosedSprite.visible = false;
+      objects.chestOpenSprite.visible = true;
+      await delay(500);
+      break;
+    case "HIDE_CHEST":
+      objects.chestClosedSprite.visible = false;
+      objects.chestOpenSprite.visible = false;
+      break;
   }
 }
 
+// ── UI derivation ──────────────────────────────────────────────────────────────
 function tick() {
   const inCombat = appState.phase === "COMBAT";
-  render(appState.combat, locked, inCombat);
-  objects.monsterSprite.visible = inCombat && appState.combat.monster.hp > 0;
+  render(appState.combat, isDispatching, inCombat);
+  objects.monsterSprite.visible = inCombat;
+
+  const showMoveBtn =
+    (appState.phase === "EXPLORING" || appState.phase === "STAGE_TRANSITION") &&
+    !isDispatching;
+  moveBtn.style.display = showMoveBtn ? "" : "none";
+  moveBtn.textContent = appState.phase === "STAGE_TRANSITION" ? "↓" : "↑";
+
+  chestClickOverlay.style.pointerEvents =
+    appState.phase === "CHEST" && !isDispatching ? "auto" : "none";
 
   const stage = getCurrentStage(appState.dungeon);
   updateStageProgress(
@@ -263,192 +258,68 @@ function tick() {
   );
 }
 
+// ── UI helpers ─────────────────────────────────────────────────────────────────
 const PLACEHOLDER_ITEMS = ["Health Potion", "Mana Crystal", "Ancient Scroll"];
 
-function showItemSelection() {
-  const overlay = document.createElement("div");
-  overlay.style.cssText = `
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:16px;
-    background:rgba(0,0,0,0.75); z-index:20; pointer-events:auto;
-  `;
-
-  const title = document.createElement("div");
-  title.textContent = "Choose an item";
-  title.style.cssText =
-    "font-family:sans-serif; font-size:22px; font-weight:bold; color:#f0c040; text-shadow:0 2px 8px #000; letter-spacing:1px;";
-  overlay.appendChild(title);
-
-  const row = document.createElement("div");
-  row.style.cssText = "display:flex; gap:12px;";
-  overlay.appendChild(row);
-
-  for (const name of PLACEHOLDER_ITEMS) {
-    const card = document.createElement("button");
-    card.style.cssText = `
-      width:100px; padding:14px 8px; border-radius:8px;
-      background:rgba(20,14,4,0.92); border:2px solid #b8901a;
-      color:#f0c040; font-family:sans-serif; font-size:13px; font-weight:bold;
-      cursor:pointer; pointer-events:auto; touch-action:manipulation;
-      display:flex; flex-direction:column; align-items:center; gap:10px;
-      transition:border-color 0.15s, background 0.15s;
+function showItemSelectionAsync(): Promise<void> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:16px;
+      background:rgba(0,0,0,0.75); z-index:20; pointer-events:auto;
     `;
-    card.addEventListener("mouseenter", () => {
-      card.style.borderColor = "#ffd700";
-      card.style.background = "rgba(40,28,4,0.95)";
-    });
-    card.addEventListener("mouseleave", () => {
-      card.style.borderColor = "#b8901a";
-      card.style.background = "rgba(20,14,4,0.92)";
-    });
 
-    const icon = document.createElement("div");
-    icon.style.cssText =
-      "width:48px; height:48px; border-radius:6px; background:rgba(184,144,26,0.2); border:1px solid #b8901a;";
-    card.appendChild(icon);
+    const title = document.createElement("div");
+    title.textContent = "Choose an item";
+    title.style.cssText =
+      "font-family:sans-serif; font-size:22px; font-weight:bold; color:#f0c040; text-shadow:0 2px 8px #000; letter-spacing:1px;";
+    overlay.appendChild(title);
 
-    const label = document.createElement("div");
-    label.textContent = name;
-    card.appendChild(label);
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; gap:12px;";
+    overlay.appendChild(row);
 
-    card.addEventListener("click", () => {
-      overlay.remove();
-      finishChestEncounter();
-    });
-    row.appendChild(card);
-  }
+    for (const name of PLACEHOLDER_ITEMS) {
+      const card = document.createElement("button");
+      card.style.cssText = `
+        width:100px; padding:14px 8px; border-radius:8px;
+        background:rgba(20,14,4,0.92); border:2px solid #b8901a;
+        color:#f0c040; font-family:sans-serif; font-size:13px; font-weight:bold;
+        cursor:pointer; pointer-events:auto; touch-action:manipulation;
+        display:flex; flex-direction:column; align-items:center; gap:10px;
+        transition:border-color 0.15s, background 0.15s;
+      `;
+      card.addEventListener("mouseenter", () => {
+        card.style.borderColor = "#ffd700";
+        card.style.background = "rgba(40,28,4,0.95)";
+      });
+      card.addEventListener("mouseleave", () => {
+        card.style.borderColor = "#b8901a";
+        card.style.background = "rgba(20,14,4,0.92)";
+      });
 
-  document.getElementById("app")!.appendChild(overlay);
-}
+      const icon = document.createElement("div");
+      icon.style.cssText =
+        "width:48px; height:48px; border-radius:6px; background:rgba(184,144,26,0.2); border:1px solid #b8901a;";
+      card.appendChild(icon);
 
-function finishChestEncounter() {
-  appState = {
-    ...appState,
-    phase: "EXPLORING",
-    encounter: onEncounterFinished("chest", appState.encounter),
-    dungeon: completeRoom(appState.dungeon),
-  };
-  objects.chestClosedSprite.visible = false;
-  objects.chestOpenSprite.visible = false;
-  onRoomCompleted();
-  tick();
-}
+      const label = document.createElement("div");
+      label.textContent = name;
+      card.appendChild(label);
 
-async function act(spellId: string | null): Promise<void> {
-  locked = true;
-  try {
-    if (spellId !== null) {
-      const spell = appState.combat.player.spells.find((s) => s.id === spellId);
-      if (spell) playSpellSound(spell.element);
-      await animatePlayerAttack();
+      card.addEventListener("click", () => {
+        overlay.remove();
+        resolve();
+      });
+      row.appendChild(card);
     }
 
-    appState = { ...appState, combat: processPlayerAction(appState.combat, spellId) };
-    tick();
-
-    await delay(100);
-
-    if (checkCombatEnd(appState.combat) === "VICTORY") {
-      handleVictory();
-      return;
-    }
-
-    const { state: afterMonster, attacked, spell } = processMonsterPhase(appState.combat);
-    appState = { ...appState, combat: afterMonster };
-    if (attacked && spell) {
-      appState.combat.monster.definition.attackSound();
-      await animateMonsterAttack(objects.monsterSprite);
-      flashScreen();
-      showMonsterAttack(spell.name, spell.damage);
-    }
-    tick();
-
-    await delay(300);
-
-    const outcome = checkCombatEnd(appState.combat);
-    if (outcome === "GAME_OVER") {
-      appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
-      stopBossMusic();
-      stopBackgroundMusic();
-      if (musicEnabled) startBackgroundMusic();
-      setBossMode(false);
-      isBossFight = false;
-      playGameOverSound();
-      showMessage("GAME OVER", "#c00");
-      return;
-    }
-    if (outcome === "VICTORY") {
-      handleVictory();
-      return;
-    }
-
-    appState = { ...appState, combat: processManaPhase(appState.combat) };
-    locked = false;
-    tick();
-    animateManaGain(appState.combat.player.manaPool.length - 1);
-  } catch (err) {
-    console.error("Turn processing failed:", err);
-    locked = false;
-    tick();
-  }
-}
-
-function handleVictory() {
-  appState = { ...appState, encounter: onEncounterFinished("monster", appState.encounter) };
-  const xp = appState.combat.monster.definition.experienceReward;
-  const prevLevel = appState.combat.player.level;
-  appState = {
-    ...appState,
-    combat: { ...appState.combat, player: applyExperience(appState.combat.player, xp) },
-    dungeon: completeRoom(appState.dungeon),
-  };
-  const leveledUp = appState.combat.player.level > prevLevel;
-
-  if (isBossFight) {
-    stopBossMusic();
-    setBossMode(false);
-    isBossFight = false;
-    if (musicEnabled) startBackgroundMusic();
-  }
-
-  playVictorySound();
-  const msg = leveledUp
-    ? `Victory!\n+${xp} XP\nLevel Up! → ${appState.combat.player.level}`
-    : `Victory!\n+${xp} XP`;
-
-  showMessage(msg, "#2b8", () => {
-    appState = { ...appState, phase: "EXPLORING" };
-    objects.monsterSprite.visible = false;
-    locked = false;
-    tick();
-
-    onRoomCompleted();
+    document.getElementById("app")!.appendChild(overlay);
   });
 }
 
-function handleDungeonComplete() {
-  showMessage(
-    `${appState.dungeon.dungeon.name}\nCOMPLETE!`,
-    "#e8c01a",
-    () => {
-      const resetDungeon = resetDungeonProgress(appState.dungeon);
-      appState = {
-        ...appState,
-        phase: "EXPLORING",
-        dungeon: resetDungeon,
-        encounter: initEncounterState(getCurrentStage(resetDungeon).encounterConfigs),
-      };
-      moveBtn.style.display = "";
-      tick();
-    },
-  );
-}
-
-function showStageTransition() {
-  const transitionType = appState.dungeon.dungeon.stageTransitionType ?? "stairs";
-
-  if (transitionType === "stairs") setStairsMode(true);
-
+function showStageTransitionOverlay() {
   stageTransitionOverlay = document.createElement("div");
   stageTransitionOverlay.style.cssText = `
     position:absolute; top:0; left:0; right:0; padding:24px 16px 12px;
@@ -469,11 +340,12 @@ function showStageTransition() {
   stageTransitionOverlay.appendChild(hint);
 
   document.getElementById("app")!.appendChild(stageTransitionOverlay);
-
-  moveBtn.textContent = "↓";
-  moveBtn.style.display = "";
 }
 
+function removeStageTransitionOverlay() {
+  stageTransitionOverlay?.remove();
+  stageTransitionOverlay = null;
+}
 
 function flashScreen() {
   const flash = document.createElement("div");
@@ -505,6 +377,10 @@ function showMessage(text: string, color: string, onDone?: () => void) {
   });
 }
 
+function showMessageAsync(text: string, color: string): Promise<void> {
+  return new Promise((resolve) => showMessage(text, color, resolve));
+}
+
 function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -512,8 +388,6 @@ function delay(ms: number): Promise<void> {
 tick();
 
 // ── Music toggle ───────────────────────────────────────────────────────────────
-let musicEnabled = true;
-
 const musicBtn = document.createElement("button");
 musicBtn.style.cssText = `
   position:absolute; top:10px; right:10px; z-index:30;
@@ -544,8 +418,11 @@ musicBtn.addEventListener("click", () => {
   musicEnabled = !musicEnabled;
   updateMusicBtn();
   if (musicEnabled) {
-    if (isBossFight) appState.dungeon.dungeon.bossMusic?.();
-    else startBackgroundMusic();
+    if (appState.phase === "COMBAT" && appState.isBoss) {
+      appState.dungeon.dungeon.bossMusic?.();
+    } else {
+      startBackgroundMusic();
+    }
   } else {
     stopBossMusic();
     stopBackgroundMusic();
@@ -568,9 +445,9 @@ if (import.meta.env.DEV) {
     getState: () => appState.combat,
     setState: (s: CombatState) => {
       appState = { ...appState, combat: s };
-      locked = false;
+      isDispatching = false;
       tick();
     },
-    isLocked: () => locked,
+    isLocked: () => isDispatching,
   };
 }
