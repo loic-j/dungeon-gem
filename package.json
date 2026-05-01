@@ -8,6 +8,7 @@
     "dev:debug": "VITE_DEBUG=true vite",
     "dev:stage2": "VITE_START_DUNGEON=dungeon_1 VITE_START_STAGE=1 vite",
     "dev:stage1-end": "VITE_START_DUNGEON=dungeon_1 VITE_START_STAGE=0 VITE_START_ROOM=10 vite",
+    "dev:stairs": "VITE_DEBUG_STAIRS=true vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -18,7 +19,9 @@
     "three": "^0.172.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

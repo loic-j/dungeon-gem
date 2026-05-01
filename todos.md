@@ -1,0 +1,7 @@
+- fix stairs
+- add stage 3
+- add rewards
+- split main
+- review code
+- add new game / continue game menu at start and save game state in cookie
+- rename skip to end turn

@@ -55,15 +55,15 @@ export function createStairsRoom(graphics: DungeonGraphics): THREE.Group {
   rightWall.position.set(2.5, 0.3, -27);
   group.add(rightWall);
 
-  // Stairs panel: replaces floor section directly ahead (z: 1.5 → -2.5)
+  // Stairs sprite: upright billboard filling the corridor opening ahead
   const stairsTex = loader.load("/sprites/stairs.png");
-  const stairsPanel = new THREE.Mesh(
-    new THREE.PlaneGeometry(5, 4),
-    new THREE.MeshBasicMaterial({ map: stairsTex }),
+  stairsTex.colorSpace = THREE.SRGBColorSpace;
+  const stairsSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: stairsTex, transparent: true }),
   );
-  stairsPanel.rotation.x = -Math.PI / 2;
-  stairsPanel.position.set(0, -1.19, -5);
-  group.add(stairsPanel);
+  stairsSprite.scale.set(5, 5, 1);
+  stairsSprite.position.set(0, 0.3, -4);
+  group.add(stairsSprite);
 
   return group;
 }

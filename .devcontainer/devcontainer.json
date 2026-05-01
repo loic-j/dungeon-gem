@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--shm-size=2gb", "-p", "8080:8080"],
+  "runArgs": ["--shm-size=2gb", "-p", "8080:8080", "-p", "5173:5173"],
   "forwardPorts": [5173, 8080],
   "portsAttributes": {
     "5173": {
@@ -38,5 +38,5 @@
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
   ],
-  "postStartCommand": "nohup /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token --default-folder /workspaces/dungeon-crawler-gem > /tmp/vscode-web.log 2>&1 &"
+  "postStartCommand": "/usr/bin/bash -c 'nohup /home/node/.local/bin/code serve-web --port 8080 --host 0.0.0.0 --without-connection-token --default-folder /workspaces/dungeon-crawler-gem > /tmp/vscode-web.log 2>&1 & disown'"
 }

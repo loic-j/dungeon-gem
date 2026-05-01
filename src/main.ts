@@ -45,14 +45,27 @@ const initialDungeon: DungeonProgress = {
   roomsCleared: startRoomIndex,
 };
 
-const debugStairs = import.meta.env.DEV && import.meta.env.VITE_DEBUG_STAIRS === "true";
+const debugStairs =
+  import.meta.env.DEV && import.meta.env.VITE_DEBUG_STAIRS === "true";
 
-const initialEncounter = initEncounterState(getCurrentStage(initialDungeon).encounterConfigs);
+const initialEncounter = initEncounterState(
+  getCurrentStage(initialDungeon).encounterConfigs,
+);
 const initialCombat = initCombat();
 
 let appState: AppState = debugStairs
-  ? { phase: "STAGE_TRANSITION", encounter: initialEncounter, combat: initialCombat, dungeon: initialDungeon }
-  : { phase: "EXPLORING", encounter: initialEncounter, combat: initialCombat, dungeon: initialDungeon };
+  ? {
+      phase: "STAGE_TRANSITION",
+      encounter: initialEncounter,
+      combat: initialCombat,
+      dungeon: initialDungeon,
+    }
+  : {
+      phase: "EXPLORING",
+      encounter: initialEncounter,
+      combat: initialCombat,
+      dungeon: initialDungeon,
+    };
 
 let isDispatching = false;
 let musicEnabled = true;
@@ -247,7 +260,7 @@ function tick() {
     (appState.phase === "EXPLORING" || appState.phase === "STAGE_TRANSITION") &&
     !isDispatching;
   moveBtn.style.display = showMoveBtn ? "" : "none";
-  moveBtn.textContent = appState.phase === "STAGE_TRANSITION" ? "↓" : "↑";
+  moveBtn.textContent = "↑";
 
   chestClickOverlay.style.pointerEvents =
     appState.phase === "CHEST" && !isDispatching ? "auto" : "none";
