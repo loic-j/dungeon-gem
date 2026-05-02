@@ -98,6 +98,10 @@ export function hasSave(): boolean {
   return localStorage.getItem(SAVE_KEY) !== null;
 }
 
+export function setDevState(state: unknown): void {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+}
+
 export function loadGame(): AppState | null {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) return null;

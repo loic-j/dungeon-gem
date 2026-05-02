@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:stage1-end": "VITE_DEV_STATE=stage1-end vite",
+    "dev:stage2-start": "VITE_DEV_STATE=stage2-start vite",
+    "dev:boss": "VITE_DEV_STATE=boss vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "phase": "EXPLORING",
+  "isBoss": false,
+  "player": {
+    "hp": 20,
+    "maxHp": 20,
+    "manaPool": [],
+    "maxMana": 3,
+    "level": 10,
+    "experience": 0,
+    "experienceToNextLevel": 103,
+    "spellIds": ["flame", "wave", "bolt", "roots"]
+  },
+  "combat": {
+    "phase": "PLAYER_ACTION",
+    "turn": 0,
+    "monsterId": "skeleton",
+    "monsterHp": 10,
+    "monsterActionPoints": 0,
+    "monsterSpellLastCastTurn": { "basic_attack": -1, "bone_strike": -1 },
+    "monsterNextSpellId": "basic_attack"
+  },
+  "dungeon": {
+    "id": "dungeon_1",
+    "currentStageIndex": 0,
+    "roomsCleared": 9
+  },
+  "encounter": {
+    "currentChances": { "monster": 0.5, "chest": 0.2 }
+  }
+}

@@ -21,7 +21,7 @@ export interface OverlayCallbacks {
 export interface OverlayControls {
   render: (state: CombatState, locked: boolean, inCombat: boolean) => void;
   animatePlayerAttack: () => Promise<void>;
-  animateManaGain: (index: number) => void;
+  animateManaGain: (index: number) => Promise<void>;
   showMonsterAttack: (spellName: string, damage: number) => void;
   updateStageProgress: (
     roomsCleared: number,
@@ -343,10 +343,10 @@ export function createOverlay(
     if (inCombat) skipBtn.style.pointerEvents = locked ? "none" : "auto";
   }
 
-  function animateManaGain(index: number): void {
+  async function animateManaGain(index: number): Promise<void> {
     const circle = manaRow.children[index] as HTMLElement | undefined;
     if (!circle) return;
-    circle.animate(
+    const anim = circle.animate(
       [
         { transform: "scale(1)", filter: "brightness(1)", offset: 0 },
         { transform: "scale(1.6)", filter: "brightness(2.2)", offset: 0.35 },
@@ -354,6 +354,7 @@ export function createOverlay(
       ],
       { duration: 420, easing: "ease-out" },
     );
+    await anim.finished;
   }
 
   async function animatePlayerAttack(): Promise<void> {

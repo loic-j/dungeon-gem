@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "phase": "COMBAT",
+  "isBoss": true,
+  "player": {
+    "hp": 20,
+    "maxHp": 20,
+    "manaPool": [],
+    "maxMana": 3,
+    "level": 10,
+    "experience": 0,
+    "experienceToNextLevel": 103,
+    "spellIds": ["flame", "wave", "bolt", "roots"]
+  },
+  "combat": {
+    "phase": "PLAYER_ACTION",
+    "turn": 1,
+    "monsterId": "skeleton_king",
+    "monsterHp": 25,
+    "monsterActionPoints": 0,
+    "monsterSpellLastCastTurn": {
+      "bone_crush": -1,
+      "royal_strike": -1,
+      "bone_strike": -1
+    },
+    "monsterNextSpellId": "bone_crush"
+  },
+  "dungeon": {
+    "id": "dungeon_1",
+    "currentStageIndex": 1,
+    "roomsCleared": 11
+  },
+  "encounter": {
+    "currentChances": { "monster": 0.65, "chest": 0.15 }
+  }
+}

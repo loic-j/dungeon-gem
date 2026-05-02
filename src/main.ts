@@ -17,7 +17,16 @@ import { DUNGEON_1 } from "./game/data/dungeons";
 import type { AppState, Step } from "./game/appState";
 import { moveForward, descend, openChest, takeTurn } from "./game/transitions";
 import { executeEffect } from "./effects";
-import { saveGame, clearSave, loadGame } from "./game/persistence";
+import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
+
+if (import.meta.env.DEV && import.meta.env.VITE_DEV_STATE) {
+  const states = import.meta.glob("/dev/states/*.json", {
+    eager: true,
+    import: "default",
+  });
+  const state = states[`/dev/states/${import.meta.env.VITE_DEV_STATE}.json`];
+  if (state) setDevState(state);
+}
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;

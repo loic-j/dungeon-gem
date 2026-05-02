@@ -24,7 +24,7 @@ export interface EffectDeps {
   animateWalk(): Promise<void>;
   animateWalkToStairs(): Promise<void>;
   animatePlayerAttack(): Promise<void>;
-  animateManaGain(index: number): void;
+  animateManaGain(index: number): Promise<void>;
   showMonsterAttack(name: string, damage: number): void;
   setBossMode(enabled: boolean, title?: string): void;
   setMonsterType(monster: MonsterType): void;
@@ -115,7 +115,7 @@ export async function executeEffect(
       await showItemSelectionAsync();
       break;
     case "ANIMATE_MANA_GAIN":
-      deps.animateManaGain(effect.index);
+      await deps.animateManaGain(effect.index);
       break;
     case "SHOW_CHEST_CLOSED":
       deps.objects.chestClosedSprite.visible = true;
