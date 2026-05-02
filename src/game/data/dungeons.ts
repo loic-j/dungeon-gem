@@ -1,12 +1,13 @@
 import type { DungeonConfig } from "../dungeon";
+import type { EncounterTypeConfig } from "../encounterSystem";
 import { startBossMusic } from "../../audio/soundManager";
 
-const STAGE_1_ENCOUNTER_CONFIGS = [
+const STAGE_1_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
   { id: "monster", baseChance: 0.5, chanceIncrement: 0.2 },
   { id: "chest", baseChance: 0.2, chanceIncrement: 0.1 },
 ];
 
-const STAGE_2_ENCOUNTER_CONFIGS = [
+const STAGE_2_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
   { id: "monster", baseChance: 0.65, chanceIncrement: 0.2 },
   { id: "chest", baseChance: 0.15, chanceIncrement: 0.1 },
 ];

@@ -1,5 +1,6 @@
 import type { AppState } from "./appState";
 import type { ManaToken, TurnPhase } from "./types";
+import type { EncounterId } from "./encounterSystem";
 import { findMonster } from "./data/monsters";
 import { SPELL_LIBRARY } from "./data/spells";
 import { ALL_DUNGEONS } from "./data/dungeons";
@@ -42,7 +43,7 @@ interface SavedState {
     roomsCleared: number;
   };
   encounter: {
-    currentChances: Record<string, number>;
+    currentChances: Record<EncounterId, number>;
   };
 }
 
