@@ -219,11 +219,34 @@ export function createOverlay(
     } else {
       tooltip.replaceChildren(content);
     }
+    // Render off-screen to measure actual dimensions
+    tooltip.style.left = "-9999px";
+    tooltip.style.top = "-9999px";
     tooltip.style.display = "";
+
+    const tRect = tooltip.getBoundingClientRect();
     const rect = anchorEl.getBoundingClientRect();
     const cRect = container.getBoundingClientRect();
-    tooltip.style.left = `${rect.left - cRect.left}px`;
-    tooltip.style.top = `${rect.bottom - cRect.top + 4}px`;
+    const gap = 6;
+
+    // Vertical: prefer below, flip above if not enough room
+    const spaceBelow = cRect.bottom - rect.bottom - gap;
+    const spaceAbove = rect.top - cRect.top - gap;
+    let top: number;
+    if (spaceBelow >= tRect.height || spaceBelow >= spaceAbove) {
+      top = rect.bottom - cRect.top + gap;
+    } else {
+      top = rect.top - cRect.top - tRect.height - gap;
+    }
+
+    // Horizontal: align left with anchor, clamp so it never overflows right
+    let left = rect.left - cRect.left;
+    const maxLeft = cRect.width - tRect.width - gap;
+    left = Math.min(left, maxLeft);
+    left = Math.max(left, gap);
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
   }
 
   function hideTooltip(): void {

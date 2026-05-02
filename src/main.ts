@@ -20,7 +20,10 @@ import {
   openChest,
   takeTurn,
   castSpell,
+  learnSpell,
+  skipSpellLearn,
 } from "./game/transitions";
+import { createSpellLearnUI } from "./ui/spellLearn";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
 
@@ -78,6 +81,17 @@ const {
   onSkip: () => {
     if (!isDispatching && appState.phase === "COMBAT")
       void dispatch(takeTurn(appState, null));
+  },
+});
+
+const spellLearnUI = createSpellLearnUI(appRoot, {
+  onLearn: (spellId, replaceId) => {
+    if (!isDispatching && appState.phase === "SPELL_LEARN")
+      void dispatch(learnSpell(appState, spellId, replaceId));
+  },
+  onSkip: () => {
+    if (!isDispatching && appState.phase === "SPELL_LEARN")
+      void dispatch(skipSpellLearn(appState));
   },
 });
 
@@ -170,6 +184,12 @@ function tick() {
   render(player, combat, isDispatching);
   objects.monsterSprite.visible = inCombat;
   controls.sync(appState.phase, isDispatching);
+
+  if (appState.phase === "SPELL_LEARN" && !isDispatching) {
+    spellLearnUI.show(appState);
+  } else {
+    spellLearnUI.hide();
+  }
   const stage = getCurrentStage(appState.dungeon);
   updateStageProgress(
     appState.dungeon.roomsCleared,

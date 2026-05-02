@@ -37,7 +37,7 @@ interface SavedCombat {
 
 interface SavedState {
   version: number;
-  phase: "EXPLORING" | "COMBAT" | "CHEST" | "STAGE_TRANSITION";
+  phase: "EXPLORING" | "COMBAT" | "CHEST" | "STAGE_TRANSITION" | "SPELL_LEARN";
   isBoss: boolean;
   player: SavedPlayer;
   combat?: SavedCombat;
@@ -59,7 +59,7 @@ export function saveGame(state: AppState): void {
 
   const saved: SavedState = {
     version: SAVE_VERSION,
-    phase: state.phase,
+    phase: state.phase === "SPELL_LEARN" ? "EXPLORING" : state.phase,
     isBoss: state.phase === "COMBAT" ? state.isBoss : false,
     player: {
       hp: player.hp,

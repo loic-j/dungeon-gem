@@ -5,6 +5,7 @@ import type {
   ChestState,
   GameOverState,
   StageTransitionState,
+  SpellLearnState,
   Step,
 } from "./appState";
 import {
@@ -32,6 +33,8 @@ import {
   initEncounterState,
 } from "./encounterSystem";
 import { findMonster, pickMonsterFromIds } from "./data/monsters";
+import { SPELL_LIBRARY } from "./data/spells";
+import type { Spell } from "./types";
 
 // ── Exploring ────────────────────────────────────────────────────────────────
 
@@ -370,23 +373,83 @@ function victorySteps(state: CombatAppState): Step[] {
       ]
     : [];
 
-  const next: ExploringState = {
-    phase: "EXPLORING",
-    player,
-    dungeon: completeRoom(state.dungeon),
-    encounter: onEncounterFinished("monster", state.encounter),
-  };
-
-  return [
+  const baseSteps: Step[] = [
     ...bossCleanup,
     { type: "effect", effect: { type: "PLAY_VICTORY_SOUND" } },
     {
       type: "effect",
       effect: { type: "SHOW_MESSAGE", text: msg, color: "#2b8" },
     },
+  ];
+
+  const dungeon = completeRoom(state.dungeon);
+  const encounter = onEncounterFinished("monster", state.encounter);
+
+  if (leveledUp) {
+    const choices = pickSpellChoices(player);
+    const learnState: SpellLearnState = {
+      phase: "SPELL_LEARN",
+      player,
+      choices,
+      dungeon,
+      encounter,
+    };
+    return [...baseSteps, { type: "state", state: learnState }];
+  }
+
+  const next: ExploringState = {
+    phase: "EXPLORING",
+    player,
+    dungeon,
+    encounter,
+  };
+  return [
+    ...baseSteps,
     { type: "state", state: next },
     ...roomCompletionSteps(next),
   ];
+}
+
+function pickSpellChoices(player: { spells: Spell[] }): Spell[] {
+  const owned = new Set(player.spells.map((s) => s.id));
+  const available = SPELL_LIBRARY.filter((s) => !owned.has(s.id));
+  for (let i = available.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [available[i], available[j]] = [available[j]!, available[i]!];
+  }
+  return available.slice(0, 3);
+}
+
+export function learnSpell(
+  state: SpellLearnState,
+  spellId: string,
+  replaceId?: string,
+): Step[] {
+  const spell = SPELL_LIBRARY.find((s) => s.id === spellId);
+  if (!spell) return skipSpellLearn(state);
+
+  let spells = [...state.player.spells];
+  if (replaceId) spells = spells.filter((s) => s.id !== replaceId);
+  spells = [...spells, spell];
+
+  const player = { ...state.player, spells };
+  const next: ExploringState = {
+    phase: "EXPLORING",
+    player,
+    dungeon: state.dungeon,
+    encounter: state.encounter,
+  };
+  return [{ type: "state", state: next }, ...roomCompletionSteps(next)];
+}
+
+export function skipSpellLearn(state: SpellLearnState): Step[] {
+  const next: ExploringState = {
+    phase: "EXPLORING",
+    player: state.player,
+    dungeon: state.dungeon,
+    encounter: state.encounter,
+  };
+  return [{ type: "state", state: next }, ...roomCompletionSteps(next)];
 }
 
 function gameOverSteps(state: CombatAppState): Step[] {

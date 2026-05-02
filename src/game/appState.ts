@@ -1,4 +1,4 @@
-import type { CombatState, Player, MonsterType, Element } from "./types";
+import type { CombatState, Player, MonsterType, Element, Spell } from "./types";
 import type { DungeonProgress } from "./dungeon";
 import type { EncounterState } from "./encounterSystem";
 
@@ -34,12 +34,19 @@ export interface StageTransitionState extends BaseState {
   stairsReached: boolean;
 }
 
+export interface SpellLearnState extends BaseState {
+  phase: "SPELL_LEARN";
+  player: Player;
+  choices: Spell[];
+}
+
 export type AppState =
   | ExploringState
   | CombatAppState
   | ChestState
   | GameOverState
-  | StageTransitionState;
+  | StageTransitionState
+  | SpellLearnState;
 
 export type Effect =
   | { type: "PLAY_FOOTSTEP" }

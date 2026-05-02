@@ -70,7 +70,7 @@ export const SPELL_LIBRARY: Spell[] = [
     id: "fireball",
     name: "Fireball",
     element: "fire",
-    damage: 11,
+    damage: 14,
     manaCost: ["fire", "fire"],
     weight: 1,
   },
@@ -79,7 +79,7 @@ export const SPELL_LIBRARY: Spell[] = [
     name: "Tidal Wave",
     element: "water",
     damage: 10,
-    manaCost: ["water", "water"],
+    manaCost: ["water", "any"],
     weight: 1,
   },
   {
