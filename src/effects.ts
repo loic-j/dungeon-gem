@@ -65,12 +65,16 @@ export async function executeEffect(
     case "PLAY_GAME_OVER_SOUND":
       playGameOverSound();
       break;
-    case "PLAY_MONSTER_APPEAR_SOUND":
-      deps.getState().combat.monster.definition.appearSound();
+    case "PLAY_MONSTER_APPEAR_SOUND": {
+      const s = deps.getState();
+      if (s.phase === "COMBAT") s.combat.monster.definition.appearSound();
       break;
-    case "PLAY_MONSTER_ATTACK_SOUND":
-      deps.getState().combat.monster.definition.attackSound();
+    }
+    case "PLAY_MONSTER_ATTACK_SOUND": {
+      const s = deps.getState();
+      if (s.phase === "COMBAT") s.combat.monster.definition.attackSound();
       break;
+    }
     case "START_BACKGROUND_MUSIC":
       if (deps.isMusicEnabled()) startBackgroundMusic();
       break;

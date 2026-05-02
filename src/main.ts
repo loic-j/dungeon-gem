@@ -8,7 +8,8 @@ import {
   stopBackgroundMusic,
   stopBossMusic,
 } from "./audio/soundManager";
-import { initCombat } from "./game/turnMachine";
+import { initPlayer } from "./game/turnMachine";
+import { SKELETON } from "./game/data/monsters";
 import { initEncounterState } from "./game/encounterSystem";
 import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
 import type { DungeonProgress } from "./game/dungeon";
@@ -36,8 +37,8 @@ function createFreshState(): AppState {
   const encounter = initEncounterState(
     getCurrentStage(dungeon).encounterConfigs,
   );
-  const combat = initCombat();
-  return { phase: "EXPLORING", encounter, combat, dungeon };
+  const player = initPlayer();
+  return { phase: "EXPLORING", player, encounter, dungeon };
 }
 
 // ── Initial state ──────────────────────────────────────────────────────────────
@@ -47,9 +48,11 @@ let appState: AppState = savedState ?? createFreshState();
 let isDispatching = false;
 
 // ── Renderer ───────────────────────────────────────────────────────────────────
+const initialMonster =
+  appState.phase === "COMBAT" ? appState.combat.monster.definition : SKELETON;
 const { objects, animateWalk, setMonsterType } = initScene(
   canvas,
-  appState.combat.monster.definition,
+  initialMonster,
   appState.dungeon.dungeon.graphics,
 );
 
@@ -110,7 +113,6 @@ newGameBtn.addEventListener("click", () => {
   clearSave();
   appState = createFreshState();
   isDispatching = false;
-  setMonsterType(appState.combat.monster.definition);
   setBossMode(false);
   tick();
 });
@@ -151,7 +153,10 @@ async function dispatch(steps: Step[]): Promise<void> {
 // ── UI sync ────────────────────────────────────────────────────────────────────
 function tick() {
   const inCombat = appState.phase === "COMBAT";
-  render(appState.combat, isDispatching, inCombat);
+  const player =
+    appState.phase === "COMBAT" ? appState.combat.player : appState.player;
+  const combat = appState.phase === "COMBAT" ? appState.combat : null;
+  render(player, combat, isDispatching);
   objects.monsterSprite.visible = inCombat;
   controls.sync(appState.phase, isDispatching);
   const stage = getCurrentStage(appState.dungeon);
@@ -178,7 +183,6 @@ if (savedState !== null) {
     onNewGame() {
       clearSave();
       appState = createFreshState();
-      setMonsterType(appState.combat.monster.definition);
       setBossMode(false);
       startScreen.hide();
       tick();

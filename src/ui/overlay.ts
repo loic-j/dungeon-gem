@@ -1,5 +1,6 @@
 import type {
   CombatState,
+  Player,
   ManaToken,
   ActiveMonster,
   MonsterSpell,
@@ -19,7 +20,7 @@ export interface OverlayCallbacks {
 }
 
 export interface OverlayControls {
-  render: (state: CombatState, locked: boolean, inCombat: boolean) => void;
+  render: (player: Player, combat: CombatState | null, locked: boolean) => void;
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => Promise<void>;
   showMonsterAttack: (spellName: string, damage: number) => void;
@@ -251,14 +252,15 @@ export function createOverlay(
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  function render(state: CombatState, locked: boolean, inCombat: boolean) {
-    const { player, monster } = state;
+  function render(player: Player, combat: CombatState | null, locked: boolean) {
+    const inCombat = combat !== null;
 
     topBar.style.display = inCombat ? "" : "none";
     skipBtn.style.visibility = inCombat ? "visible" : "hidden";
     skipBtn.style.pointerEvents = inCombat ? "auto" : "none";
 
-    if (inCombat) {
+    if (combat) {
+      const { monster } = combat;
       enemyHpLabel.textContent = `Enemy HP: ${monster.hp} / ${monster.definition.maxHp}`;
       const enemyHpRatio = Math.max(0, monster.hp / monster.definition.maxHp);
       enemyHpFill.style.width = `${Math.round(enemyHpRatio * 100)}%`;

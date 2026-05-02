@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
-  initCombat,
+  initPlayer,
   processManaPhase,
   processPlayerAction,
   processMonsterPhase,
@@ -11,27 +11,40 @@ import { SKELETON } from "./data/monsters";
 
 afterEach(() => vi.restoreAllMocks());
 
-describe("initCombat", () => {
+const initCombat = () => resetCombat(initPlayer(), SKELETON);
+
+describe("initPlayer", () => {
   it("player starts at 20/20 HP", () => {
-    const state = initCombat();
-    expect(state.player.hp).toBe(20);
-    expect(state.player.maxHp).toBe(20);
+    const player = initPlayer();
+    expect(player.hp).toBe(20);
+    expect(player.maxHp).toBe(20);
   });
 
   it("player starts with 0 mana tokens", () => {
-    const state = initCombat();
-    expect(state.player.manaPool).toHaveLength(0);
+    const player = initPlayer();
+    expect(player.manaPool).toHaveLength(0);
   });
+});
 
+describe("resetCombat", () => {
   it("monster starts at 10/10 HP", () => {
-    const state = initCombat();
+    const state = resetCombat(initPlayer(), SKELETON);
     expect(state.monster.hp).toBe(10);
     expect(state.monster.definition.maxHp).toBe(10);
   });
 
   it("monster starts with 0 action points", () => {
-    const state = initCombat();
+    const state = resetCombat(initPlayer(), SKELETON);
     expect(state.monster.actionPoints).toBe(0);
+  });
+
+  it("mana pool reset to empty", () => {
+    const player = {
+      ...initPlayer(),
+      manaPool: ["fire" as const, "water" as const, "nature" as const],
+    };
+    const next = resetCombat(player, SKELETON);
+    expect(next.player.manaPool).toHaveLength(0);
   });
 });
 
@@ -133,38 +146,5 @@ describe("checkCombatEnd", () => {
 
   it("null when combat ongoing", () => {
     expect(checkCombatEnd(initCombat())).toBeNull();
-  });
-});
-
-describe("resetCombat", () => {
-  it("monster returns to 10/10 HP", () => {
-    const state = {
-      ...initCombat(),
-      monster: { ...initCombat().monster, hp: 2 },
-    };
-    const next = resetCombat(state, SKELETON);
-    expect(next.monster.hp).toBe(10);
-    expect(next.monster.definition.maxHp).toBe(10);
-  });
-
-  it("monster AP reset to 0", () => {
-    const state = {
-      ...initCombat(),
-      monster: { ...initCombat().monster, actionPoints: 5 },
-    };
-    const next = resetCombat(state, SKELETON);
-    expect(next.monster.actionPoints).toBe(0);
-  });
-
-  it("mana pool reset to 1 token", () => {
-    const state = {
-      ...initCombat(),
-      player: {
-        ...initCombat().player,
-        manaPool: ["fire" as const, "water" as const, "nature" as const],
-      },
-    };
-    const next = resetCombat(state, SKELETON);
-    expect(next.player.manaPool).toHaveLength(0);
   });
 });

@@ -60,7 +60,7 @@ function bossEncounterSteps(state: ExploringState): Step[] {
   const boss = findMonster(state.dungeon.dungeon.bossMonster);
   if (!boss) return emptyRoomSteps(state);
 
-  const combat = processManaPhase(resetCombat(state.combat, boss));
+  const combat = processManaPhase(resetCombat(state.player, boss));
   const next: CombatAppState = {
     phase: "COMBAT",
     isBoss: true,
@@ -94,7 +94,7 @@ function bossEncounterSteps(state: ExploringState): Step[] {
 function monsterEncounterSteps(state: ExploringState): Step[] {
   const stage = getCurrentStage(state.dungeon);
   const monster = pickMonsterFromIds(stage.availableMonsters);
-  const combat = processManaPhase(resetCombat(state.combat, monster));
+  const combat = processManaPhase(resetCombat(state.player, monster));
   const next: CombatAppState = {
     phase: "COMBAT",
     isBoss: false,
@@ -119,7 +119,7 @@ function monsterEncounterSteps(state: ExploringState): Step[] {
 function chestRoomSteps(state: ExploringState): Step[] {
   const next: ChestState = {
     phase: "CHEST",
-    combat: state.combat,
+    player: state.player,
     dungeon: state.dungeon,
     encounter: state.encounter,
   };
@@ -147,7 +147,7 @@ function roomCompletionSteps(state: ExploringState): Step[] {
   const nextDungeon = advanceToNextStage(state.dungeon);
   const next: ExploringState = {
     phase: "EXPLORING",
-    combat: state.combat,
+    player: state.player,
     dungeon: nextDungeon,
     encounter: initEncounterState(
       getCurrentStage(nextDungeon).encounterConfigs,
@@ -170,7 +170,7 @@ function dungeonCompleteSteps(state: ExploringState): Step[] {
   const resetDungeon = resetDungeonProgress(state.dungeon);
   const next: ExploringState = {
     phase: "EXPLORING",
-    combat: state.combat,
+    player: state.player,
     dungeon: resetDungeon,
     encounter: initEncounterState(
       getCurrentStage(resetDungeon).encounterConfigs,
@@ -194,7 +194,7 @@ function dungeonCompleteSteps(state: ExploringState): Step[] {
 export function openChest(state: ChestState): Step[] {
   const next: ExploringState = {
     phase: "EXPLORING",
-    combat: state.combat,
+    player: state.player,
     dungeon: completeRoom(state.dungeon),
     encounter: onEncounterFinished("chest", state.encounter),
   };
@@ -310,7 +310,7 @@ function victorySteps(state: CombatAppState): Step[] {
 
   const next: ExploringState = {
     phase: "EXPLORING",
-    combat: { ...state.combat, player },
+    player,
     dungeon: completeRoom(state.dungeon),
     encounter: onEncounterFinished("monster", state.encounter),
   };
@@ -337,7 +337,7 @@ function gameOverSteps(state: CombatAppState): Step[] {
 
   const next: GameOverState = {
     phase: "GAME_OVER",
-    combat: state.combat,
+    player: state.combat.player,
     dungeon: state.dungeon,
     encounter: state.encounter,
   };

@@ -1,28 +1,31 @@
-import type { CombatState, MonsterType, Element } from "./types";
+import type { CombatState, Player, MonsterType, Element } from "./types";
 import type { DungeonProgress } from "./dungeon";
 import type { EncounterState } from "./encounterSystem";
 
 interface BaseState {
-  combat: CombatState;
   dungeon: DungeonProgress;
   encounter: EncounterState;
 }
 
 export interface ExploringState extends BaseState {
   phase: "EXPLORING";
+  player: Player;
 }
 
 export interface CombatAppState extends BaseState {
   phase: "COMBAT";
+  combat: CombatState;
   isBoss: boolean;
 }
 
 export interface ChestState extends BaseState {
   phase: "CHEST";
+  player: Player;
 }
 
 export interface GameOverState extends BaseState {
   phase: "GAME_OVER";
+  player: Player;
 }
 
 export type AppState =

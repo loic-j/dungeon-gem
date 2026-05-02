@@ -1,4 +1,4 @@
-import type { CombatState, MonsterSpell, MonsterType } from "./types";
+import type { CombatState, Player, MonsterSpell, MonsterType } from "./types";
 import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
@@ -8,26 +8,21 @@ import {
   ACTION_POINTS_AFTER_ATTACK,
 } from "./constants";
 import { SPELL_LIBRARY } from "./data/spells";
-import { SKELETON, spawnMonster } from "./data/monsters";
+import { spawnMonster } from "./data/monsters";
 import { addManaToPool, initManaPool } from "./mana";
 import { applyPlayerSpell, applyMonsterSpell } from "./combat";
 import { rollMonsterAttack, chooseMonsterSpell } from "./monsterAI";
 
-export function initCombat(): CombatState {
+export function initPlayer(): Player {
   return {
-    player: {
-      hp: PLAYER_START_HP,
-      maxHp: PLAYER_START_HP,
-      manaPool: initManaPool(),
-      maxMana: PLAYER_START_MAX_MANA,
-      spells: SPELL_LIBRARY,
-      level: PLAYER_START_LEVEL,
-      experience: PLAYER_START_EXPERIENCE,
-      experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
-    },
-    monster: spawnMonster(SKELETON),
-    phase: "PLAYER_ACTION",
-    turn: 0,
+    hp: PLAYER_START_HP,
+    maxHp: PLAYER_START_HP,
+    manaPool: initManaPool(),
+    maxMana: PLAYER_START_MAX_MANA,
+    spells: SPELL_LIBRARY,
+    level: PLAYER_START_LEVEL,
+    experience: PLAYER_START_EXPERIENCE,
+    experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
   };
 }
 
@@ -107,16 +102,9 @@ export function checkCombatEnd(
   return null;
 }
 
-export function resetCombat(
-  state: CombatState,
-  monster: MonsterType,
-): CombatState {
+export function resetCombat(player: Player, monster: MonsterType): CombatState {
   return {
-    ...state,
-    player: {
-      ...state.player,
-      manaPool: initManaPool(),
-    },
+    player: { ...player, manaPool: initManaPool() },
     monster: spawnMonster(monster),
     phase: "PLAYER_ACTION",
     turn: 0,
