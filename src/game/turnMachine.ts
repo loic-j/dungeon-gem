@@ -54,6 +54,15 @@ export function processPlayerAction(
   return { ...applyPlayerSpell(state, spell), phase: "MONSTER_ACTION" };
 }
 
+export function processPlayerCast(
+  state: CombatState,
+  spellId: string,
+): CombatState {
+  const spell = state.player.spells.find((s) => s.id === spellId);
+  if (!spell) return state;
+  return { ...applyPlayerSpell(state, spell), phase: "PLAYER_ACTION" };
+}
+
 export function processMonsterPhase(state: CombatState): {
   state: CombatState;
   attacked: boolean;

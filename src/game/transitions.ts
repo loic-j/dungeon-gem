@@ -8,6 +8,7 @@ import type {
 } from "./appState";
 import {
   processPlayerAction,
+  processPlayerCast,
   processMonsterPhase,
   processManaPhase,
   checkCombatEnd,
@@ -208,6 +209,32 @@ export function openChest(state: ChestState): Step[] {
 }
 
 // ── Combat ────────────────────────────────────────────────────────────────────
+
+export function castSpell(state: CombatAppState, spellId: string): Step[] {
+  const steps: Step[] = [];
+  const spell = state.combat.player.spells.find((s) => s.id === spellId);
+  if (!spell) return steps;
+
+  steps.push(
+    {
+      type: "effect",
+      effect: { type: "PLAY_SPELL_SOUND", element: spell.element },
+    },
+    { type: "effect", effect: { type: "ANIMATE_PLAYER_ATTACK" } },
+  );
+
+  const afterSpell = processPlayerCast(state.combat, spellId);
+  steps.push({
+    type: "state",
+    state: { ...state, combat: afterSpell } as AppState,
+  });
+
+  if (checkCombatEnd(afterSpell) === "VICTORY") {
+    return [...steps, ...victorySteps({ ...state, combat: afterSpell })];
+  }
+
+  return steps;
+}
 
 export function takeTurn(
   state: CombatAppState,

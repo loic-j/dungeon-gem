@@ -14,7 +14,12 @@ import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
 import type { DungeonProgress } from "./game/dungeon";
 import { DUNGEON_1 } from "./game/data/dungeons";
 import type { AppState, Step } from "./game/appState";
-import { moveForward, openChest, takeTurn } from "./game/transitions";
+import {
+  moveForward,
+  openChest,
+  takeTurn,
+  castSpell,
+} from "./game/transitions";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
 
@@ -64,7 +69,7 @@ const {
 } = createOverlay(uiRoot, {
   onSpell: (spellId) => {
     if (!isDispatching && appState.phase === "COMBAT")
-      void dispatch(takeTurn(appState, spellId));
+      void dispatch(castSpell(appState, spellId));
   },
   onSkip: () => {
     if (!isDispatching && appState.phase === "COMBAT")
