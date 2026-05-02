@@ -9,7 +9,6 @@ import {
   stopBossMusic,
 } from "./audio/soundManager";
 import { initPlayer } from "./game/turnMachine";
-import { SKELETON } from "./game/data/monsters";
 import { initEncounterState } from "./game/encounterSystem";
 import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
 import type { DungeonProgress } from "./game/dungeon";
@@ -48,13 +47,12 @@ let appState: AppState = savedState ?? createFreshState();
 let isDispatching = false;
 
 // ── Renderer ───────────────────────────────────────────────────────────────────
-const initialMonster =
-  appState.phase === "COMBAT" ? appState.combat.monster.definition : SKELETON;
 const { objects, animateWalk, setMonsterType } = initScene(
   canvas,
-  initialMonster,
   appState.dungeon.dungeon.graphics,
 );
+if (appState.phase === "COMBAT")
+  setMonsterType(appState.combat.monster.definition);
 
 const {
   render,

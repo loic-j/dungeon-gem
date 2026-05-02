@@ -2,11 +2,7 @@ import * as THREE from "three";
 import type { MonsterType } from "../game/types";
 import type { DungeonGraphics } from "../game/dungeon";
 import { createDungeon } from "./dungeon";
-import {
-  createMonsterSprite,
-  createChestClosedSprite,
-  createChestOpenSprite,
-} from "./sprites";
+import { createChestClosedSprite, createChestOpenSprite } from "./sprites";
 
 export interface SceneObjects {
   monsterSprite: THREE.Sprite;
@@ -16,7 +12,6 @@ export interface SceneObjects {
 
 export function initScene(
   canvas: HTMLCanvasElement,
-  monsterType: MonsterType,
   dungeonGraphics: DungeonGraphics,
 ): {
   renderer: THREE.WebGLRenderer;
@@ -51,7 +46,9 @@ export function initScene(
     monsterSprite.position.set(...position);
   }
 
-  const monsterSprite = createMonsterSprite(monsterType);
+  const monsterSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ transparent: true }),
+  );
   scene.add(monsterSprite);
 
   const chestClosedSprite = createChestClosedSprite();
