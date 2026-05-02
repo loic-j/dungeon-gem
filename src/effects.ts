@@ -61,7 +61,7 @@ export async function executeEffect(
       await delay(effect.ms);
       break;
     case "PLAY_SPELL_SOUND":
-      playSpellSound(effect.element);
+      if (effect.element !== null) playSpellSound(effect.element);
       break;
     case "PLAY_VICTORY_SOUND":
       playVictorySound();

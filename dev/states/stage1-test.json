@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "phase": "EXPLORING",
+  "isBoss": false,
+  "player": {
+    "hp": 100,
+    "maxHp": 100,
+    "manaPool": [],
+    "maxMana": 3,
+    "level": 10,
+    "experience": 0,
+    "experienceToNextLevel": 103,
+    "spellIds": ["water_wall", "wave", "bolt", "roots"]
+  },
+  "dungeon": {
+    "id": "dungeon_1",
+    "currentStageIndex": 0,
+    "roomsCleared": 0
+  },
+  "encounter": {
+    "currentChances": { "monster": 0.5, "chest": 0.2 }
+  }
+}

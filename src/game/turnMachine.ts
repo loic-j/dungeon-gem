@@ -7,11 +7,12 @@ import {
   xpToNextLevel,
   ACTION_POINTS_AFTER_ATTACK,
 } from "./constants";
-import { SPELL_LIBRARY } from "./data/spells";
+import { SPELL_LIBRARY, STARTER_SPELLS } from "./data/spells";
 import { spawnMonster } from "./data/monsters";
 import { addManaToPool, initManaPool } from "./mana";
 import { applyPlayerSpell, applyMonsterSpell } from "./combat";
 import { rollMonsterAttack, chooseMonsterSpell } from "./monsterAI";
+import { tickEffects, hasSlowEffect } from "./statusEffects";
 
 export function initPlayer(): Player {
   return {
@@ -19,7 +20,7 @@ export function initPlayer(): Player {
     maxHp: PLAYER_START_HP,
     manaPool: initManaPool(),
     maxMana: PLAYER_START_MAX_MANA,
-    spells: SPELL_LIBRARY,
+    spells: SPELL_LIBRARY.filter((s) => STARTER_SPELLS.includes(s.id)),
     level: PLAYER_START_LEVEL,
     experience: PLAYER_START_EXPERIENCE,
     experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
@@ -27,6 +28,7 @@ export function initPlayer(): Player {
 }
 
 export function processManaPhase(state: CombatState): CombatState {
+  const slow = hasSlowEffect(state.monsterEffects);
   return {
     ...state,
     turn: state.turn + 1,
@@ -36,7 +38,9 @@ export function processManaPhase(state: CombatState): CombatState {
     },
     monster: {
       ...state.monster,
-      actionPoints: state.monster.actionPoints + 1,
+      actionPoints: slow
+        ? state.monster.actionPoints
+        : state.monster.actionPoints + 1,
     },
     phase: "PLAYER_ACTION",
   };
@@ -103,6 +107,10 @@ export function processMonsterPhase(state: CombatState): {
   };
 }
 
+export function processStatusEffects(state: CombatState): CombatState {
+  return tickEffects(state);
+}
+
 export function checkCombatEnd(
   state: CombatState,
 ): "VICTORY" | "GAME_OVER" | null {
@@ -117,5 +125,7 @@ export function resetCombat(player: Player, monster: MonsterType): CombatState {
     monster: spawnMonster(monster),
     phase: "PLAYER_ACTION",
     turn: 0,
+    playerEffects: [],
+    monsterEffects: [],
   };
 }

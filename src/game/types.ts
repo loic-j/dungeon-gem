@@ -1,13 +1,33 @@
 export type Element = "fire" | "water" | "nature" | "lightning";
 export type ManaToken = Element;
+export type SpellManaCost = Element | "any";
+
+export type SpellEffectDef =
+  | { type: "burn"; damage: number }
+  | { type: "shield"; amount: number }
+  | { type: "amplify"; bonus: number }
+  | { type: "heal"; amount: number }
+  | { type: "poison"; damage: number; turns: number }
+  | { type: "regen"; amount: number; turns: number }
+  | { type: "stun" }
+  | { type: "slow"; turns: number };
+
+export type StatusEffect =
+  | { type: "burn"; damage: number }
+  | { type: "shield"; amount: number }
+  | { type: "amplify"; bonus: number }
+  | { type: "poison"; damage: number; turnsLeft: number }
+  | { type: "regen"; amount: number; turnsLeft: number }
+  | { type: "slow"; turnsLeft: number };
 
 export interface Spell {
   id: string;
   name: string;
-  element: Element;
+  element: Element | null;
   damage: number;
-  manaCost: ManaToken[];
+  manaCost: SpellManaCost[];
   weight: number;
+  effect?: SpellEffectDef;
 }
 
 export interface MonsterSpell {
@@ -72,4 +92,6 @@ export interface CombatState {
   monster: ActiveMonster;
   phase: TurnPhase;
   turn: number;
+  playerEffects: StatusEffect[];
+  monsterEffects: StatusEffect[];
 }

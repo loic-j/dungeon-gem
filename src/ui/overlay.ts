@@ -4,15 +4,30 @@ import type {
   ManaToken,
   ActiveMonster,
   MonsterSpell,
+  StatusEffect,
+  Element,
+  Spell,
+  SpellManaCost,
 } from "../game/types";
 import { canCastSpell } from "../game/mana";
+import { getEffectIconInfo } from "../game/statusEffects";
 
-const ELEMENT_COLOR: Record<ManaToken, string> = {
+const ELEMENT_COLOR: Record<Element, string> = {
   fire: "#e84a1a",
   water: "#1a7ae8",
   nature: "#2db84b",
   lightning: "#e8c01a",
 };
+
+const ELEMENT_BG: Record<Element, string> = {
+  fire: "rgba(232,74,26,0.18)",
+  water: "rgba(26,122,232,0.18)",
+  nature: "rgba(45,184,75,0.18)",
+  lightning: "rgba(232,192,26,0.18)",
+};
+
+const NEUTRAL_COLOR = "#aaaaaa";
+const NEUTRAL_BG = "rgba(100,100,100,0.12)";
 
 export interface OverlayCallbacks {
   onSpell: (spellId: string) => void;
@@ -85,6 +100,11 @@ export function createOverlay(
   dangerFill.dataset["testid"] = "danger-fill";
   dangerBar.appendChild(dangerFill);
   dangerWrap.append(dangerLabel, dangerBar);
+
+  const monsterEffectsRow = div(
+    "margin-top:4px; display:flex; gap:4px; flex-wrap:wrap; pointer-events:auto;",
+  );
+
   const nextSpellWrap = div(
     "margin-top:6px; display:flex; gap:6px; pointer-events:none;",
   );
@@ -94,6 +114,7 @@ export function createOverlay(
     enemyHpWrapper,
     enemyLvlLabel,
     dangerWrap,
+    monsterEffectsRow,
     nextSpellWrap,
   );
   container.appendChild(topBar);
@@ -162,6 +183,11 @@ export function createOverlay(
 
   const manaRow = div("display:flex; gap:5px; flex-wrap:wrap;");
   manaRow.dataset["testid"] = "mana-row";
+
+  const playerEffectsRow = div(
+    "display:flex; gap:4px; flex-wrap:wrap; pointer-events:auto;",
+  );
+
   const spellsCol = div("display:flex; flex-direction:column; gap:5px;");
   rightCol.append(
     hpWrapper,
@@ -169,11 +195,70 @@ export function createOverlay(
     xpWrapper,
     stageWrapper,
     manaRow,
+    playerEffectsRow,
     spellsCol,
   );
 
   bottom.append(charOval, leftCol, rightCol);
   container.appendChild(bottom);
+
+  // ── Tooltip ────────────────────────────────────────────────────────────────
+  const tooltip = div(
+    "position:absolute; background:rgba(0,0,0,0.92); border:1px solid #555; border-radius:6px; padding:8px 12px; font-size:13px; color:#eee; pointer-events:none; z-index:20; max-width:210px; display:none; line-height:1.5;",
+  );
+  container.appendChild(tooltip);
+
+  let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showTooltip(
+    content: string | HTMLElement,
+    anchorEl: HTMLElement,
+  ): void {
+    if (typeof content === "string") {
+      tooltip.textContent = content;
+    } else {
+      tooltip.replaceChildren(content);
+    }
+    tooltip.style.display = "";
+    const rect = anchorEl.getBoundingClientRect();
+    const cRect = container.getBoundingClientRect();
+    tooltip.style.left = `${rect.left - cRect.left}px`;
+    tooltip.style.top = `${rect.bottom - cRect.top + 4}px`;
+  }
+
+  function hideTooltip(): void {
+    if (hoverTimer !== null) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    tooltip.style.display = "none";
+  }
+
+  function makeEffectIcon(effect: StatusEffect): HTMLElement {
+    const info = getEffectIconInfo(effect);
+    const el = div(
+      `font-size:18px; width:28px; height:28px; border-radius:5px; display:flex; align-items:center; justify-content:center; cursor:default; border:1px solid ${info.color}; background:rgba(0,0,0,0.5); pointer-events:auto;`,
+    );
+    el.textContent = info.emoji;
+    el.title = info.description;
+    el.addEventListener("mouseenter", () => showTooltip(info.description, el));
+    el.addEventListener("mouseleave", hideTooltip);
+    el.addEventListener("click", () => {
+      if (tooltip.style.display === "none") {
+        showTooltip(info.description, el);
+      } else {
+        hideTooltip();
+      }
+    });
+    return el;
+  }
+
+  function renderEffects(row: HTMLElement, effects: StatusEffect[]): void {
+    row.replaceChildren();
+    for (const effect of effects) {
+      row.appendChild(makeEffectIcon(effect));
+    }
+  }
 
   // ── Next spell helpers ─────────────────────────────────────────────────────
   function getSwordCount(spell: MonsterSpell, monster: ActiveMonster): number {
@@ -278,8 +363,10 @@ export function createOverlay(
       );
       dangerFill.style.width = `${Math.round(prob * 100)}%`;
       updateSwords(monster.nextSpell, monster);
+      renderEffects(monsterEffectsRow, combat.monsterEffects);
     } else {
       nextSpellWrap.replaceChildren();
+      monsterEffectsRow.replaceChildren();
     }
 
     playerHpLabel.textContent = `HP: ${player.hp} / ${player.maxHp}`;
@@ -296,7 +383,7 @@ export function createOverlay(
     // Mana circles
     manaRow.replaceChildren();
     for (let i = 0; i < player.maxMana; i++) {
-      const token = player.manaPool[i];
+      const token = player.manaPool[i] as ManaToken | undefined;
       const img = document.createElement("img");
       img.src = token
         ? `/sprites/mana-${token}.svg`
@@ -305,37 +392,119 @@ export function createOverlay(
       manaRow.appendChild(img);
     }
 
+    // Player effects
+    if (combat) {
+      renderEffects(playerEffectsRow, combat.playerEffects);
+    } else {
+      playerEffectsRow.replaceChildren();
+    }
+
     // Spell buttons
     spellsCol.replaceChildren();
     for (const spell of player.spells) {
       const castable =
         inCombat && !locked && canCastSpell(player.manaPool, spell.manaCost);
-      const color = ELEMENT_COLOR[spell.element];
+      const color = spell.element
+        ? ELEMENT_COLOR[spell.element]
+        : NEUTRAL_COLOR;
+      const bg = spell.element ? ELEMENT_BG[spell.element] : NEUTRAL_BG;
 
       const btn = document.createElement("button");
       btn.style.cssText = `width:100%; padding:8px 10px; text-align:left;
-        background:${castable ? "#1a2a3a" : "#111"};
-        border:1px solid ${castable ? color : "#333"};
-        border-radius:5px; color:${castable ? "#fff" : "#555"};
+        background:${castable ? bg : "#0d0d0d"};
+        border:1px solid ${castable ? color : "#2a2a2a"};
+        border-radius:5px; color:${castable ? "#fff" : "#444"};
         font-size:17px; cursor:${castable ? "pointer" : "default"};
-        pointer-events:${castable ? "auto" : "none"};
+        pointer-events:auto;
         touch-action:manipulation;
-        display:flex; justify-content:space-between; align-items:center;`;
+        display:flex; justify-content:space-between; align-items:center; gap:6px;`;
 
-      const dot = div(`display:inline-block; width:10px; height:10px;
-        border-radius:50%; background:${color}; margin-right:6px; flex-shrink:0;`);
+      const nameSpan = span(
+        "flex:1; min-width:0; display:flex; align-items:center; gap:5px; overflow:hidden;",
+      );
+      if (spell.element) {
+        const elIcon = document.createElement("img");
+        elIcon.src = `/sprites/mana-${spell.element}.svg`;
+        elIcon.style.cssText = `width:18px; height:18px; flex-shrink:0; opacity:${castable ? "1" : "0.3"};`;
+        nameSpan.appendChild(elIcon);
+      } else {
+        const dot = div(
+          `width:18px; height:18px; flex-shrink:0; border-radius:50%; border:1px solid ${castable ? "#888" : "#333"};`,
+        );
+        nameSpan.appendChild(dot);
+      }
+      const nameTxt = document.createElement("span");
+      nameTxt.style.cssText =
+        "overflow:hidden; text-overflow:ellipsis; white-space:nowrap;";
+      nameTxt.textContent = spell.name;
+      nameSpan.appendChild(nameTxt);
 
-      const nameSpan = span("");
-      nameSpan.style.display = "flex";
-      nameSpan.style.alignItems = "center";
-      nameSpan.appendChild(dot);
-      nameSpan.appendChild(document.createTextNode(spell.name));
+      const rightSpan = span(
+        "display:flex; align-items:center; gap:4px; flex-shrink:0;",
+      );
 
-      const dmgSpan = span("opacity:0.6; font-size:15px;");
-      dmgSpan.textContent = `${spell.damage} dmg`;
+      // Mana cost icons
+      const costWrap = span("display:flex; gap:2px; align-items:center;");
+      for (const token of spell.manaCost) {
+        costWrap.appendChild(makeManaIcon(token, castable));
+      }
+      rightSpan.appendChild(costWrap);
+
+      // Damage
+      if (spell.damage > 0) {
+        const dmgSpan = span(
+          `font-size:14px; opacity:${castable ? "0.7" : "0.3"}; margin-left:4px;`,
+        );
+        dmgSpan.textContent = `${spell.damage}`;
+        rightSpan.appendChild(dmgSpan);
+      }
+
+      // Effect badge
+      if (spell.effect) {
+        const effectBadge = span(
+          `font-size:14px; opacity:${castable ? "1" : "0.3"};`,
+        );
+        effectBadge.textContent = formatEffectEmoji(spell.effect.type);
+        rightSpan.appendChild(effectBadge);
+      }
 
       btn.dataset["testid"] = `spell-${spell.id}`;
-      btn.append(nameSpan, dmgSpan);
+      btn.append(nameSpan, rightSpan);
+
+      // Tooltip
+      let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+
+      btn.addEventListener("mouseenter", () => {
+        hoverTimer = setTimeout(
+          () => showTooltip(buildSpellTooltipEl(spell), btn),
+          1000,
+        );
+      });
+      btn.addEventListener("mouseleave", hideTooltip);
+      btn.addEventListener(
+        "touchstart",
+        (e) => {
+          longPressTimer = setTimeout(() => {
+            e.preventDefault();
+            showTooltip(buildSpellTooltipEl(spell), btn);
+          }, 1000);
+        },
+        { passive: true },
+      );
+      btn.addEventListener("touchend", () => {
+        if (longPressTimer !== null) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        setTimeout(hideTooltip, 1200);
+      });
+      btn.addEventListener("touchmove", () => {
+        if (longPressTimer !== null) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      });
+
       if (castable)
         btn.addEventListener("click", () => callbacks.onSpell(spell.id));
       spellsCol.appendChild(btn);
@@ -396,6 +565,113 @@ export function createOverlay(
     updateStageProgress,
     setBossMode,
   };
+}
+
+function formatEffectEmoji(type: string): string {
+  switch (type) {
+    case "burn":
+      return "🔥";
+    case "shield":
+      return "🛡";
+    case "amplify":
+      return "⚡";
+    case "heal":
+      return "💚";
+    case "poison":
+      return "☠";
+    case "regen":
+      return "💚";
+    case "stun":
+      return "💫";
+    case "slow":
+      return "🐢";
+    default:
+      return "";
+  }
+}
+
+function makeManaIcon(token: SpellManaCost, active: boolean): HTMLElement {
+  if (token === "any") {
+    const el = document.createElement("span");
+    el.style.cssText = `display:inline-flex; align-items:center; justify-content:center;
+      width:16px; height:16px; border-radius:50%; border:1px solid ${active ? "#888" : "#333"};
+      font-size:10px; color:${active ? "#aaa" : "#444"}; flex-shrink:0;`;
+    el.textContent = "?";
+    return el;
+  }
+  const img = document.createElement("img");
+  img.src = `/sprites/mana-${token}.svg`;
+  img.style.cssText = `width:16px; height:16px; flex-shrink:0; opacity:${active ? "1" : "0.3"};`;
+  return img;
+}
+
+function buildSpellTooltipEl(spell: Spell): HTMLElement {
+  const root = document.createElement("div");
+  root.style.cssText = "display:flex; flex-direction:column; gap:5px;";
+
+  // Name + element
+  const header = document.createElement("div");
+  header.style.cssText = "font-weight:bold; font-size:14px;";
+  header.textContent = spell.element
+    ? `${spell.name} · ${spell.element.charAt(0).toUpperCase() + spell.element.slice(1)}`
+    : `${spell.name} · Neutral`;
+  root.appendChild(header);
+
+  // Damage
+  if (spell.damage > 0) {
+    const dmg = document.createElement("div");
+    dmg.style.cssText = "font-size:12px; opacity:0.8;";
+    dmg.textContent = `${spell.damage} damage`;
+    root.appendChild(dmg);
+  }
+
+  // Cost row with icons
+  const costRow = document.createElement("div");
+  costRow.style.cssText =
+    "display:flex; align-items:center; gap:3px; font-size:12px; opacity:0.8;";
+  const costLabel = document.createElement("span");
+  costLabel.textContent = "Cost: ";
+  costRow.appendChild(costLabel);
+  for (const token of spell.manaCost) {
+    costRow.appendChild(makeManaIcon(token, true));
+  }
+  root.appendChild(costRow);
+
+  // Effect
+  if (spell.effect) {
+    const eff = document.createElement("div");
+    eff.style.cssText =
+      "font-size:12px; opacity:0.85; border-top:1px solid #444; padding-top:4px;";
+    switch (spell.effect.type) {
+      case "burn":
+        eff.textContent = `🔥 Burn: ${spell.effect.damage} dmg/turn, -1 each turn`;
+        break;
+      case "shield":
+        eff.textContent = `🛡 Shield: absorb ${spell.effect.amount} dmg`;
+        break;
+      case "amplify":
+        eff.textContent = `⚡ Amplify: next spell +${spell.effect.bonus} dmg`;
+        break;
+      case "heal":
+        eff.textContent = `💚 Heal: +${spell.effect.amount} HP`;
+        break;
+      case "poison":
+        eff.textContent = `☠ Poison: ${spell.effect.damage} dmg/turn × ${spell.effect.turns} turns`;
+        break;
+      case "regen":
+        eff.textContent = `💚 Regen: +${spell.effect.amount} HP/turn × ${spell.effect.turns} turns`;
+        break;
+      case "stun":
+        eff.textContent = `💫 Stun: reset monster action points`;
+        break;
+      case "slow":
+        eff.textContent = `🐢 Slow: monster skips AP gain × ${spell.effect.turns} turns`;
+        break;
+    }
+    root.appendChild(eff);
+  }
+
+  return root;
 }
 
 function div(css: string): HTMLDivElement {

@@ -11,6 +11,7 @@ import {
   processPlayerAction,
   processPlayerCast,
   processMonsterPhase,
+  processStatusEffects,
   processManaPhase,
   checkCombatEnd,
   resetCombat,
@@ -323,7 +324,19 @@ export function takeTurn(
   if (outcome === "VICTORY")
     return [...steps, ...victorySteps({ ...state, combat: afterMonster })];
 
-  const afterMana = processManaPhase(afterMonster);
+  const afterEffects = processStatusEffects(afterMonster);
+  steps.push({
+    type: "state",
+    state: { ...state, combat: afterEffects } as AppState,
+  });
+
+  const endOutcome = checkCombatEnd(afterEffects);
+  if (endOutcome === "GAME_OVER")
+    return [...steps, ...gameOverSteps({ ...state, combat: afterEffects })];
+  if (endOutcome === "VICTORY")
+    return [...steps, ...victorySteps({ ...state, combat: afterEffects })];
+
+  const afterMana = processManaPhase(afterEffects);
   steps.push(
     { type: "state", state: { ...state, combat: afterMana } as AppState },
     {

@@ -26,9 +26,14 @@ function makeState(overrides?: {
       experience: 0,
       experienceToNextLevel: 20,
     },
-    monster: { ...monster, hp: overrides?.monsterHp ?? monster.definition.maxHp },
+    monster: {
+      ...monster,
+      hp: overrides?.monsterHp ?? monster.definition.maxHp,
+    },
     phase: "PLAYER_ACTION",
     turn: 1,
+    playerEffects: [],
+    monsterEffects: [],
   };
 }
 
@@ -54,7 +59,6 @@ describe("getElementModifier", () => {
   it("nature vs neutral → 1.0", () => {
     expect(getElementModifier("nature", spawnMonster(SKELETON))).toBe(1.0);
   });
-
 });
 
 describe("calculateDamage", () => {

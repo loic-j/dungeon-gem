@@ -48,7 +48,7 @@ export type Effect =
   | { type: "ANIMATE_MONSTER_ATTACK" }
   | { type: "FLASH_SCREEN" }
   | { type: "DELAY"; ms: number }
-  | { type: "PLAY_SPELL_SOUND"; element: Element }
+  | { type: "PLAY_SPELL_SOUND"; element: Element | null }
   | { type: "PLAY_VICTORY_SOUND" }
   | { type: "PLAY_GAME_OVER_SOUND" }
   | { type: "PLAY_MONSTER_APPEAR_SOUND" }

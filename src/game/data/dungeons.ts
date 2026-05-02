@@ -8,8 +8,8 @@ const STAGE_1_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
 ];
 
 const STAGE_2_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
-  { id: "monster", baseChance: 0.65, chanceIncrement: 0.2 },
-  { id: "chest", baseChance: 0.15, chanceIncrement: 0.1 },
+  { id: "monster", baseChance: 0.5, chanceIncrement: 0.2 },
+  { id: "chest", baseChance: 0.2, chanceIncrement: 0.1 },
 ];
 
 export const DUNGEON_1: DungeonConfig = {

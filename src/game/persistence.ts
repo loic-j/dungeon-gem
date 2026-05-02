@@ -196,6 +196,8 @@ export function loadGame(): AppState | null {
           },
           phase: saved.combat.phase,
           turn: saved.combat.turn,
+          playerEffects: [],
+          monsterEffects: [],
         };
 
         return {

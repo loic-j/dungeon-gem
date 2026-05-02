@@ -3,26 +3,35 @@ import { SPELL_LIBRARY } from "./data/spells";
 import { SKELETON, spawnMonster } from "./data/monsters";
 
 describe("SPELL_LIBRARY", () => {
-  it("has exactly 4 spells", () => {
-    expect(SPELL_LIBRARY).toHaveLength(4);
+  it("has at least 4 spells", () => {
+    expect(SPELL_LIBRARY.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("each spell costs exactly 1 mana of its own element", () => {
+  it("each spell has a unique id", () => {
+    const ids = SPELL_LIBRARY.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("each spell has a non-empty name", () => {
     for (const spell of SPELL_LIBRARY) {
-      expect(spell.manaCost).toHaveLength(1);
-      expect(spell.manaCost[0]).toBe(spell.element);
+      expect(spell.name.length).toBeGreaterThan(0);
     }
   });
 
-  it("each spell deals 5 damage", () => {
+  it("each spell has at least 1 mana cost", () => {
     for (const spell of SPELL_LIBRARY) {
-      expect(spell.damage).toBe(5);
+      expect(spell.manaCost.length).toBeGreaterThanOrEqual(1);
     }
   });
 
   it("covers all 4 elements", () => {
-    const elements = SPELL_LIBRARY.map((s) => s.element).sort();
-    expect(elements).toEqual(["fire", "lightning", "nature", "water"]);
+    const elements = new Set(
+      SPELL_LIBRARY.map((s) => s.element).filter((e) => e !== null),
+    );
+    expect(elements).toContain("fire");
+    expect(elements).toContain("water");
+    expect(elements).toContain("nature");
+    expect(elements).toContain("lightning");
   });
 });
 
