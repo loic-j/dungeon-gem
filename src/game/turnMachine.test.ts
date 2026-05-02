@@ -18,9 +18,9 @@ describe("initCombat", () => {
     expect(state.player.maxHp).toBe(20);
   });
 
-  it("player starts with 1 mana token", () => {
+  it("player starts with 0 mana tokens", () => {
     const state = initCombat();
-    expect(state.player.manaPool).toHaveLength(1);
+    expect(state.player.manaPool).toHaveLength(0);
   });
 
   it("monster starts at 10/10 HP", () => {
@@ -165,6 +165,6 @@ describe("resetCombat", () => {
       },
     };
     const next = resetCombat(state, SKELETON);
-    expect(next.player.manaPool).toHaveLength(1);
+    expect(next.player.manaPool).toHaveLength(0);
   });
 });

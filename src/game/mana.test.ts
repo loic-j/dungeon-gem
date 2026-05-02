@@ -54,12 +54,7 @@ describe("consumeMana", () => {
 });
 
 describe("initManaPool", () => {
-  it("returns exactly 1 mana", () => {
-    expect(initManaPool()).toHaveLength(1);
-  });
-
-  it("returned token is a valid element", () => {
-    const pool = initManaPool();
-    expect(ELEMENTS).toContain(pool[0]);
+  it("returns empty pool", () => {
+    expect(initManaPool()).toHaveLength(0);
   });
 });

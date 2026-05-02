@@ -12,11 +12,10 @@ import {
 import { initCombat } from "./game/turnMachine";
 import { initEncounterState } from "./game/encounterSystem";
 import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
-import type { DungeonConfig, DungeonProgress } from "./game/dungeon";
+import type { DungeonProgress } from "./game/dungeon";
 import { DUNGEON_1 } from "./game/data/dungeons";
 import type { AppState, Step } from "./game/appState";
 import { moveForward, descend, openChest, takeTurn } from "./game/transitions";
-import type { CombatState } from "./game/types";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame } from "./game/persistence";
 
@@ -24,40 +23,12 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const uiRoot = document.getElementById("ui") as HTMLDivElement;
 const appRoot = document.getElementById("app") as HTMLDivElement;
 
-// ── Config ─────────────────────────────────────────────────────────────────────
-const DUNGEONS: Record<string, DungeonConfig> = { [DUNGEON_1.id]: DUNGEON_1 };
-const startDungeonConfig =
-  DUNGEONS[import.meta.env.VITE_START_DUNGEON ?? ""] ?? DUNGEON_1;
-const startStageIndex = Math.max(
-  0,
-  Math.min(
-    Number(import.meta.env.VITE_START_STAGE ?? 0) || 0,
-    startDungeonConfig.stages.length - 1,
-  ),
-);
-const startRoomIndex = Math.max(
-  0,
-  Math.min(
-    Number(import.meta.env.VITE_START_ROOM ?? 0) || 0,
-    startDungeonConfig.stages[startStageIndex]!.roomCount - 1,
-  ),
-);
-const debugStairs =
-  import.meta.env.DEV && import.meta.env.VITE_DEBUG_STAIRS === "true";
-
 function createFreshState(): AppState {
-  const dungeon: DungeonProgress = {
-    ...createDungeonProgress(startDungeonConfig),
-    currentStageIndex: startStageIndex,
-    roomsCleared: startRoomIndex,
-  };
+  const dungeon: DungeonProgress = createDungeonProgress(DUNGEON_1);
   const encounter = initEncounterState(
     getCurrentStage(dungeon).encounterConfigs,
   );
   const combat = initCombat();
-  if (debugStairs) {
-    return { phase: "STAGE_TRANSITION", encounter, combat, dungeon };
-  }
   return { phase: "EXPLORING", encounter, combat, dungeon };
 }
 
@@ -239,21 +210,4 @@ if (savedState !== null) {
 } else {
   tick();
   musicButton.startOnInteraction();
-
-  if (debugStairs) {
-    setStairsMode(true);
-    showStageTransitionOverlay();
-  }
-}
-
-if (import.meta.env.DEV) {
-  (window as unknown as Record<string, unknown>)["__game"] = {
-    getState: () => appState.combat,
-    setState: (s: CombatState) => {
-      appState = { ...appState, combat: s };
-      isDispatching = false;
-      tick();
-    },
-    isLocked: () => isDispatching,
-  };
 }

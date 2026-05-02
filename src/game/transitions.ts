@@ -73,16 +73,24 @@ function bossEncounterSteps(state: ExploringState): Step[] {
   const boss = findMonster(state.dungeon.dungeon.bossMonster);
   if (!boss) return emptyRoomSteps(state);
 
+  const combat = processManaPhase(resetCombat(state.combat, boss));
   const next: CombatAppState = {
     phase: "COMBAT",
     isBoss: true,
-    combat: resetCombat(state.combat, boss),
+    combat,
     dungeon: state.dungeon,
     encounter: state.encounter,
   };
   return [
     { type: "effect", effect: { type: "SET_MONSTER_TYPE", monster: boss } },
     { type: "state", state: next },
+    {
+      type: "effect",
+      effect: {
+        type: "ANIMATE_MANA_GAIN",
+        index: combat.player.manaPool.length - 1,
+      },
+    },
     { type: "effect", effect: { type: "PLAY_MONSTER_APPEAR_SOUND" } },
     {
       type: "effect",
@@ -99,16 +107,24 @@ function bossEncounterSteps(state: ExploringState): Step[] {
 function monsterEncounterSteps(state: ExploringState): Step[] {
   const stage = getCurrentStage(state.dungeon);
   const monster = pickMonsterFromIds(stage.availableMonsters);
+  const combat = processManaPhase(resetCombat(state.combat, monster));
   const next: CombatAppState = {
     phase: "COMBAT",
     isBoss: false,
-    combat: resetCombat(state.combat, monster),
+    combat,
     dungeon: state.dungeon,
     encounter: state.encounter,
   };
   return [
     { type: "effect", effect: { type: "SET_MONSTER_TYPE", monster } },
     { type: "state", state: next },
+    {
+      type: "effect",
+      effect: {
+        type: "ANIMATE_MANA_GAIN",
+        index: combat.player.manaPool.length - 1,
+      },
+    },
     { type: "effect", effect: { type: "PLAY_MONSTER_APPEAR_SOUND" } },
   ];
 }

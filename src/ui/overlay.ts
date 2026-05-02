@@ -1,4 +1,9 @@
-import type { CombatState, ManaToken, ActiveMonster, MonsterSpell } from "../game/types";
+import type {
+  CombatState,
+  ManaToken,
+  ActiveMonster,
+  MonsterSpell,
+} from "../game/types";
 import { canCastSpell } from "../game/mana";
 
 const ELEMENT_COLOR: Record<ManaToken, string> = {
@@ -18,7 +23,11 @@ export interface OverlayControls {
   animatePlayerAttack: () => Promise<void>;
   animateManaGain: (index: number) => void;
   showMonsterAttack: (spellName: string, damage: number) => void;
-  updateStageProgress: (roomsCleared: number, totalRooms: number, stageIndex: number) => void;
+  updateStageProgress: (
+    roomsCleared: number,
+    totalRooms: number,
+    stageIndex: number,
+  ) => void;
   setBossMode: (active: boolean, title?: string) => void;
 }
 
@@ -75,8 +84,17 @@ export function createOverlay(
   dangerFill.dataset["testid"] = "danger-fill";
   dangerBar.appendChild(dangerFill);
   dangerWrap.append(dangerLabel, dangerBar);
-  const nextSpellWrap = div("margin-top:6px; display:flex; gap:6px; pointer-events:none;");
-  topBar.append(bossLabel, monsterNameLabel, enemyHpWrapper, enemyLvlLabel, dangerWrap, nextSpellWrap);
+  const nextSpellWrap = div(
+    "margin-top:6px; display:flex; gap:6px; pointer-events:none;",
+  );
+  topBar.append(
+    bossLabel,
+    monsterNameLabel,
+    enemyHpWrapper,
+    enemyLvlLabel,
+    dangerWrap,
+    nextSpellWrap,
+  );
   container.appendChild(topBar);
 
   // ── Bottom: combat controls ────────────────────────────────────────────────
@@ -94,7 +112,7 @@ export function createOverlay(
     "margin:20px 0; position:absolute; bottom:52px; left:22.5%; transform:translateX(-50%); height:300px; width:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));";
 
   const skipBtn = document.createElement("button");
-  skipBtn.textContent = "Skip turn";
+  skipBtn.textContent = "End turn";
   skipBtn.style.cssText = `width:100%; padding:10px 0; background:#222; border:1px solid #555;
     border-radius:6px; color:#ccc; font-size:18px; cursor:pointer; pointer-events:auto;
     touch-action:manipulation;`;
@@ -144,7 +162,14 @@ export function createOverlay(
   const manaRow = div("display:flex; gap:5px; flex-wrap:wrap;");
   manaRow.dataset["testid"] = "mana-row";
   const spellsCol = div("display:flex; flex-direction:column; gap:5px;");
-  rightCol.append(hpWrapper, playerLvlLabel, xpWrapper, stageWrapper, manaRow, spellsCol);
+  rightCol.append(
+    hpWrapper,
+    playerLvlLabel,
+    xpWrapper,
+    stageWrapper,
+    manaRow,
+    spellsCol,
+  );
 
   bottom.append(charOval, leftCol, rightCol);
   container.appendChild(bottom);
@@ -207,7 +232,9 @@ export function createOverlay(
     const el = div(
       "position:absolute; top:52%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.82); border:2px solid #cc2222; border-radius:8px; padding:10px 18px; text-align:center; pointer-events:none; z-index:15; animation:monsterAttackFade 2s ease-out forwards;",
     );
-    const nameEl = div("font-size:16px; font-weight:bold; color:#e84a1a; margin-bottom:3px;");
+    const nameEl = div(
+      "font-size:16px; font-weight:bold; color:#e84a1a; margin-bottom:3px;",
+    );
     nameEl.textContent = spellName;
     const dmgEl = div("font-size:22px; font-weight:bold; color:#ff6666;");
     dmgEl.textContent = `-${damage} HP`;
@@ -342,7 +369,11 @@ export function createOverlay(
     await anim.finished;
   }
 
-  function updateStageProgress(roomsCleared: number, totalRooms: number, stageIndex: number): void {
+  function updateStageProgress(
+    roomsCleared: number,
+    totalRooms: number,
+    stageIndex: number,
+  ): void {
     stageLabel.textContent = `Stage ${stageIndex + 1} — ${roomsCleared}/${totalRooms} Rooms`;
     stageFill.style.width = `${Math.round((roomsCleared / totalRooms) * 100)}%`;
   }
@@ -354,7 +385,14 @@ export function createOverlay(
     enemyLvlLabel.style.display = active ? "none" : "";
   }
 
-  return { render, animatePlayerAttack, animateManaGain, showMonsterAttack, updateStageProgress, setBossMode };
+  return {
+    render,
+    animatePlayerAttack,
+    animateManaGain,
+    showMonsterAttack,
+    updateStageProgress,
+    setBossMode,
+  };
 }
 
 function div(css: string): HTMLDivElement {

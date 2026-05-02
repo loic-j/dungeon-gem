@@ -27,7 +27,7 @@ export function initCombat(): CombatState {
     },
     monster: spawnMonster(SKELETON),
     phase: "PLAYER_ACTION",
-    turn: 1,
+    turn: 0,
   };
 }
 
@@ -65,12 +65,19 @@ export function processMonsterPhase(state: CombatState): {
   spell: MonsterSpell | null;
 } {
   if (!rollMonsterAttack(state.monster)) {
-    return { state: { ...state, phase: "CHECK_END" }, attacked: false, spell: null };
+    return {
+      state: { ...state, phase: "CHECK_END" },
+      attacked: false,
+      spell: null,
+    };
   }
 
   const spell = state.monster.nextSpell;
   const next = applyMonsterSpell(state, spell);
-  const updatedLastCast = { ...next.monster.spellLastCastTurn, [spell.id]: state.turn };
+  const updatedLastCast = {
+    ...next.monster.spellLastCastTurn,
+    [spell.id]: state.turn,
+  };
   const nextSpell = chooseMonsterSpell(
     { ...next.monster, spellLastCastTurn: updatedLastCast },
     state.turn + 1,
@@ -100,7 +107,10 @@ export function checkCombatEnd(
   return null;
 }
 
-export function resetCombat(state: CombatState, monster: MonsterType): CombatState {
+export function resetCombat(
+  state: CombatState,
+  monster: MonsterType,
+): CombatState {
   return {
     ...state,
     player: {
@@ -109,6 +119,6 @@ export function resetCombat(state: CombatState, monster: MonsterType): CombatSta
     },
     monster: spawnMonster(monster),
     phase: "PLAYER_ACTION",
-    turn: 1,
+    turn: 0,
   };
 }

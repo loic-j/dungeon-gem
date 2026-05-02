@@ -38,5 +38,5 @@ export function consumeMana(pool: ManaToken[], cost: ManaToken[]): ManaToken[] {
 }
 
 export function initManaPool(): ManaToken[] {
-  return [drawRandomMana()];
+  return [];
 }
