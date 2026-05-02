@@ -51,6 +51,7 @@ export interface PlayerProfile {
 export interface Player extends PlayerProfile {
   hp: number;
   manaPool: ManaToken[];
+  activeRewards: ActiveReward[];
 }
 
 export interface MonsterType {
@@ -71,6 +72,47 @@ export interface MonsterType {
     scale: [number, number, number];
     position: [number, number, number];
   };
+}
+
+export type RewardTier = 1 | 2 | 3;
+
+export type RewardEffect =
+  | { type: "heal_hp"; amount: number }
+  | { type: "add_max_hp"; amount: number }
+  | { type: "add_max_mana"; amount: number }
+  | { type: "mana_bias"; element: Element; percent: number }
+  | {
+      type: "elemental_damage";
+      element: Element;
+      percent: number;
+      combats?: number;
+    }
+  | { type: "all_elements_damage"; percent: number; combats?: number }
+  | { type: "xp_bonus"; percent: number; combats?: number }
+  | {
+      type: "initial_mana_bonus";
+      element: Element;
+      amount: number;
+      combats: number;
+    }
+  | { type: "combat_shield"; amount: number; combats: number }
+  | { type: "lifesteal"; percent: number; combats: number }
+  | { type: "damage_reflect"; percent: number; combats: number }
+  | { type: "critical_chance"; percent: number; combats?: number };
+
+export interface ActiveReward {
+  id: string;
+  effect: RewardEffect;
+  combatsRemaining: number;
+}
+
+export interface RewardDefinition {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  tier: RewardTier;
+  effect: RewardEffect;
 }
 
 export interface ActiveMonster {

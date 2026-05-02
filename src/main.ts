@@ -18,12 +18,15 @@ import {
   moveForward,
   moveForwardFromTransition,
   openChest,
+  selectReward,
+  skipReward,
   takeTurn,
   castSpell,
   learnSpell,
   skipSpellLearn,
 } from "./game/transitions";
 import { createSpellLearnUI } from "./ui/spellLearn";
+import { createRewardSelectionUI } from "./ui/rewardSelection";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
 import { createDebugPanel } from "./ui/debugPanel";
@@ -96,6 +99,17 @@ const spellLearnUI = createSpellLearnUI(appRoot, {
   },
 });
 
+const rewardSelectionUI = createRewardSelectionUI(appRoot, {
+  onSelect: (rewardId) => {
+    if (!isDispatching && appState.phase === "REWARD_SELECTION")
+      void dispatch(selectReward(appState, rewardId));
+  },
+  onSkip: () => {
+    if (!isDispatching && appState.phase === "REWARD_SELECTION")
+      void dispatch(skipReward(appState));
+  },
+});
+
 // ── UI widgets ─────────────────────────────────────────────────────────────────
 const controls = createExploreControls({
   getPhase: () => appState.phase,
@@ -130,7 +144,12 @@ appRoot.appendChild(musicButton.element);
 
 // ── Debug panel (VITE_DEBUG env var) ──────────────────────────────────────────
 const debugPanel = import.meta.env.VITE_DEBUG
-  ? createDebugPanel(appRoot)
+  ? createDebugPanel(appRoot, {
+      onApply: (state) => {
+        appState = state;
+        tick();
+      },
+    })
   : null;
 
 // ── New Game button (shown after Game Over) ────────────────────────────────────
@@ -195,6 +214,12 @@ function tick() {
     spellLearnUI.show(appState);
   } else {
     spellLearnUI.hide();
+  }
+
+  if (appState.phase === "REWARD_SELECTION" && !isDispatching) {
+    rewardSelectionUI.show(appState);
+  } else {
+    rewardSelectionUI.hide();
   }
   const stage = getCurrentStage(appState.dungeon);
   updateStageProgress(

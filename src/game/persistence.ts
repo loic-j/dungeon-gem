@@ -1,5 +1,5 @@
 import type { AppState } from "./appState";
-import type { ManaToken, TurnPhase } from "./types";
+import type { ManaToken, TurnPhase, ActiveReward } from "./types";
 import type { EncounterId } from "./encounterSystem";
 import { findMonster } from "./data/monsters";
 import { SPELL_LIBRARY } from "./data/spells";
@@ -8,7 +8,7 @@ import type { DungeonConfig } from "./dungeon";
 import { getCurrentStage, advanceToNextStage } from "./dungeon";
 
 const SAVE_KEY = "dcg_save";
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 3;
 
 const DUNGEON_REGISTRY: Record<string, DungeonConfig> = Object.fromEntries(
   ALL_DUNGEONS.map((d) => [d.id, d]),
@@ -23,6 +23,7 @@ interface SavedPlayer {
   experience: number;
   experienceToNextLevel: number;
   spellIds: string[];
+  activeRewards: ActiveReward[];
 }
 
 interface SavedCombat {
@@ -59,7 +60,10 @@ export function saveGame(state: AppState): void {
 
   const saved: SavedState = {
     version: SAVE_VERSION,
-    phase: state.phase === "SPELL_LEARN" ? "EXPLORING" : state.phase,
+    phase:
+      state.phase === "SPELL_LEARN" || state.phase === "REWARD_SELECTION"
+        ? "EXPLORING"
+        : state.phase,
     isBoss: state.phase === "COMBAT" ? state.isBoss : false,
     player: {
       hp: player.hp,
@@ -70,6 +74,7 @@ export function saveGame(state: AppState): void {
       experience: player.experience,
       experienceToNextLevel: player.experienceToNextLevel,
       spellIds: player.spells.map((s) => s.id),
+      activeRewards: [...player.activeRewards],
     },
     ...(state.phase === "COMBAT" && {
       combat: {
@@ -141,6 +146,7 @@ export function loadGame(): AppState | null {
       experience: saved.player.experience,
       experienceToNextLevel: saved.player.experienceToNextLevel,
       spells,
+      activeRewards: saved.player.activeRewards ?? [],
     };
 
     const dungeon = {

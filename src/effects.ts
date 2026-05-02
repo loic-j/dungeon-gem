@@ -11,7 +11,6 @@ import { animateMonsterAttack } from "./renderer/animator";
 import {
   flashScreen,
   showMessageAsync,
-  showItemSelectionAsync,
   fadeToBlack,
   fadeFromBlack,
 } from "./ui/messages";
@@ -102,9 +101,6 @@ export async function executeEffect(
       break;
     case "SHOW_MESSAGE":
       await showMessageAsync(effect.text, effect.color);
-      break;
-    case "SHOW_ITEM_SELECTION":
-      await showItemSelectionAsync();
       break;
     case "ANIMATE_MANA_GAIN":
       await deps.animateManaGain(effect.index);

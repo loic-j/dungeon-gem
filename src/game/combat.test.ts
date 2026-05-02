@@ -25,6 +25,7 @@ function makeState(overrides?: {
       level: 1,
       experience: 0,
       experienceToNextLevel: 20,
+      activeRewards: [],
     },
     monster: {
       ...monster,

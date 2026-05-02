@@ -1,5 +1,3 @@
-const PLACEHOLDER_ITEMS = ["Health Potion", "Mana Crystal", "Ancient Scroll"];
-
 function root(): HTMLElement {
   return document.getElementById("app")!;
 }
@@ -25,55 +23,6 @@ export function showMessageAsync(text: string, color: string): Promise<void> {
       overlay.remove();
       resolve();
     });
-  });
-}
-
-export function showItemSelectionAsync(): Promise<void> {
-  return new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.style.cssText =
-      "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,0.75);z-index:20;pointer-events:auto;";
-
-    const title = document.createElement("div");
-    title.textContent = "Choose an item";
-    title.style.cssText =
-      "font-family:sans-serif;font-size:22px;font-weight:bold;color:#f0c040;text-shadow:0 2px 8px #000;letter-spacing:1px;";
-    overlay.appendChild(title);
-
-    const row = document.createElement("div");
-    row.style.cssText = "display:flex;gap:12px;";
-    overlay.appendChild(row);
-
-    for (const name of PLACEHOLDER_ITEMS) {
-      const card = document.createElement("button");
-      card.style.cssText =
-        "width:100px;padding:14px 8px;border-radius:8px;background:rgba(20,14,4,0.92);border:2px solid #b8901a;color:#f0c040;font-family:sans-serif;font-size:13px;font-weight:bold;cursor:pointer;pointer-events:auto;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;gap:10px;transition:border-color 0.15s,background 0.15s;";
-      card.addEventListener("mouseenter", () => {
-        card.style.borderColor = "#ffd700";
-        card.style.background = "rgba(40,28,4,0.95)";
-      });
-      card.addEventListener("mouseleave", () => {
-        card.style.borderColor = "#b8901a";
-        card.style.background = "rgba(20,14,4,0.92)";
-      });
-
-      const icon = document.createElement("div");
-      icon.style.cssText =
-        "width:48px;height:48px;border-radius:6px;background:rgba(184,144,26,0.2);border:1px solid #b8901a;";
-      card.appendChild(icon);
-
-      const label = document.createElement("div");
-      label.textContent = name;
-      card.appendChild(label);
-
-      card.addEventListener("click", () => {
-        overlay.remove();
-        resolve();
-      });
-      row.appendChild(card);
-    }
-
-    root().appendChild(overlay);
   });
 }
 

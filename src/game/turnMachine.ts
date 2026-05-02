@@ -1,4 +1,10 @@
-import type { CombatState, Player, MonsterSpell, MonsterType } from "./types";
+import type {
+  CombatState,
+  Player,
+  MonsterSpell,
+  MonsterType,
+  StatusEffect,
+} from "./types";
 import {
   PLAYER_START_HP,
   PLAYER_START_MAX_MANA,
@@ -13,6 +19,11 @@ import { addManaToPool, initManaPool } from "./mana";
 import { applyPlayerSpell, applyMonsterSpell } from "./combat";
 import { rollMonsterAttack, chooseMonsterSpell } from "./monsterAI";
 import { tickEffects, hasSlowEffect } from "./statusEffects";
+import {
+  getManaDrawWeights,
+  getInitialManaBonus,
+  getCombatShieldTotal,
+} from "./rewards";
 
 export function initPlayer(): Player {
   return {
@@ -24,17 +35,23 @@ export function initPlayer(): Player {
     level: PLAYER_START_LEVEL,
     experience: PLAYER_START_EXPERIENCE,
     experienceToNextLevel: xpToNextLevel(PLAYER_START_LEVEL),
+    activeRewards: [],
   };
 }
 
 export function processManaPhase(state: CombatState): CombatState {
   const slow = hasSlowEffect(state.monsterEffects);
+  const manaBias = getManaDrawWeights(state.player.activeRewards);
   return {
     ...state,
     turn: state.turn + 1,
     player: {
       ...state.player,
-      manaPool: addManaToPool(state.player.manaPool, state.player.maxMana),
+      manaPool: addManaToPool(
+        state.player.manaPool,
+        state.player.maxMana,
+        manaBias,
+      ),
     },
     monster: {
       ...state.monster,
@@ -120,12 +137,26 @@ export function checkCombatEnd(
 }
 
 export function resetCombat(player: Player, monster: MonsterType): CombatState {
+  let initialMana = initManaPool();
+
+  for (const { element, amount } of getInitialManaBonus(player.activeRewards)) {
+    for (let i = 0; i < amount; i++) {
+      if (initialMana.length < player.maxMana) {
+        initialMana = [...initialMana, element];
+      }
+    }
+  }
+
+  const shieldTotal = getCombatShieldTotal(player.activeRewards);
+  const playerEffects: StatusEffect[] =
+    shieldTotal > 0 ? [{ type: "shield", amount: shieldTotal }] : [];
+
   return {
-    player: { ...player, manaPool: initManaPool() },
+    player: { ...player, manaPool: initialMana },
     monster: spawnMonster(monster),
     phase: "PLAYER_ACTION",
     turn: 0,
-    playerEffects: [],
+    playerEffects,
     monsterEffects: [],
   };
 }

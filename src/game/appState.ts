@@ -1,4 +1,11 @@
-import type { CombatState, Player, MonsterType, Element, Spell } from "./types";
+import type {
+  CombatState,
+  Player,
+  MonsterType,
+  Element,
+  Spell,
+  RewardDefinition,
+} from "./types";
 import type { DungeonProgress } from "./dungeon";
 import type { EncounterState } from "./encounterSystem";
 
@@ -40,13 +47,20 @@ export interface SpellLearnState extends BaseState {
   choices: Spell[];
 }
 
+export interface RewardSelectionState extends BaseState {
+  phase: "REWARD_SELECTION";
+  player: Player;
+  rewards: RewardDefinition[];
+}
+
 export type AppState =
   | ExploringState
   | CombatAppState
   | ChestState
   | GameOverState
   | StageTransitionState
-  | SpellLearnState;
+  | SpellLearnState
+  | RewardSelectionState;
 
 export type Effect =
   | { type: "PLAY_FOOTSTEP" }
@@ -68,7 +82,6 @@ export type Effect =
   | { type: "SET_BOSS_MODE"; enabled: boolean; title?: string }
   | { type: "SHOW_MONSTER_ATTACK_POPUP"; name: string; damage: number }
   | { type: "SHOW_MESSAGE"; text: string; color: string }
-  | { type: "SHOW_ITEM_SELECTION" }
   | { type: "ANIMATE_MANA_GAIN"; index: number }
   | { type: "SHOW_CHEST_CLOSED" }
   | { type: "ANIMATE_CHEST_OPEN" }

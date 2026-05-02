@@ -6,6 +6,7 @@ import type {
   GameOverState,
   StageTransitionState,
   SpellLearnState,
+  RewardSelectionState,
   Step,
 } from "./appState";
 import {
@@ -18,6 +19,7 @@ import {
   resetCombat,
 } from "./turnMachine";
 import { applyExperience } from "./experience";
+import { pickRewards, applyRewardToPlayer, tickActiveRewards } from "./rewards";
 import {
   isBossRoom,
   isStageComplete,
@@ -219,19 +221,46 @@ function dungeonCompleteSteps(state: ExploringState): Step[] {
 // ── Chest ─────────────────────────────────────────────────────────────────────
 
 export function openChest(state: ChestState): Step[] {
+  const stage = getCurrentStage(state.dungeon);
+  const rewards = pickRewards(stage.rewardTiers);
+  const rewardState: RewardSelectionState = {
+    phase: "REWARD_SELECTION",
+    player: state.player,
+    dungeon: state.dungeon,
+    encounter: state.encounter,
+    rewards,
+  };
+  return [
+    { type: "effect", effect: { type: "ANIMATE_CHEST_OPEN" } },
+    { type: "effect", effect: { type: "HIDE_CHEST" } },
+    { type: "state", state: rewardState },
+  ];
+}
+
+export function selectReward(
+  state: RewardSelectionState,
+  rewardId: string,
+): Step[] {
+  const def = state.rewards.find((r) => r.id === rewardId);
+  if (!def) return skipReward(state);
+  const player = applyRewardToPlayer(state.player, def);
+  const next: ExploringState = {
+    phase: "EXPLORING",
+    player,
+    dungeon: completeRoom(state.dungeon),
+    encounter: onEncounterFinished("chest", state.encounter),
+  };
+  return [{ type: "state", state: next }, ...roomCompletionSteps(next)];
+}
+
+export function skipReward(state: RewardSelectionState): Step[] {
   const next: ExploringState = {
     phase: "EXPLORING",
     player: state.player,
     dungeon: completeRoom(state.dungeon),
     encounter: onEncounterFinished("chest", state.encounter),
   };
-  return [
-    { type: "effect", effect: { type: "ANIMATE_CHEST_OPEN" } },
-    { type: "effect", effect: { type: "SHOW_ITEM_SELECTION" } },
-    { type: "effect", effect: { type: "HIDE_CHEST" } },
-    { type: "state", state: next },
-    ...roomCompletionSteps(next),
-  ];
+  return [{ type: "state", state: next }, ...roomCompletionSteps(next)];
 }
 
 // ── Combat ────────────────────────────────────────────────────────────────────
@@ -355,12 +384,10 @@ export function takeTurn(
 }
 
 function victorySteps(state: CombatAppState): Step[] {
-  const player = applyExperience(
-    state.combat.player,
-    state.combat.monster.definition.experienceReward,
-  );
-  const leveledUp = player.level > state.combat.player.level;
   const xp = state.combat.monster.definition.experienceReward;
+  const playerWithXp = applyExperience(state.combat.player, xp);
+  const player = tickActiveRewards(playerWithXp);
+  const leveledUp = player.level > state.combat.player.level;
   const msg = leveledUp
     ? `Victory!\n+${xp} XP\nLevel Up! → ${player.level}`
     : `Victory!\n+${xp} XP`;

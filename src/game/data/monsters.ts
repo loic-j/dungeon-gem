@@ -22,10 +22,7 @@ export const SKELETON: MonsterType = {
     setTimeout(() => playNoise(0.06, 0.3, 4200), 160);
     setTimeout(() => playNoise(0.06, 0.25, 3000), 240);
   },
-  spells: [
-    getMonsterSpell("basic_attack"),
-    getMonsterSpell("bone_strike"),
-  ],
+  spells: [getMonsterSpell("basic_attack"), getMonsterSpell("bone_strike")],
   sprite: {
     path: "/sprites/monster-skeleton.svg",
     scale: [1.4, 1.8, 1],
@@ -70,7 +67,7 @@ export const CRYPT_SPIDER: MonsterType = {
   id: "crypt_spider",
   name: "Crypt Spider",
   level: 2,
-  maxHp: 14,
+  maxHp: 11,
   experienceReward: 20,
   threshold: 2,
   resistances: ["nature"],
@@ -87,10 +84,7 @@ export const CRYPT_SPIDER: MonsterType = {
     setTimeout(() => playNoise(0.05, 0.25, 6500), 240);
     setTimeout(() => playTone(350, "square", 0.3, 0.4, 280), 320);
   },
-  spells: [
-    getMonsterSpell("fang_strike"),
-    getMonsterSpell("toxic_spit"),
-  ],
+  spells: [getMonsterSpell("fang_strike"), getMonsterSpell("toxic_spit")],
   sprite: {
     path: "/sprites/monster-spider.svg",
     scale: [1.3, 1.1, 1],
@@ -102,7 +96,7 @@ export const PUTRID_OOZE: MonsterType = {
   id: "putrid_ooze",
   name: "Putrid Ooze",
   level: 2,
-  maxHp: 22,
+  maxHp: 17,
   experienceReward: 25,
   threshold: 4,
   resistances: ["water", "nature"],
@@ -118,10 +112,7 @@ export const PUTRID_OOZE: MonsterType = {
     setTimeout(() => playNoise(0.15, 0.3, 280), 400);
     setTimeout(() => playTone(50, "sine", 0.6, 0.5, 35), 600);
   },
-  spells: [
-    getMonsterSpell("corrosive_glob"),
-    getMonsterSpell("acid_surge"),
-  ],
+  spells: [getMonsterSpell("corrosive_glob"), getMonsterSpell("acid_surge")],
   sprite: {
     path: "/sprites/monster-ooze.svg",
     scale: [1.7, 1.2, 1],
@@ -144,12 +135,14 @@ export function pickMonsterFromIds(ids: string[]): MonsterType {
   const candidates = ids
     .map((id) => findMonster(id))
     .filter((m): m is MonsterType => m !== undefined);
-  if (candidates.length === 0) throw new Error(`No valid monsters for ids: ${ids.join(", ")}`);
+  if (candidates.length === 0)
+    throw new Error(`No valid monsters for ids: ${ids.join(", ")}`);
   return candidates[Math.floor(Math.random() * candidates.length)]!;
 }
 
 export function spawnMonster(type: MonsterType): ActiveMonster {
-  if (type.spells.length === 0) throw new Error(`Monster "${type.id}" has no spells`);
+  if (type.spells.length === 0)
+    throw new Error(`Monster "${type.id}" has no spells`);
   const spellLastCastTurn: Record<string, number> = {};
   for (const spell of type.spells) {
     spellLastCastTurn[spell.id] = -1;

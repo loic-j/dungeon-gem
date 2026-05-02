@@ -1,6 +1,6 @@
 import type { Spell } from "../types";
 
-export const STARTER_SPELLS = ["flame", "wave", "bolt", "roots"];
+export const STARTER_SPELLS = ["strike"];
 
 export const SPELL_LIBRARY: Spell[] = [
   // ── Basic single-element (1 mana) ─────────────────────────────────────────
@@ -42,7 +42,7 @@ export const SPELL_LIBRARY: Spell[] = [
     id: "strike",
     name: "Strike",
     element: null,
-    damage: 4,
+    damage: 5,
     manaCost: ["any"],
     weight: 1,
   },

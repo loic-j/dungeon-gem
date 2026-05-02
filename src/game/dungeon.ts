@@ -1,4 +1,5 @@
 import type { EncounterTypeConfig } from "./encounterSystem";
+import type { RewardTier } from "./types";
 
 export interface DungeonGraphics {
   floor: string;
@@ -11,6 +12,7 @@ export interface StageConfig {
   roomCount: number;
   encounterConfigs: EncounterTypeConfig[];
   availableMonsters: string[];
+  rewardTiers: RewardTier[];
 }
 
 export interface DungeonConfig {
