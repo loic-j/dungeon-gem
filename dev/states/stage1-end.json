@@ -3,8 +3,8 @@
   "phase": "EXPLORING",
   "isBoss": false,
   "player": {
-    "hp": 20,
-    "maxHp": 20,
+    "hp": 100,
+    "maxHp": 100,
     "manaPool": [],
     "maxMana": 3,
     "level": 10,

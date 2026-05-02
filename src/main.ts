@@ -3,7 +3,6 @@ import { createOverlay } from "./ui/overlay";
 import { createMusicButton } from "./ui/musicButton";
 import { createExploreControls } from "./ui/exploreControls";
 import { createStartScreen } from "./ui/startScreen";
-import { showStageTransitionOverlay } from "./ui/messages";
 import {
   startBackgroundMusic,
   stopBackgroundMusic,
@@ -15,7 +14,7 @@ import { createDungeonProgress, getCurrentStage } from "./game/dungeon";
 import type { DungeonProgress } from "./game/dungeon";
 import { DUNGEON_1 } from "./game/data/dungeons";
 import type { AppState, Step } from "./game/appState";
-import { moveForward, descend, openChest, takeTurn } from "./game/transitions";
+import { moveForward, openChest, takeTurn } from "./game/transitions";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
 
@@ -48,13 +47,7 @@ let appState: AppState = savedState ?? createFreshState();
 let isDispatching = false;
 
 // ── Renderer ───────────────────────────────────────────────────────────────────
-const {
-  objects,
-  animateWalk,
-  animateWalkToStairs,
-  setMonsterType,
-  setStairsMode,
-} = initScene(
+const { objects, animateWalk, setMonsterType } = initScene(
   canvas,
   appState.combat.monster.definition,
   appState.dungeon.dungeon.graphics,
@@ -84,10 +77,6 @@ const controls = createExploreControls({
   onMoveForward: () => {
     if (!isDispatching && appState.phase === "EXPLORING")
       void dispatch(moveForward(appState));
-  },
-  onDescend: () => {
-    if (!isDispatching && appState.phase === "STAGE_TRANSITION")
-      void dispatch(descend(appState));
   },
   onOpenChest: () => {
     if (!isDispatching && appState.phase === "CHEST")
@@ -123,7 +112,6 @@ newGameBtn.addEventListener("click", () => {
   isDispatching = false;
   setMonsterType(appState.combat.monster.definition);
   setBossMode(false);
-  setStairsMode(false);
   tick();
 });
 appRoot.appendChild(newGameBtn);
@@ -142,13 +130,11 @@ async function dispatch(steps: Step[]): Promise<void> {
         await executeEffect(step.effect, {
           objects,
           animateWalk,
-          animateWalkToStairs,
           animatePlayerAttack,
           animateManaGain,
           showMonsterAttack,
           setBossMode,
           setMonsterType,
-          setStairsMode,
           isMusicEnabled: () => musicButton.isEnabled(),
           getState: () => appState,
         });
@@ -194,7 +180,6 @@ if (savedState !== null) {
       appState = createFreshState();
       setMonsterType(appState.combat.monster.definition);
       setBossMode(false);
-      setStairsMode(false);
       startScreen.hide();
       tick();
       musicButton.startOnInteraction();
@@ -206,9 +191,6 @@ if (savedState !== null) {
         if (appState.isBoss) {
           setBossMode(true, appState.dungeon.dungeon.bossTitle);
         }
-      } else if (appState.phase === "STAGE_TRANSITION") {
-        setStairsMode(true);
-        showStageTransitionOverlay();
       }
       tick();
       musicButton.startOnInteraction();

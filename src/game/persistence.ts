@@ -15,7 +15,7 @@ const DUNGEON_REGISTRY: Record<string, DungeonConfig> = Object.fromEntries(
 
 interface SavedState {
   version: number;
-  phase: "EXPLORING" | "COMBAT" | "CHEST" | "STAGE_TRANSITION";
+  phase: "EXPLORING" | "COMBAT" | "CHEST";
   isBoss: boolean;
   player: {
     hp: number;
@@ -175,8 +175,6 @@ export function loadGame(): AppState | null {
         return { ...base, phase: "EXPLORING" };
       case "COMBAT":
         return { ...base, phase: "COMBAT", isBoss: saved.isBoss ?? false };
-      case "STAGE_TRANSITION":
-        return { ...base, phase: "STAGE_TRANSITION" };
       default:
         return null;
     }

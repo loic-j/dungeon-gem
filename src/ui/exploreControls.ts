@@ -3,7 +3,6 @@ import type { AppState } from "../game/appState";
 export function createExploreControls(options: {
   getPhase(): AppState["phase"];
   onMoveForward(): void;
-  onDescend(): void;
   onOpenChest(): void;
 }): {
   moveButton: HTMLButtonElement;
@@ -23,9 +22,7 @@ export function createExploreControls(options: {
     moveBtn.style.borderColor = "rgba(255,255,255,0.25)";
   });
   moveBtn.addEventListener("click", () => {
-    const phase = options.getPhase();
-    if (phase === "STAGE_TRANSITION") options.onDescend();
-    else if (phase === "EXPLORING") options.onMoveForward();
+    if (options.getPhase() === "EXPLORING") options.onMoveForward();
   });
 
   const chestOverlay = document.createElement("div");
@@ -36,9 +33,8 @@ export function createExploreControls(options: {
   });
 
   function sync(phase: AppState["phase"], isDispatching: boolean) {
-    const showMove =
-      (phase === "EXPLORING" || phase === "STAGE_TRANSITION") && !isDispatching;
-    moveBtn.style.display = showMove ? "" : "none";
+    moveBtn.style.display =
+      phase === "EXPLORING" && !isDispatching ? "" : "none";
     chestOverlay.style.pointerEvents =
       phase === "CHEST" && !isDispatching ? "auto" : "none";
   }

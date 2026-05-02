@@ -12,8 +12,6 @@ import {
   flashScreen,
   showMessageAsync,
   showItemSelectionAsync,
-  showStageTransitionOverlay,
-  removeStageTransitionOverlay,
 } from "./ui/messages";
 import type { Effect, AppState } from "./game/appState";
 import type { SceneObjects } from "./renderer/scene";
@@ -22,13 +20,11 @@ import type { MonsterType } from "./game/types";
 export interface EffectDeps {
   objects: SceneObjects;
   animateWalk(): Promise<void>;
-  animateWalkToStairs(): Promise<void>;
   animatePlayerAttack(): Promise<void>;
   animateManaGain(index: number): Promise<void>;
   showMonsterAttack(name: string, damage: number): void;
   setBossMode(enabled: boolean, title?: string): void;
   setMonsterType(monster: MonsterType): void;
-  setStairsMode(enabled: boolean): void;
   isMusicEnabled(): boolean;
   getState(): AppState;
 }
@@ -47,9 +43,6 @@ export async function executeEffect(
       break;
     case "ANIMATE_WALK":
       await deps.animateWalk();
-      break;
-    case "ANIMATE_WALK_TO_STAIRS":
-      await deps.animateWalkToStairs();
       break;
     case "ANIMATE_PLAYER_ATTACK":
       await deps.animatePlayerAttack();
@@ -93,9 +86,6 @@ export async function executeEffect(
     case "SET_MONSTER_TYPE":
       deps.setMonsterType(effect.monster);
       break;
-    case "SET_STAIRS_MODE":
-      deps.setStairsMode(effect.enabled);
-      break;
     case "SET_BOSS_MODE":
       deps.setBossMode(effect.enabled, effect.title);
       break;
@@ -104,12 +94,6 @@ export async function executeEffect(
       break;
     case "SHOW_MESSAGE":
       await showMessageAsync(effect.text, effect.color);
-      break;
-    case "SHOW_STAGE_TRANSITION_OVERLAY":
-      showStageTransitionOverlay();
-      break;
-    case "REMOVE_STAGE_TRANSITION_OVERLAY":
-      removeStageTransitionOverlay();
       break;
     case "SHOW_ITEM_SELECTION":
       await showItemSelectionAsync();

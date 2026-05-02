@@ -3,7 +3,6 @@ import type {
   ExploringState,
   CombatAppState,
   ChestState,
-  StageTransitionState,
   GameOverState,
   Step,
 } from "./appState";
@@ -39,18 +38,6 @@ export function moveForward(state: ExploringState): Step[] {
 
   if (isBossRoom(state.dungeon)) {
     return [footstep, walk, ...bossEncounterSteps(state)];
-  }
-
-  // Last room of a non-final stage is always the stair transition — skip encounter roll
-  const afterRoomDungeon = completeRoom(state.dungeon);
-  if (isStageComplete(afterRoomDungeon) && !isFinalStage(afterRoomDungeon)) {
-    const afterRoom: ExploringState = { ...state, dungeon: afterRoomDungeon };
-    return [
-      footstep,
-      { type: "effect", effect: { type: "ANIMATE_WALK_TO_STAIRS" } },
-      { type: "state", state: afterRoom },
-      ...roomCompletionSteps(afterRoom),
-    ];
   }
 
   const { encounter, nextState: nextEncounter } = enterRoom(state.encounter);
@@ -157,16 +144,25 @@ function roomCompletionSteps(state: ExploringState): Step[] {
   if (!isStageComplete(state.dungeon)) return [];
   if (isFinalStage(state.dungeon)) return dungeonCompleteSteps(state);
 
-  const next: StageTransitionState = {
-    phase: "STAGE_TRANSITION",
+  const nextDungeon = advanceToNextStage(state.dungeon);
+  const next: ExploringState = {
+    phase: "EXPLORING",
     combat: state.combat,
-    dungeon: state.dungeon,
-    encounter: state.encounter,
+    dungeon: nextDungeon,
+    encounter: initEncounterState(
+      getCurrentStage(nextDungeon).encounterConfigs,
+    ),
   };
   return [
+    {
+      type: "effect",
+      effect: {
+        type: "SHOW_MESSAGE",
+        text: "Stage Complete!",
+        color: "#e8c01a",
+      },
+    },
     { type: "state", state: next },
-    { type: "effect", effect: { type: "SET_STAIRS_MODE", enabled: true } },
-    { type: "effect", effect: { type: "SHOW_STAGE_TRANSITION_OVERLAY" } },
   ];
 }
 
@@ -189,27 +185,6 @@ function dungeonCompleteSteps(state: ExploringState): Step[] {
         color: "#e8c01a",
       },
     },
-    { type: "state", state: next },
-  ];
-}
-
-// ── Stage transition ──────────────────────────────────────────────────────────
-
-export function descend(state: StageTransitionState): Step[] {
-  const nextDungeon = advanceToNextStage(state.dungeon);
-  const next: ExploringState = {
-    phase: "EXPLORING",
-    combat: state.combat,
-    dungeon: nextDungeon,
-    encounter: initEncounterState(
-      getCurrentStage(nextDungeon).encounterConfigs,
-    ),
-  };
-  return [
-    { type: "effect", effect: { type: "PLAY_FOOTSTEP" } },
-    { type: "effect", effect: { type: "ANIMATE_WALK" } },
-    { type: "effect", effect: { type: "REMOVE_STAGE_TRANSITION_OVERLAY" } },
-    { type: "effect", effect: { type: "SET_STAIRS_MODE", enabled: false } },
     { type: "state", state: next },
   ];
 }
