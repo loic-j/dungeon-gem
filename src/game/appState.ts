@@ -28,11 +28,18 @@ export interface GameOverState extends BaseState {
   player: Player;
 }
 
+export interface StageTransitionState extends BaseState {
+  phase: "STAGE_TRANSITION";
+  player: Player;
+  stairsReached: boolean;
+}
+
 export type AppState =
   | ExploringState
   | CombatAppState
   | ChestState
-  | GameOverState;
+  | GameOverState
+  | StageTransitionState;
 
 export type Effect =
   | { type: "PLAY_FOOTSTEP" }
@@ -58,7 +65,11 @@ export type Effect =
   | { type: "ANIMATE_MANA_GAIN"; index: number }
   | { type: "SHOW_CHEST_CLOSED" }
   | { type: "ANIMATE_CHEST_OPEN" }
-  | { type: "HIDE_CHEST" };
+  | { type: "HIDE_CHEST" }
+  | { type: "ANIMATE_STAGE_TRANSITION" }
+  | { type: "HIDE_STAGE_TRANSITION" }
+  | { type: "FADE_TO_BLACK" }
+  | { type: "FADE_FROM_BLACK" };
 
 export type Step =
   | { type: "state"; state: AppState }

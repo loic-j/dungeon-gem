@@ -5,7 +5,7 @@ import { findMonster } from "./data/monsters";
 import { SPELL_LIBRARY } from "./data/spells";
 import { ALL_DUNGEONS } from "./data/dungeons";
 import type { DungeonConfig } from "./dungeon";
-import { getCurrentStage } from "./dungeon";
+import { getCurrentStage, advanceToNextStage } from "./dungeon";
 
 const SAVE_KEY = "dcg_save";
 const SAVE_VERSION = 2;
@@ -37,7 +37,7 @@ interface SavedCombat {
 
 interface SavedState {
   version: number;
-  phase: "EXPLORING" | "COMBAT" | "CHEST";
+  phase: "EXPLORING" | "COMBAT" | "CHEST" | "STAGE_TRANSITION";
   isBoss: boolean;
   player: SavedPlayer;
   combat?: SavedCombat;
@@ -155,11 +155,25 @@ export function loadGame(): AppState | null {
       currentChances: saved.encounter.currentChances,
     };
 
-    // CHEST → EXPLORING: chest is lost but dungeon position preserved
+    // CHEST/STAGE_TRANSITION → EXPLORING: room lost but dungeon position preserved
     switch (saved.phase) {
       case "EXPLORING":
       case "CHEST":
         return { phase: "EXPLORING", player, dungeon, encounter };
+      case "STAGE_TRANSITION": {
+        const nextDungeon = advanceToNextStage(dungeon);
+        const nextStage = getCurrentStage(nextDungeon);
+        const nextEncounter = {
+          configs: nextStage.encounterConfigs,
+          currentChances: { ...encounter.currentChances },
+        };
+        return {
+          phase: "EXPLORING",
+          player,
+          dungeon: nextDungeon,
+          encounter: nextEncounter,
+        };
+      }
       case "COMBAT": {
         if (!saved.combat) return null;
 

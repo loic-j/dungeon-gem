@@ -4,6 +4,7 @@ export interface DungeonGraphics {
   floor: string;
   ceiling: string;
   wall: string;
+  stageTransition?: string;
 }
 
 export interface StageConfig {
@@ -43,7 +44,9 @@ export function isFinalStage(progress: DungeonProgress): boolean {
 
 export function isBossRoom(progress: DungeonProgress): boolean {
   const stage = getCurrentStage(progress);
-  return isFinalStage(progress) && progress.roomsCleared === stage.roomCount - 1;
+  return (
+    isFinalStage(progress) && progress.roomsCleared === stage.roomCount - 1
+  );
 }
 
 export function isStageComplete(progress: DungeonProgress): boolean {
@@ -62,6 +65,8 @@ export function advanceToNextStage(progress: DungeonProgress): DungeonProgress {
   };
 }
 
-export function resetDungeonProgress(progress: DungeonProgress): DungeonProgress {
+export function resetDungeonProgress(
+  progress: DungeonProgress,
+): DungeonProgress {
   return { ...progress, currentStageIndex: 0, roomsCleared: 0 };
 }

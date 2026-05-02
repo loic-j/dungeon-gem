@@ -16,6 +16,7 @@ import { DUNGEON_1 } from "./game/data/dungeons";
 import type { AppState, Step } from "./game/appState";
 import {
   moveForward,
+  moveForwardFromTransition,
   openChest,
   takeTurn,
   castSpell,
@@ -52,10 +53,13 @@ let appState: AppState = savedState ?? createFreshState();
 let isDispatching = false;
 
 // ── Renderer ───────────────────────────────────────────────────────────────────
-const { objects, animateWalk, setMonsterType } = initScene(
-  canvas,
-  appState.dungeon.dungeon.graphics,
-);
+const {
+  objects,
+  animateWalk,
+  animateStageTransition,
+  hideStageTransition,
+  setMonsterType,
+} = initScene(canvas, appState.dungeon.dungeon.graphics);
 if (appState.phase === "COMBAT")
   setMonsterType(appState.combat.monster.definition);
 
@@ -81,8 +85,10 @@ const {
 const controls = createExploreControls({
   getPhase: () => appState.phase,
   onMoveForward: () => {
-    if (!isDispatching && appState.phase === "EXPLORING")
-      void dispatch(moveForward(appState));
+    if (isDispatching) return;
+    if (appState.phase === "EXPLORING") void dispatch(moveForward(appState));
+    else if (appState.phase === "STAGE_TRANSITION")
+      void dispatch(moveForwardFromTransition(appState));
   },
   onOpenChest: () => {
     if (!isDispatching && appState.phase === "CHEST")
@@ -135,6 +141,8 @@ async function dispatch(steps: Step[]): Promise<void> {
         await executeEffect(step.effect, {
           objects,
           animateWalk,
+          animateStageTransition,
+          hideStageTransition,
           animatePlayerAttack,
           animateManaGain,
           showMonsterAttack,

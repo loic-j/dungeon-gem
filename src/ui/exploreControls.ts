@@ -22,7 +22,9 @@ export function createExploreControls(options: {
     moveBtn.style.borderColor = "rgba(255,255,255,0.25)";
   });
   moveBtn.addEventListener("click", () => {
-    if (options.getPhase() === "EXPLORING") options.onMoveForward();
+    const phase = options.getPhase();
+    if (phase === "EXPLORING" || phase === "STAGE_TRANSITION")
+      options.onMoveForward();
   });
 
   const chestOverlay = document.createElement("div");
@@ -34,7 +36,9 @@ export function createExploreControls(options: {
 
   function sync(phase: AppState["phase"], isDispatching: boolean) {
     moveBtn.style.display =
-      phase === "EXPLORING" && !isDispatching ? "" : "none";
+      (phase === "EXPLORING" || phase === "STAGE_TRANSITION") && !isDispatching
+        ? ""
+        : "none";
     chestOverlay.style.pointerEvents =
       phase === "CHEST" && !isDispatching ? "auto" : "none";
   }

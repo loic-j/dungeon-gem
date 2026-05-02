@@ -77,6 +77,37 @@ export function showItemSelectionAsync(): Promise<void> {
   });
 }
 
+let blackOverlay: HTMLElement | null = null;
+
+export function fadeToBlack(ms = 300): Promise<void> {
+  return new Promise((resolve) => {
+    blackOverlay?.remove();
+    blackOverlay = document.createElement("div");
+    blackOverlay.style.cssText = `position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:30;transition:opacity ${ms}ms ease-in;`;
+    root().appendChild(blackOverlay);
+    requestAnimationFrame(() => {
+      blackOverlay!.style.opacity = "1";
+      setTimeout(resolve, ms);
+    });
+  });
+}
+
+export function fadeFromBlack(ms = 300): Promise<void> {
+  return new Promise((resolve) => {
+    if (!blackOverlay) {
+      resolve();
+      return;
+    }
+    blackOverlay.style.transition = `opacity ${ms}ms ease-out`;
+    blackOverlay.style.opacity = "0";
+    setTimeout(() => {
+      blackOverlay?.remove();
+      blackOverlay = null;
+      resolve();
+    }, ms);
+  });
+}
+
 let activeTransition: HTMLElement | null = null;
 
 export function showStageTransitionOverlay(): void {

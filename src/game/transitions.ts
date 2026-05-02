@@ -4,6 +4,7 @@ import type {
   CombatAppState,
   ChestState,
   GameOverState,
+  StageTransitionState,
   Step,
 } from "./appState";
 import {
@@ -36,6 +37,10 @@ import { findMonster, pickMonsterFromIds } from "./data/monsters";
 export function moveForward(state: ExploringState): Step[] {
   const footstep: Step = { type: "effect", effect: { type: "PLAY_FOOTSTEP" } };
   const walk: Step = { type: "effect", effect: { type: "ANIMATE_WALK" } };
+
+  if (isStageComplete(state.dungeon)) {
+    return [footstep, walk, ...roomCompletionSteps(state)];
+  }
 
   if (isBossRoom(state.dungeon)) {
     return [footstep, walk, ...bossEncounterSteps(state)];
@@ -145,6 +150,26 @@ function roomCompletionSteps(state: ExploringState): Step[] {
   if (!isStageComplete(state.dungeon)) return [];
   if (isFinalStage(state.dungeon)) return dungeonCompleteSteps(state);
 
+  const transition: StageTransitionState = {
+    phase: "STAGE_TRANSITION",
+    player: state.player,
+    dungeon: state.dungeon,
+    encounter: state.encounter,
+    stairsReached: false,
+  };
+  return [{ type: "state", state: transition }];
+}
+
+export function moveForwardFromTransition(state: StageTransitionState): Step[] {
+  if (!state.stairsReached) {
+    const atStairs: StageTransitionState = { ...state, stairsReached: true };
+    return [
+      { type: "effect", effect: { type: "PLAY_FOOTSTEP" } },
+      { type: "effect", effect: { type: "ANIMATE_STAGE_TRANSITION" } },
+      { type: "state", state: atStairs },
+    ];
+  }
+
   const nextDungeon = advanceToNextStage(state.dungeon);
   const next: ExploringState = {
     phase: "EXPLORING",
@@ -155,15 +180,12 @@ function roomCompletionSteps(state: ExploringState): Step[] {
     ),
   };
   return [
-    {
-      type: "effect",
-      effect: {
-        type: "SHOW_MESSAGE",
-        text: "Stage Complete!",
-        color: "#e8c01a",
-      },
-    },
+    { type: "effect", effect: { type: "PLAY_FOOTSTEP" } },
+    { type: "effect", effect: { type: "FADE_TO_BLACK" } },
+    { type: "effect", effect: { type: "HIDE_STAGE_TRANSITION" } },
     { type: "state", state: next },
+    { type: "effect", effect: { type: "DELAY", ms: 250 } },
+    { type: "effect", effect: { type: "FADE_FROM_BLACK" } },
   ];
 }
 

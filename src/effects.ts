@@ -12,6 +12,8 @@ import {
   flashScreen,
   showMessageAsync,
   showItemSelectionAsync,
+  fadeToBlack,
+  fadeFromBlack,
 } from "./ui/messages";
 import type { Effect, AppState } from "./game/appState";
 import type { SceneObjects } from "./renderer/scene";
@@ -20,6 +22,8 @@ import type { MonsterType } from "./game/types";
 export interface EffectDeps {
   objects: SceneObjects;
   animateWalk(): Promise<void>;
+  animateStageTransition(): Promise<void>;
+  hideStageTransition(): void;
   animatePlayerAttack(): Promise<void>;
   animateManaGain(index: number): Promise<void>;
   showMonsterAttack(name: string, damage: number): void;
@@ -117,6 +121,18 @@ export async function executeEffect(
     case "HIDE_CHEST":
       deps.objects.chestClosedSprite.visible = false;
       deps.objects.chestOpenSprite.visible = false;
+      break;
+    case "ANIMATE_STAGE_TRANSITION":
+      await deps.animateStageTransition();
+      break;
+    case "HIDE_STAGE_TRANSITION":
+      deps.hideStageTransition();
+      break;
+    case "FADE_TO_BLACK":
+      await fadeToBlack();
+      break;
+    case "FADE_FROM_BLACK":
+      await fadeFromBlack();
       break;
   }
 }

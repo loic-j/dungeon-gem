@@ -35,6 +35,7 @@ export const DUNGEON_1: DungeonConfig = {
     floor: "/sprites/floor.png",
     ceiling: "/sprites/ceiling.png",
     wall: "/sprites/wall-1.png",
+    stageTransition: "/sprites/dungeon1stagetransition.png",
   },
 };
 

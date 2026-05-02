@@ -17,6 +17,8 @@ export function initScene(
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
   animateWalk: () => Promise<void>;
+  animateStageTransition: () => Promise<void>;
+  hideStageTransition: () => void;
   setMonsterType: (monster: MonsterType) => void;
   dispose: () => void;
 } {
@@ -84,10 +86,76 @@ export function initScene(
   }
   animate();
 
+  let stairsPlane: THREE.Mesh | null = null;
+  if (dungeonGraphics.stageTransition) {
+    const tex = new THREE.TextureLoader().load(dungeonGraphics.stageTransition);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0,
+    });
+    stairsPlane = new THREE.Mesh(new THREE.PlaneGeometry(5, 3), mat);
+    stairsPlane.position.set(0, 0.3, -5);
+    stairsPlane.visible = false;
+    scene.add(stairsPlane);
+  }
+
+  function animateStageTransition(): Promise<void> {
+    return new Promise((resolve) => {
+      if (!stairsPlane) {
+        resolve();
+        return;
+      }
+      const mat = stairsPlane.material as THREE.MeshBasicMaterial;
+      // Camera travels Z=2→-4 (delta -6). To keep apparent staircase size constant
+      // across the final snap, stairs must also shift -6: restZ=-5 → animEndZ=-11.
+      // At snap: camera -4→2 (+6) and stairs -11→-5 (+6) simultaneously → distance
+      // stays 7 before and after → no visible resize.
+      const stairsStartZ = -20;
+      const stairsAnimEndZ = -11;
+      const stairsRestZ = -5;
+      const camStartZ = camera.position.z;
+      const camEndZ = -4;
+      const duration = 900;
+      const start = performance.now();
+      stairsPlane.position.z = stairsStartZ;
+      mat.opacity = 0;
+      stairsPlane.visible = true;
+
+      function step(now: number) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        stairsPlane!.position.z =
+          stairsStartZ + (stairsAnimEndZ - stairsStartZ) * eased;
+        mat.opacity = eased;
+        camera.position.z = camStartZ + (camEndZ - camStartZ) * eased;
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          // Simultaneous snap: both shift +6 units — apparent distance unchanged.
+          stairsPlane!.position.z = stairsRestZ;
+          mat.opacity = 1;
+          camera.position.z = camStartZ;
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function hideStageTransition(): void {
+    if (!stairsPlane) return;
+    stairsPlane.visible = false;
+    (stairsPlane.material as THREE.MeshBasicMaterial).opacity = 0;
+    camera.position.z = 2;
+  }
+
   function animateWalk(): Promise<void> {
     return new Promise((resolve) => {
+      const homeZ = 2;
       const startZ = camera.position.z;
-      const endZ = -4;
+      const endZ = startZ - 6;
       const duration = 550;
       const start = performance.now();
 
@@ -98,7 +166,7 @@ export function initScene(
         if (t < 1) {
           requestAnimationFrame(step);
         } else {
-          camera.position.z = startZ;
+          camera.position.z = homeZ;
           resolve();
         }
       }
@@ -134,6 +202,8 @@ export function initScene(
     renderer,
     objects: { monsterSprite, chestClosedSprite, chestOpenSprite },
     animateWalk,
+    animateStageTransition,
+    hideStageTransition,
     setMonsterType,
     dispose,
   };
