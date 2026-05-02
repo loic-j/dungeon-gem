@@ -39,6 +39,7 @@ export type AppState =
 export type Effect =
   | { type: "PLAY_FOOTSTEP" }
   | { type: "ANIMATE_WALK" }
+  | { type: "ANIMATE_WALK_TO_STAIRS" }
   | { type: "ANIMATE_PLAYER_ATTACK" }
   | { type: "ANIMATE_MONSTER_ATTACK" }
   | { type: "FLASH_SCREEN" }

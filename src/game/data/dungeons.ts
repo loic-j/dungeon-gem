@@ -36,3 +36,5 @@ export const DUNGEON_1: DungeonConfig = {
     wall: "/sprites/wall-1.png",
   },
 };
+
+export const ALL_DUNGEONS: DungeonConfig[] = [DUNGEON_1];

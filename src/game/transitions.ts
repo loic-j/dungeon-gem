@@ -24,27 +24,49 @@ import {
   getCurrentStage,
   resetDungeonProgress,
 } from "./dungeon";
-import { enterRoom, onEncounterFinished, initEncounterState } from "./encounterSystem";
+import {
+  enterRoom,
+  onEncounterFinished,
+  initEncounterState,
+} from "./encounterSystem";
 import { findMonster, pickMonsterFromIds } from "./data/monsters";
 
 // ── Exploring ────────────────────────────────────────────────────────────────
 
 export function moveForward(state: ExploringState): Step[] {
-  const walk: Step[] = [
-    { type: "effect", effect: { type: "PLAY_FOOTSTEP" } },
-    { type: "effect", effect: { type: "ANIMATE_WALK" } },
-  ];
+  const footstep: Step = { type: "effect", effect: { type: "PLAY_FOOTSTEP" } };
+  const walk: Step = { type: "effect", effect: { type: "ANIMATE_WALK" } };
 
   if (isBossRoom(state.dungeon)) {
-    return [...walk, ...bossEncounterSteps(state)];
+    return [footstep, walk, ...bossEncounterSteps(state)];
+  }
+
+  // Last room of a non-final stage is always the stair transition — skip encounter roll
+  const afterRoomDungeon = completeRoom(state.dungeon);
+  if (isStageComplete(afterRoomDungeon) && !isFinalStage(afterRoomDungeon)) {
+    const afterRoom: ExploringState = { ...state, dungeon: afterRoomDungeon };
+    return [
+      footstep,
+      { type: "effect", effect: { type: "ANIMATE_WALK_TO_STAIRS" } },
+      { type: "state", state: afterRoom },
+      ...roomCompletionSteps(afterRoom),
+    ];
   }
 
   const { encounter, nextState: nextEncounter } = enterRoom(state.encounter);
   const s: ExploringState = { ...state, encounter: nextEncounter };
 
-  if (encounter === "chest") return [...walk, ...chestRoomSteps(s)];
-  if (encounter !== "empty") return [...walk, ...monsterEncounterSteps(s)];
-  return [...walk, ...emptyRoomSteps(s)];
+  if (encounter === "chest") return [footstep, walk, ...chestRoomSteps(s)];
+  if (encounter !== "empty")
+    return [footstep, walk, ...monsterEncounterSteps(s)];
+
+  const afterRoom: ExploringState = { ...s, dungeon: completeRoom(s.dungeon) };
+  return [
+    footstep,
+    walk,
+    { type: "state", state: afterRoom },
+    ...roomCompletionSteps(afterRoom),
+  ];
 }
 
 function bossEncounterSteps(state: ExploringState): Step[] {
@@ -62,7 +84,14 @@ function bossEncounterSteps(state: ExploringState): Step[] {
     { type: "effect", effect: { type: "SET_MONSTER_TYPE", monster: boss } },
     { type: "state", state: next },
     { type: "effect", effect: { type: "PLAY_MONSTER_APPEAR_SOUND" } },
-    { type: "effect", effect: { type: "SET_BOSS_MODE", enabled: true, title: state.dungeon.dungeon.bossTitle } },
+    {
+      type: "effect",
+      effect: {
+        type: "SET_BOSS_MODE",
+        enabled: true,
+        title: state.dungeon.dungeon.bossTitle,
+      },
+    },
     { type: "effect", effect: { type: "PLAY_BOSS_MUSIC" } },
   ];
 }
@@ -98,7 +127,10 @@ function chestRoomSteps(state: ExploringState): Step[] {
 }
 
 function emptyRoomSteps(state: ExploringState): Step[] {
-  const afterRoom: ExploringState = { ...state, dungeon: completeRoom(state.dungeon) };
+  const afterRoom: ExploringState = {
+    ...state,
+    dungeon: completeRoom(state.dungeon),
+  };
   return [
     { type: "state", state: afterRoom },
     ...roomCompletionSteps(afterRoom),
@@ -128,10 +160,19 @@ function dungeonCompleteSteps(state: ExploringState): Step[] {
     phase: "EXPLORING",
     combat: state.combat,
     dungeon: resetDungeon,
-    encounter: initEncounterState(getCurrentStage(resetDungeon).encounterConfigs),
+    encounter: initEncounterState(
+      getCurrentStage(resetDungeon).encounterConfigs,
+    ),
   };
   return [
-    { type: "effect", effect: { type: "SHOW_MESSAGE", text: `${state.dungeon.dungeon.name}\nCOMPLETE!`, color: "#e8c01a" } },
+    {
+      type: "effect",
+      effect: {
+        type: "SHOW_MESSAGE",
+        text: `${state.dungeon.dungeon.name}\nCOMPLETE!`,
+        color: "#e8c01a",
+      },
+    },
     { type: "state", state: next },
   ];
 }
@@ -144,7 +185,9 @@ export function descend(state: StageTransitionState): Step[] {
     phase: "EXPLORING",
     combat: state.combat,
     dungeon: nextDungeon,
-    encounter: initEncounterState(getCurrentStage(nextDungeon).encounterConfigs),
+    encounter: initEncounterState(
+      getCurrentStage(nextDungeon).encounterConfigs,
+    ),
   };
   return [
     { type: "effect", effect: { type: "PLAY_FOOTSTEP" } },
@@ -175,21 +218,30 @@ export function openChest(state: ChestState): Step[] {
 
 // ── Combat ────────────────────────────────────────────────────────────────────
 
-export function takeTurn(state: CombatAppState, spellId: string | null): Step[] {
+export function takeTurn(
+  state: CombatAppState,
+  spellId: string | null,
+): Step[] {
   const steps: Step[] = [];
 
   if (spellId !== null) {
     const spell = state.combat.player.spells.find((s) => s.id === spellId);
     if (spell) {
       steps.push(
-        { type: "effect", effect: { type: "PLAY_SPELL_SOUND", element: spell.element } },
+        {
+          type: "effect",
+          effect: { type: "PLAY_SPELL_SOUND", element: spell.element },
+        },
         { type: "effect", effect: { type: "ANIMATE_PLAYER_ATTACK" } },
       );
     }
   }
 
   const afterPlayer = processPlayerAction(state.combat, spellId);
-  steps.push({ type: "state", state: { ...state, combat: afterPlayer } as AppState });
+  steps.push({
+    type: "state",
+    state: { ...state, combat: afterPlayer } as AppState,
+  });
 
   if (checkCombatEnd(afterPlayer) === "VICTORY") {
     return [...steps, ...victorySteps({ ...state, combat: afterPlayer })];
@@ -197,35 +249,60 @@ export function takeTurn(state: CombatAppState, spellId: string | null): Step[] 
 
   steps.push({ type: "effect", effect: { type: "DELAY", ms: 100 } });
 
-  const { state: afterMonster, attacked, spell: monsterSpell } = processMonsterPhase(afterPlayer);
-  steps.push({ type: "state", state: { ...state, combat: afterMonster } as AppState });
+  const {
+    state: afterMonster,
+    attacked,
+    spell: monsterSpell,
+  } = processMonsterPhase(afterPlayer);
+  steps.push({
+    type: "state",
+    state: { ...state, combat: afterMonster } as AppState,
+  });
 
   if (attacked && monsterSpell) {
     steps.push(
       { type: "effect", effect: { type: "PLAY_MONSTER_ATTACK_SOUND" } },
       { type: "effect", effect: { type: "ANIMATE_MONSTER_ATTACK" } },
       { type: "effect", effect: { type: "FLASH_SCREEN" } },
-      { type: "effect", effect: { type: "SHOW_MONSTER_ATTACK_POPUP", name: monsterSpell.name, damage: monsterSpell.damage } },
+      {
+        type: "effect",
+        effect: {
+          type: "SHOW_MONSTER_ATTACK_POPUP",
+          name: monsterSpell.name,
+          damage: monsterSpell.damage,
+        },
+      },
     );
   }
 
   steps.push({ type: "effect", effect: { type: "DELAY", ms: 300 } });
 
   const outcome = checkCombatEnd(afterMonster);
-  if (outcome === "GAME_OVER") return [...steps, ...gameOverSteps({ ...state, combat: afterMonster })];
-  if (outcome === "VICTORY") return [...steps, ...victorySteps({ ...state, combat: afterMonster })];
+  if (outcome === "GAME_OVER")
+    return [...steps, ...gameOverSteps({ ...state, combat: afterMonster })];
+  if (outcome === "VICTORY")
+    return [...steps, ...victorySteps({ ...state, combat: afterMonster })];
 
   const afterMana = processManaPhase(afterMonster);
   steps.push(
     { type: "state", state: { ...state, combat: afterMana } as AppState },
-    { type: "effect", effect: { type: "ANIMATE_MANA_GAIN", index: afterMana.player.manaPool.length - 1 } },
+    {
+      type: "effect",
+      effect: {
+        type: "ANIMATE_MANA_GAIN",
+        index: afterMana.player.manaPool.length - 1,
+      },
+    },
   );
 
   return steps;
 }
 
 function victorySteps(state: CombatAppState): Step[] {
-  const player = applyExperience(state.combat.player, state.combat.monster.definition.experienceReward);
+  const player = applyExperience(
+    state.combat.player,
+    state.combat.monster.definition.experienceReward,
+  );
   const leveledUp = player.level > state.combat.player.level;
   const xp = state.combat.monster.definition.experienceReward;
   const msg = leveledUp
@@ -250,7 +327,10 @@ function victorySteps(state: CombatAppState): Step[] {
   return [
     ...bossCleanup,
     { type: "effect", effect: { type: "PLAY_VICTORY_SOUND" } },
-    { type: "effect", effect: { type: "SHOW_MESSAGE", text: msg, color: "#2b8" } },
+    {
+      type: "effect",
+      effect: { type: "SHOW_MESSAGE", text: msg, color: "#2b8" },
+    },
     { type: "state", state: next },
     ...roomCompletionSteps(next),
   ];
@@ -276,7 +356,10 @@ function gameOverSteps(state: CombatAppState): Step[] {
     { type: "effect", effect: { type: "STOP_BACKGROUND_MUSIC" } },
     { type: "effect", effect: { type: "START_BACKGROUND_MUSIC" } },
     { type: "effect", effect: { type: "PLAY_GAME_OVER_SOUND" } },
-    { type: "effect", effect: { type: "SHOW_MESSAGE", text: "GAME OVER", color: "#c00" } },
+    {
+      type: "effect",
+      effect: { type: "SHOW_MESSAGE", text: "GAME OVER", color: "#c00" },
+    },
     { type: "state", state: next },
   ];
 }

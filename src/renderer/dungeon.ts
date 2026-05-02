@@ -54,20 +54,21 @@ function buildCorridor(group: THREE.Group, graphics: DungeonGraphics): void {
   group.add(rightWall);
 }
 
-export function createStairsRoom(graphics: DungeonGraphics): THREE.Group {
+export function createStairsCorridor(graphics: DungeonGraphics): THREE.Group {
   const group = new THREE.Group();
   buildCorridor(group, graphics);
+  return group;
+}
 
+export function createStairsSprite(): THREE.Sprite {
   const stairsTex = new THREE.TextureLoader().load("/sprites/stairs.png");
   stairsTex.colorSpace = THREE.SRGBColorSpace;
-  const stairsSprite = new THREE.Sprite(
+  const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: stairsTex, transparent: true }),
   );
-  stairsSprite.scale.set(5, 5, 1);
-  stairsSprite.position.set(0, 0.3, -4);
-  group.add(stairsSprite);
-
-  return group;
+  sprite.scale.set(5, 5, 1);
+  sprite.position.set(0, 0.3, -4);
+  return sprite;
 }
 
 export function createDungeon(graphics: DungeonGraphics): THREE.Group {

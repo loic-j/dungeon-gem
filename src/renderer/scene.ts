@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import type { MonsterType } from "../game/types";
 import type { DungeonGraphics } from "../game/dungeon";
-import { createDungeon, createStairsRoom } from "./dungeon";
+import {
+  createDungeon,
+  createStairsCorridor,
+  createStairsSprite,
+} from "./dungeon";
 import {
   createMonsterSprite,
   createChestClosedSprite,
@@ -22,6 +26,7 @@ export function initScene(
   renderer: THREE.WebGLRenderer;
   objects: SceneObjects;
   animateWalk: () => Promise<void>;
+  animateWalkToStairs: () => Promise<void>;
   setMonsterType: (monster: MonsterType) => void;
   setStairsMode: (enabled: boolean) => void;
   dispose: () => void;
@@ -40,13 +45,19 @@ export function initScene(
   const dungeonGroup = createDungeon(dungeonGraphics);
   scene.add(dungeonGroup);
 
-  const stairsGroup = createStairsRoom(dungeonGraphics);
-  stairsGroup.visible = false;
-  scene.add(stairsGroup);
+  const stairsCorridorGroup = createStairsCorridor(dungeonGraphics);
+  stairsCorridorGroup.visible = false;
+  scene.add(stairsCorridorGroup);
+
+  const stairsSprite = createStairsSprite();
+  stairsSprite.visible = false;
+  scene.add(stairsSprite);
 
   function setStairsMode(enabled: boolean) {
     dungeonGroup.visible = !enabled;
-    stairsGroup.visible = enabled;
+    stairsCorridorGroup.visible = enabled;
+    stairsSprite.visible = enabled;
+    if (enabled) stairsSprite.position.z = -4;
   }
 
   function setMonsterType(monster: MonsterType) {
@@ -119,15 +130,52 @@ export function initScene(
     });
   }
 
+  function animateWalkToStairs(): Promise<void> {
+    return new Promise((resolve) => {
+      const startZ = camera.position.z;
+      const endZ = -4;
+      const duration = 550;
+      const start = performance.now();
+
+      stairsSprite.position.z = -20;
+      stairsSprite.visible = true;
+
+      function step(now: number) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        camera.position.z = startZ + (endZ - startZ) * eased;
+        stairsSprite.position.z = -20 + 16 * eased;
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          // Switch corridor while camera is at endZ (deep inside, change invisible),
+          // then snap camera back — first rendered frame IS the stairs room view.
+          dungeonGroup.visible = false;
+          stairsCorridorGroup.visible = true;
+          stairsSprite.position.z = -4;
+          camera.position.z = startZ;
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
   function dispose() {
     ro.disconnect();
     cancelAnimationFrame(animId);
     scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh || obj instanceof THREE.Sprite) {
         if (obj instanceof THREE.Mesh) obj.geometry.dispose();
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        const mats = Array.isArray(obj.material)
+          ? obj.material
+          : [obj.material];
         for (const mat of mats) {
-          if (mat instanceof THREE.SpriteMaterial || mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshBasicMaterial) {
+          if (
+            mat instanceof THREE.SpriteMaterial ||
+            mat instanceof THREE.MeshStandardMaterial ||
+            mat instanceof THREE.MeshBasicMaterial
+          ) {
             mat.map?.dispose();
           }
           mat.dispose();
@@ -141,6 +189,7 @@ export function initScene(
     renderer,
     objects: { monsterSprite, chestClosedSprite, chestOpenSprite },
     animateWalk,
+    animateWalkToStairs,
     setMonsterType,
     setStairsMode,
     dispose,

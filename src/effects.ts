@@ -22,6 +22,7 @@ import type { MonsterType } from "./game/types";
 export interface EffectDeps {
   objects: SceneObjects;
   animateWalk(): Promise<void>;
+  animateWalkToStairs(): Promise<void>;
   animatePlayerAttack(): Promise<void>;
   animateManaGain(index: number): void;
   showMonsterAttack(name: string, damage: number): void;
@@ -46,6 +47,9 @@ export async function executeEffect(
       break;
     case "ANIMATE_WALK":
       await deps.animateWalk();
+      break;
+    case "ANIMATE_WALK_TO_STAIRS":
+      await deps.animateWalkToStairs();
       break;
     case "ANIMATE_PLAYER_ATTACK":
       await deps.animatePlayerAttack();
