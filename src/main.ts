@@ -26,6 +26,7 @@ import {
 import { createSpellLearnUI } from "./ui/spellLearn";
 import { executeEffect } from "./effects";
 import { saveGame, clearSave, loadGame, setDevState } from "./game/persistence";
+import { createDebugPanel } from "./ui/debugPanel";
 
 if (import.meta.env.DEV && import.meta.env.VITE_DEV_STATE) {
   const states = import.meta.glob("/dev/states/*.json", {
@@ -127,6 +128,11 @@ const musicButton = createMusicButton({
 });
 appRoot.appendChild(musicButton.element);
 
+// ── Debug panel (VITE_DEBUG env var) ──────────────────────────────────────────
+const debugPanel = import.meta.env.VITE_DEBUG
+  ? createDebugPanel(appRoot)
+  : null;
+
 // ── New Game button (shown after Game Over) ────────────────────────────────────
 const newGameBtn = document.createElement("button");
 newGameBtn.textContent = "NEW GAME";
@@ -205,6 +211,8 @@ function tick() {
   } else {
     saveGame(appState);
   }
+
+  debugPanel?.update(appState);
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────

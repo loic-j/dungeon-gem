@@ -3,12 +3,12 @@ import type { EncounterTypeConfig } from "../encounterSystem";
 import { startBossMusic } from "../../audio/soundManager";
 
 const STAGE_1_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
-  { id: "monster", baseChance: 0.5, chanceIncrement: 0.2 },
+  { id: "monster", baseChance: 0.4, chanceIncrement: 0.2 },
   { id: "chest", baseChance: 0.2, chanceIncrement: 0.1 },
 ];
 
 const STAGE_2_ENCOUNTER_CONFIGS: EncounterTypeConfig[] = [
-  { id: "monster", baseChance: 0.5, chanceIncrement: 0.2 },
+  { id: "monster", baseChance: 0.4, chanceIncrement: 0.2 },
   { id: "chest", baseChance: 0.2, chanceIncrement: 0.1 },
 ];
 
